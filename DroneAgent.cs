@@ -10,22 +10,37 @@ public class DroneAgent : Agent
     // 환경에 대한 설정인 DroneSettings를 불러온다
     public DroneSetting area;
     public GameObject goal;
-    // goal여러개 추가 테스트
+    // 70개의 goal여러개 추가 생성
+    // 5개 먼저 테스트
     public GameObject goal2;
+    public GameObject goal3;
+    public GameObject goal4;
+    public GameObject goal5;
+
     float preDist;
     private Transform agentTrans;
+    // private Transform[] goalTrans;
     private Transform goalTrans;
     private Rigidbody agent_Rigidbody;
+    
+    // void Start(){
+    // }
+
+    
 
     public override void Initialize()
     {
         // 드론 PA_DroneController를 불러와 변수로 저장
         dcoScript = gameObject.GetComponent<PA_DroneController>();
         agentTrans = gameObject.transform;
+
         goalTrans = goal.transform;
+
         agent_Rigidbody = gameObject.GetComponent<Rigidbody>();
 
         Academy.Instance.AgentPreStep += WaitTimeInference;
+
+
     }
 
     // x,y,z 거리,속도,각속도의 9개 벡터
@@ -77,6 +92,8 @@ public class DroneAgent : Agent
     {
         area.AreaSetting();     // Area 
         preDist = Vector3.Magnitude(goalTrans.position - agentTrans.position);
+        // Drone으로부터 가장 가까운 목표점 탐색 후 설정 코드 추가(불필요)
+        // area.SearchGoal();
         // DroneSettings에 드론 위치 변경 코드 추가
         // area.MoveDronePos();    // Drone 위치 변경
     }
