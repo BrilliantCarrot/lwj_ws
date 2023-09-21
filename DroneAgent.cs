@@ -12,15 +12,21 @@ public class DroneAgent : Agent
     public GameObject goal;
     // 70개의 goal여러개 추가 생성
     // 5개 먼저 테스트
-    public GameObject goal2;
-    public GameObject goal3;
-    public GameObject goal4;
-    public GameObject goal5;
+    // public GameObject goal2;
+    // public GameObject goal3;
+    // public GameObject goal4;
+    // public GameObject goal5;
+    // public GameObject goal6;
 
     float preDist;
     private Transform agentTrans;
     // private Transform[] goalTrans;
     private Transform goalTrans;
+    // private Transform goal2Trans;
+    // private Transform goal3Trans;
+    // private Transform goal4Trans;
+    // private Transform goal5Trans;
+    // private Transform goal6Trans;
     private Rigidbody agent_Rigidbody;
     
     // void Start(){
@@ -35,6 +41,11 @@ public class DroneAgent : Agent
         agentTrans = gameObject.transform;
 
         goalTrans = goal.transform;
+        // goal2Trans = goal2.transform;
+        // goal3Trans = goal3.transform;
+        // goal4Trans = goal4.transform;
+        // goal5Trans = goal5.transform;
+        // goal6Trans = goal6.transform;
 
         agent_Rigidbody = gameObject.GetComponent<Rigidbody>();
 
@@ -47,6 +58,11 @@ public class DroneAgent : Agent
     public override void CollectObservations(VectorSensor sensor)
     {
         sensor.AddObservation(agentTrans.position - goalTrans.position);
+        // sensor.AddObservation(agentTrans.position - goal2Trans.position);
+        // sensor.AddObservation(agentTrans.position - goal3Trans.position);
+        // sensor.AddObservation(agentTrans.position - goal4Trans.position);
+        // sensor.AddObservation(agentTrans.position - goal5Trans.position);
+        // sensor.AddObservation(agentTrans.position - goal6Trans.position);
         sensor.AddObservation(agent_Rigidbody.velocity);
         sensor.AddObservation(agent_Rigidbody.angularVelocity);
     }
@@ -85,6 +101,91 @@ public class DroneAgent : Agent
 			AddReward(reward);
             preDist = distance;
         }
+        // float distance2 = Vector3.Magnitude(goal2Trans.position - agentTrans.position);
+        // if(distance <= 1f)
+        // {
+        //     SetReward(10f);
+        //     // EndEpisode();
+        // }
+        // else if(distance > 90f)
+        // {
+		// 	SetReward(-100f);
+        //     EndEpisode();
+        // }
+        // else
+        // {
+        //     float reward = preDist - distance;
+		// 	AddReward(reward);
+        //     preDist = distance;
+        // }
+        // float distance3 = Vector3.Magnitude(goal3Trans.position - agentTrans.position);
+        // if(distance <= 1f)
+        // {
+        //     SetReward(10f);
+        //     // EndEpisode();
+        // }
+        // else if(distance > 90f)
+        // {
+		// 	SetReward(-100f);
+        //     EndEpisode();
+        // }
+        // else
+        // {
+        //     float reward = preDist - distance;
+		// 	AddReward(reward);
+        //     preDist = distance;
+        // }
+        // float distance4 = Vector3.Magnitude(goal4Trans.position - agentTrans.position);
+        // if(distance <= 1f)
+        // {
+        //     SetReward(10f);
+        //     // EndEpisode();
+        // }
+        // else if(distance > 90f)
+        // {
+		// 	SetReward(-100f);
+        //     EndEpisode();
+        // }
+        // else
+        // {
+        //     float reward = preDist - distance;
+		// 	AddReward(reward);
+        //     preDist = distance;
+        // }
+        // float distance5 = Vector3.Magnitude(goal5Trans.position - agentTrans.position);
+        // if(distance <= 1f)
+        // {
+        //     SetReward(10f);
+        //     // EndEpisode();
+        // }
+        // else if(distance > 90f)
+        // {
+		// 	SetReward(-100f);
+        //     EndEpisode();
+        // }
+        // else
+        // {
+        //     float reward = preDist - distance;
+		// 	AddReward(reward);
+        //     preDist = distance;
+        // }
+        // float distance6 = Vector3.Magnitude(goal6Trans.position - agentTrans.position);
+        // if(distance <= 1f)
+        // {
+        //     SetReward(10f);
+        //     // EndEpisode();
+        // }
+        // else if(distance > 90f)
+        // {
+		// 	SetReward(-100f);
+        //     EndEpisode();
+        // }
+        // else
+        // {
+        //     float reward = preDist - distance;
+		// 	AddReward(reward);
+        //     preDist = distance;
+        // }
     }
 
     // episode가 시작될때 호출, 목표 제거, 드론 이동 함수 추가 필요
