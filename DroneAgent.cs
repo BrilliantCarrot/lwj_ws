@@ -9,6 +9,8 @@ public class DroneAgent : Agent
     private PA_DroneController dcoScript;
     // 환경에 대한 설정인 DroneSettings를 불러온다
     public DroneSetting area;
+    public area.
+    
     public GameObject goal;
     // 70개의 goal여러개 추가 생성
     // 5개 먼저 테스트
@@ -88,7 +90,8 @@ public class DroneAgent : Agent
         if(distance <= 1f)
         {
             SetReward(10f);
-            // EndEpisode();
+            // 해당 위치로 드론의 초기 위치 설정 함수(droneititpos 포함)
+            // 해당 위치 근처의 소노부이 제거 함수
         }
         else if(distance > 90f)
         {
@@ -101,91 +104,7 @@ public class DroneAgent : Agent
 			AddReward(reward);
             preDist = distance;
         }
-        // float distance2 = Vector3.Magnitude(goal2Trans.position - agentTrans.position);
-        // if(distance <= 1f)
-        // {
-        //     SetReward(10f);
-        //     // EndEpisode();
-        // }
-        // else if(distance > 90f)
-        // {
-		// 	SetReward(-100f);
-        //     EndEpisode();
-        // }
-        // else
-        // {
-        //     float reward = preDist - distance;
-		// 	AddReward(reward);
-        //     preDist = distance;
-        // }
-        // float distance3 = Vector3.Magnitude(goal3Trans.position - agentTrans.position);
-        // if(distance <= 1f)
-        // {
-        //     SetReward(10f);
-        //     // EndEpisode();
-        // }
-        // else if(distance > 90f)
-        // {
-		// 	SetReward(-100f);
-        //     EndEpisode();
-        // }
-        // else
-        // {
-        //     float reward = preDist - distance;
-		// 	AddReward(reward);
-        //     preDist = distance;
-        // }
-        // float distance4 = Vector3.Magnitude(goal4Trans.position - agentTrans.position);
-        // if(distance <= 1f)
-        // {
-        //     SetReward(10f);
-        //     // EndEpisode();
-        // }
-        // else if(distance > 90f)
-        // {
-		// 	SetReward(-100f);
-        //     EndEpisode();
-        // }
-        // else
-        // {
-        //     float reward = preDist - distance;
-		// 	AddReward(reward);
-        //     preDist = distance;
-        // }
-        // float distance5 = Vector3.Magnitude(goal5Trans.position - agentTrans.position);
-        // if(distance <= 1f)
-        // {
-        //     SetReward(10f);
-        //     // EndEpisode();
-        // }
-        // else if(distance > 90f)
-        // {
-		// 	SetReward(-100f);
-        //     EndEpisode();
-        // }
-        // else
-        // {
-        //     float reward = preDist - distance;
-		// 	AddReward(reward);
-        //     preDist = distance;
-        // }
-        // float distance6 = Vector3.Magnitude(goal6Trans.position - agentTrans.position);
-        // if(distance <= 1f)
-        // {
-        //     SetReward(10f);
-        //     // EndEpisode();
-        // }
-        // else if(distance > 90f)
-        // {
-		// 	SetReward(-100f);
-        //     EndEpisode();
-        // }
-        // else
-        // {
-        //     float reward = preDist - distance;
-		// 	AddReward(reward);
-        //     preDist = distance;
-        // }
+
     }
 
     // episode가 시작될때 호출, 목표 제거, 드론 이동 함수 추가 필요
@@ -193,8 +112,8 @@ public class DroneAgent : Agent
     {
         area.AreaSetting();     // Area 
         preDist = Vector3.Magnitude(goalTrans.position - agentTrans.position);
-        // Drone으로부터 가장 가까운 목표점 탐색 후 설정 코드 추가(불필요)
-        // area.SearchGoal();
+        // 목표점 중 Drone으로부터 가장 가까운 목표점 탐색 후 Goal로 설정
+        area.SearchGoal();
         // DroneSettings에 드론 위치 변경 코드 추가
         // area.MoveDronePos();    // Drone 위치 변경
     }
