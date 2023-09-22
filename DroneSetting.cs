@@ -5,7 +5,9 @@ using Unity.MLAgents;
 using System;
 using Unity.Mathematics;
 
-
+/// <summary>
+/// ////////////////////////////////////////////
+/// </summary>
 
 public class DroneSetting : MonoBehaviour
 {
