@@ -28,6 +28,8 @@ public class DroneSetting : MonoBehaviour
     private Transform DroneTrans;
     private Transform[] GoalTrans = new Transform[6];      // 생성된 목표점들의 위치를 저장할 Transform 배열 선언
     float[] Distance = new float[6];
+    float preDist;
+    public GameObject target;
 
     public DroneAgent agent;
 
@@ -94,18 +96,39 @@ public class DroneSetting : MonoBehaviour
         DroneTrans.rotation = droneInitRot;
 
         // 드론과 가장 가까운 소노부이를 선택하는 함수
-        SearchGoal();
+
     }
 
     // 드론 위치로부터 최단거리 목표점 탐색
-    public int SearchGoal(){
+    public GameObject SearchGoal(){
+        int minIndex = 0;
+        target = null;
+        float closestDistanceSqr = Mathf.Infinity;
+        // Vector3 currentPosition = transform.position
+
         for(int i = 0; i<numOfGoals;i++){
-            float Distance[i] = Vector3.Magnitude(GoalTrans[i].position - DroneTrans.position);
-            int index = Distance.IndexOf(Distance.Max())
-            return index;
-            // Math.Sqrt(Math.Pow(GoalTrans[i].position.x,2) + Math.Pow(GoalTrans[i].position.y,2));
+            Vector3 directionToTarget = (GoalTrans[i].position - DroneTrans.position);
+            float dSqrToTarget = directionToTarget.sqrMagnitude;
+            if(dSqrToTarget < closestDistanceSqr){
+                closestDistanceSqr = dSqrToTarget;
+                target = Goal[i];
+            }
         }
+        
+        // float min = Distance[0];
+        // for(int i = 0;i<numOfGoals;i++){
+        //     if (Distance[i] < min){
+        //         min = Distance[i];
+        //         minIndex = i;
+        //     }
+        // }
+        // preDist = Vector3.Magnitude(GoalTrans[minIndex].position - agent.agentTrans.position);
+        // return preDist;
+        // Console.WriteLine("거리 계산: {0}",preDist );
+
+        return target;
     }
+    
 
     // 목표점에 도달한 후 드론의 위치를 목표점으로 설정
     // droneNextPos = 1f;

@@ -6,35 +6,43 @@ using PA_DronePack;
 
 public class DroneAgent : Agent
 {
+    int i;
     private PA_DroneController dcoScript;
-    // 환경에 대한 설정인 DroneSettings를 불러온다
     public DroneSetting area;
-    public area.
+    // public area.GoalTrans;
     
     public GameObject goal;
-    // 70개의 goal여러개 추가 생성
-    // 5개 먼저 테스트
-    // public GameObject goal2;
-    // public GameObject goal3;
-    // public GameObject goal4;
-    // public GameObject goal5;
-    // public GameObject goal6;
-
-    float preDist;
-    private Transform agentTrans;
-    // private Transform[] goalTrans;
-    private Transform goalTrans;
-    // private Transform goal2Trans;
-    // private Transform goal3Trans;
-    // private Transform goal4Trans;
-    // private Transform goal5Trans;
-    // private Transform goal6Trans;
+    // public GameObject[] Goal = new GameObject[6];
+    // int numOfGoals = 6;
+    int goalIndex = 0;
+    public Transform agentTrans;        // 에이전트 드론 transform
+    public Transform goalTrans;
+    // public Transform[] GoalTrans = new Transform[6];
     private Rigidbody agent_Rigidbody;
+    // float[] Distance = new float[6];
+    float preDist;
+    int minIndex;
     
-    // void Start(){
+    // void Start()
+    // {
+    //     for (i = 0; i<numOfGoals; i++){
+    //         Goal[i] = GameObject.Find((i+1).ToString());    
+    //         GoalTrans[i] = Goal[i].transform;
+    //     }
+    //     int minIndex = 0;
+        
+    //     for(int i = 0; i<numOfGoals;i++){
+    //         Distance[i] = Vector3.Magnitude(GoalTrans[i].position - agentTrans.position);
+    //     }
+    //     float min = Distance[0];
+    //     for(int i = 0;i<numOfGoals;i++){
+    //         if (Distance[i] > min){
+    //             min = Distance[i];
+    //             minIndex = i;
+    //         }
+    //     }
     // }
 
-    
 
     public override void Initialize()
     {
@@ -42,12 +50,8 @@ public class DroneAgent : Agent
         dcoScript = gameObject.GetComponent<PA_DroneController>();
         agentTrans = gameObject.transform;
 
+        // goalTrans = Goal[goalIndex].transform;
         goalTrans = goal.transform;
-        // goal2Trans = goal2.transform;
-        // goal3Trans = goal3.transform;
-        // goal4Trans = goal4.transform;
-        // goal5Trans = goal5.transform;
-        // goal6Trans = goal6.transform;
 
         agent_Rigidbody = gameObject.GetComponent<Rigidbody>();
 
@@ -60,11 +64,6 @@ public class DroneAgent : Agent
     public override void CollectObservations(VectorSensor sensor)
     {
         sensor.AddObservation(agentTrans.position - goalTrans.position);
-        // sensor.AddObservation(agentTrans.position - goal2Trans.position);
-        // sensor.AddObservation(agentTrans.position - goal3Trans.position);
-        // sensor.AddObservation(agentTrans.position - goal4Trans.position);
-        // sensor.AddObservation(agentTrans.position - goal5Trans.position);
-        // sensor.AddObservation(agentTrans.position - goal6Trans.position);
         sensor.AddObservation(agent_Rigidbody.velocity);
         sensor.AddObservation(agent_Rigidbody.angularVelocity);
     }
@@ -107,13 +106,50 @@ public class DroneAgent : Agent
 
     }
 
+    // public int SearchGoal(){
+    //     // int minIndex = 0;
+        
+    //     // for(int i = 0; i<numOfGoals;i++){
+    //     //     Distance[i] = Vector3.Magnitude(GoalTrans[i].position - agentTrans.position);
+    //     // }
+    //     // float min = Distance[0];
+    //     // for(int i = 0;i<numOfGoals;i++){
+    //     //     if (Distance[i] < min){
+    //     //         min = Distance[i];
+    //     //         minIndex = i;
+    //     //     }
+    //     // }
+        
+    //     // Console.WriteLine("거리 계산: {0}",preDist );
+    //     // return minIndex;
+    // }
+
+
     // episode가 시작될때 호출, 목표 제거, 드론 이동 함수 추가 필요
     public override void OnEpisodeBegin()
     {
+        // int goalIndex;
         area.AreaSetting();     // Area 
-        preDist = Vector3.Magnitude(goalTrans.position - agentTrans.position);
         // 목표점 중 Drone으로부터 가장 가까운 목표점 탐색 후 Goal로 설정
-        area.SearchGoal();
+        goal = area.SearchGoal();
+        goalTrans = goal.transform;
+        // int minIndex = 0;
+        
+        // for(int i = 0; i<numOfGoals;i++){
+        //     Distance[i] = Vector3.Magnitude(GoalTrans[i].position - agentTrans.position);
+        // }
+        // float min = Distance[0];
+        // for(int i = 0;i<numOfGoals;i++){
+        //     if (Distance[i] > min){
+        //         min = Distance[i];
+        //         minIndex = i;
+        //     }
+        // }
+
+
+        // preDist = Vector3.Magnitude(GoalTrans[minIndex].position - agentTrans.position);
+        // Goal = GameObject.Find((goalIndex).ToString());
+        preDist = Vector3.Magnitude(goalTrans.position - agentTrans.position);
         // DroneSettings에 드론 위치 변경 코드 추가
         // area.MoveDronePos();    // Drone 위치 변경
     }
