@@ -8,13 +8,13 @@ using Unity.Mathematics;
 public class DroneSetting : MonoBehaviour
 {
     int i;
-    public int numOfGoals = 6;            // 타겟 Goal(소노부이)들의 갯수
+    public int numOfGoals = 6;      // 타겟인 Goal(소노부이)들의 갯수
     public Material Land_Material;
     float planeSize = 12.5f;        // 바다 표면
     float cylinderHeight = 2f;      
     float cylinderRadius = 25f;     // 탐지반경
     int sphereRadius = 4;           // 소노부이 크기
-    float posY = 20f;              // 0.5f
+    float posY = 20f;               // 0.5f
     public GameObject DroneAgent;   // 드론 에이전트 
     public GameObject[] Goal = new GameObject[6];       // 타겟 Goal들이 저장될 배열
 
@@ -35,41 +35,33 @@ public class DroneSetting : MonoBehaviour
 
     private Rigidbody DroneAgent_Rigidbody;
 
-    // 70개의 골 위치가 포함될 리스트 작성
-    // <GameObject> Goal = new List<GameObject>();
-
-    // float randomX = UnityEngine.Random.Range(-50f, 50f);
-    // float randomZ = UnityEngine.Random.Range(-50f, 50f);
-
     void Start()
     {
         
         for (i = 0; i<numOfGoals; i++){
             // 타겟 Goal 생성
             Goal[i] = GameObject.Find((i+1).ToString());    
+
+            GoalTrans[i] = Goal[i].transform;
+
             // // 소노부이 반경
             // GameObject cylinder = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
             // cylinder.transform.localScale = new Vector3(cylinderRadius,cylinderHeight,cylinderRadius);
 		    // cylinder.transform.position = new Vector3(randomX, posY, randomZ);
             // Goal의 transform 설정
-            GoalTrans[i] = Goal[i].transform;
 
             // // 타겟(골)
             // GameObject Goal = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             // Goal.transform.localScale = new Vector3(sphereRadius,sphereRadius,sphereRadius);
 		    // Goal.transform.position = new Vector3(randomX, posY+75, randomZ);
-            
 
-
-            // 머티리얼 적용, 수정 필요
+            // 머티리얼 적용
             // Renderer Goal_Renderer = Goal.GetComponent<Renderer>();
             // if (Land_Material != null){
             //     // Renderer renderer = GetComponent<Renderer>();
             //     Goal_Renderer.material = Land_Material;
             // }
-
         }
-        // Console.WriteLine("생성된 goalList들: {0}",Goal.Count );
 
         Debug.Log(m_ResetParams);
 
@@ -78,9 +70,6 @@ public class DroneSetting : MonoBehaviour
         areaInitPos = AreaTrans.position;       // 위치 정보가 저장된 position을 Vector3로 가져온다
         droneInitPos = DroneTrans.position;
         droneInitRot = DroneTrans.rotation;
-
-
-
         DroneAgent_Rigidbody = DroneAgent.GetComponent<Rigidbody>();
     }
 
@@ -101,38 +90,26 @@ public class DroneSetting : MonoBehaviour
 
     // 드론 위치로부터 최단거리 목표점 탐색
     public GameObject SearchGoal(){
-        int minIndex = 0;
+        
         target = null;
         float closestDistanceSqr = Mathf.Infinity;
-        // Vector3 currentPosition = transform.position
 
         for(int i = 0; i<numOfGoals;i++){
             Vector3 directionToTarget = (GoalTrans[i].position - DroneTrans.position);
             float dSqrToTarget = directionToTarget.sqrMagnitude;
+
             if(dSqrToTarget < closestDistanceSqr){
                 closestDistanceSqr = dSqrToTarget;
                 target = Goal[i];
             }
         }
-        
-        // float min = Distance[0];
-        // for(int i = 0;i<numOfGoals;i++){
-        //     if (Distance[i] < min){
-        //         min = Distance[i];
-        //         minIndex = i;
-        //     }
-        // }
-        // preDist = Vector3.Magnitude(GoalTrans[minIndex].position - agent.agentTrans.position);
-        // return preDist;
-        // Console.WriteLine("거리 계산: {0}",preDist );
-
         return target;
     }
     
 
     // 목표점에 도달한 후 드론의 위치를 목표점으로 설정
     // droneNextPos = 1f;
-    public void MoveDronePos(){
+    // public void MoveDronePos(){
         
-    }
+    // }
 }
