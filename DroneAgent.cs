@@ -6,31 +6,74 @@ using PA_DronePack;
 
 public class DroneAgent : Agent
 {
-    int i;
     private PA_DroneController dcoScript;
+    public GameObject Drone;
     public DroneSetting area;
     public GameObject goal;
-    int goalIndex = 0;
-    public Transform agentTrans;        // 에이전트 드론 transform
-    public Transform goalTrans;
-    private Rigidbody agent_Rigidbody;
+    public int numOfGoals = 7;
+    public GameObject[] Goals = new GameObject[7];
+    public GameObject target;
+    private Material[] mat = new Material[4];
+    public GameObject Detection;
     float preDist;
-    int minIndex;
+
+    private Transform agentTrans;
+    public Transform goalTrans;
+    public Transform[] GoalsTrans = new Transform[7];
+    private Transform DroneTrans;
+    
+
+    private Rigidbody agent_Rigidbody;
+
+    void Start(){
+        DroneTrans = Drone.transform;
+        for(int i = 0; i<numOfGoals;i++){
+            Goals[i] = GameObject.Find((i+1).ToString());
+            GoalsTrans[i] = Goals[i].transform;
+        }
+        goal = SearchGoal();
+        goalTrans = goal.transform;
+        // droneInitPos = DroneTrans.position;
+        // droneInitRot = DroneTrans.rotation;
+    }
+
+    public void ChangeColor(){
+        Detection.GetComponent<MeshRenderer>().material = mat[1];
+    }
+
+    public GameObject SearchGoal(){
+        target = null;
+        float closestDistanceSqr = Mathf.Infinity;
+
+        for(int i = 0; i<numOfGoals;i++){
+            Vector3 directionToTarget = (GoalsTrans[i].position - DroneTrans.position);
+            float dSqrToTarget = directionToTarget.sqrMagnitude;
+
+            if(dSqrToTarget < closestDistanceSqr){
+                closestDistanceSqr = dSqrToTarget;
+                goal = Goals[i];
+            }
+        }
+        return goal;
+    }
 
     public override void Initialize()
     {
-        // 드론 PA_DroneController를 불러와 변수로 저장
         dcoScript = gameObject.GetComponent<PA_DroneController>();
-        agentTrans = gameObject.transform;
 
-        goalTrans = goal.transform;
+        agentTrans = gameObject.transform;
+        // goal = SearchGoal();
+        // goalTrans = goal.transform;
+
+        // goal = area.Goal;
+        // goalTrans = area.Goal.transform;
+
+        // goalTrans = goal.transform;
 
         agent_Rigidbody = gameObject.GetComponent<Rigidbody>();
-
         Academy.Instance.AgentPreStep += WaitTimeInference;
     }
 
-    // x,y,z 거리,속도,각속도의 9개 벡터
     public override void CollectObservations(VectorSensor sensor)
     {
         sensor.AddObservation(agentTrans.position - goalTrans.position);
@@ -38,55 +81,59 @@ public class DroneAgent : Agent
         sensor.AddObservation(agent_Rigidbody.angularVelocity);
     }
 
-    // Action에 따른 보상 설정
     public override void OnActionReceived(ActionBuffers actionBuffers)
     {
 		AddReward(-0.01f);
         var actions = actionBuffers.ContinuousActions;
 
-        // Clamp 범위 조절
         float moveX = Mathf.Clamp(actions[0], -1, 1f);
         float moveY = Mathf.Clamp(actions[1], -1, 1f);
         float moveZ = Mathf.Clamp(actions[2], -1, 1f);
 
-        dcoScript.DriveInput(moveX);    // 앞뒤
-        dcoScript.StrafeInput(moveY);   // 좌우
-        dcoScript.LiftInput(moveZ);     // 위아래
+        dcoScript.DriveInput(moveX);
+        dcoScript.StrafeInput(moveY);
+        dcoScript.LiftInput(moveZ);
 
-        // set Reward Parameter for drone agent
-        // 거리(distance)  = 목표지점 벡터 - 에이전트 위치 벡터
         float distance = Vector3.Magnitude(goalTrans.position - agentTrans.position);
-        if(distance <= 1f)
+
+        // 0.5 1 10 -1
+        if(distance <= 2f)
         {
-            SetReward(10f);
+            SetReward(100f);
+            ChangeColor();
+            EndEpisode();
         }
-        else if(distance > 90f)
+        // distance 추가
+        // else if (distance <= 7.5f && distance >= 7){
+        //     AddReward(10f);
+        // }
+        // else if (distance = 10f){
+        //     SetReward(25f);
+        // }
+        else if(distance > 40f)
         {
-			SetReward(-100f);
+			SetReward(-10f);
             EndEpisode();
         }
         else
         {
             float reward = preDist - distance;
+			// if (reward > 0f)
+			// 	reward = reward * 1.1f;
 			AddReward(reward);
             preDist = distance;
         }
-
     }
 
-    // episode가 시작될때 호출되며 환경 초기화, 목표 탐색, 목표 달성 후 드론 pos초기화
     public override void OnEpisodeBegin()
     {
-        // 환경 설정 스크립트로부터 환경 로딩
-        area.AreaSetting();     
-        // 목표점 중 Drone으로부터 가장 가까운 목표점 탐색 후 Goal로 설정
-        goal = area.SearchGoal();   // 수정 필요
-        goalTrans = goal.transform;
-        // 가장 가까운 거리를 preDist 변수에 저장 후 학습 시작
+        area.AreaSetting();
+
+        // goal = area.Goal;
+        // goalTrans = goal.transform;
         preDist = Vector3.Magnitude(goalTrans.position - agentTrans.position);
     }
 
-    // User Input
     public override void Heuristic(in ActionBuffers actionsOut)
     {
         var continuousActionsOut = actionsOut.ContinuousActions;
@@ -96,7 +143,7 @@ public class DroneAgent : Agent
         continuousActionsOut[2] = Input.GetAxis("Mouse ScrollWheel");
     }
 
-    public float DecisionWaitingTime = 5f;
+    public float DecisionWaitingTime = 0.01f;
     float m_currentTime = 0f;
 
     public void WaitTimeInference(int action)
@@ -118,4 +165,6 @@ public class DroneAgent : Agent
             }
         }
     }
+
+
 }
