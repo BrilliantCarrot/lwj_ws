@@ -2,10 +2,13 @@ using Unity.MLAgents;
 using Unity.MLAgents.Actuators;
 using Unity.MLAgents.Sensors;
 using UnityEngine;
+// using System.Diagnostics;
 using PA_DronePack;
 
 public class DroneAgent : Agent
 {
+    // Stopwatch watch = new Stopwatch();
+    float timePassed = 0f;
     private PA_DroneController dcoScript;
     public GameObject Drone;
     public DroneSetting area;
@@ -14,7 +17,7 @@ public class DroneAgent : Agent
     public GameObject[] Goals = new GameObject[7];
     private GameObject target;
     private Material[] mat = new Material[4];
-    public GameObject Detection;
+    public GameObject Range;
     float preDist;
     private Transform agentTrans;
     public Transform goalTrans;
@@ -40,7 +43,7 @@ public class DroneAgent : Agent
     }
 
     public void ChangeColor(){
-        Detection.GetComponent<MeshRenderer>().material = mat[1];
+        Range.GetComponent<MeshRenderer>().material = mat[1];
     }
 
     public GameObject SearchGoal(){
@@ -78,6 +81,9 @@ public class DroneAgent : Agent
 
     public override void OnEpisodeBegin()
     {
+        // watch.Start();
+        timePassed = 0f;
+        timePassed += Time.deltaTime;
         area.AreaSetting();
         AreaSetting2();
         // goal = area.Goal;
@@ -107,9 +113,9 @@ public class DroneAgent : Agent
 
         float distance = Vector3.Magnitude(goalTrans.position - agentTrans.position);
 
-        // 0.5 1 10 -1
+        // 1 2 20 -1
         if(distance < 1f){
-            SetReward(1f);
+            SetReward(2f);
             ChangeColor();
             EndEpisode();
         }
@@ -117,17 +123,22 @@ public class DroneAgent : Agent
         // else if (distance < 2f){
         //     AddReward(50f);
         // }
-        else if (distance <= 1.5f){
-            move = true;
-        }
+        // else if (distance <= 1.5f){
+        //     move = true;
+        // }
         else if(distance > 20f){
-			SetReward(-1f);
+			SetReward(-2f);
             EndEpisode();
         }
-        else if(preDist - distance == 0f && move == true){
-            SetReward(-1f);
-            EndEpisode();
-        }
+        // else if(preDist - distance == 0f && move == true){
+        //     SetReward(-1f);
+        //     EndEpisode();
+        // }
+        // if(timePassed >= 5f){
+        //     // watch.Stop();
+        //     // timePassed = 0f;
+        //     EndEpisode();
+        // }
         else{
             float reward = preDist - distance;
 			// if (reward > 0f)

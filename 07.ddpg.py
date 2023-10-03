@@ -33,7 +33,7 @@ sigma = 2e-3
 # 50000 10000 5000
 run_step = 50000 if train_mode else 0
 test_step = 10000
-train_start_step = 5000
+train_start_step = 2500
 
 print_interval = 10
 save_interval = 100
@@ -47,7 +47,7 @@ if os_name == 'Windows':
 # 모델 저장 및 불러오기 경로
 date_time = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
 save_path = f"./saved_models/{game}/DDPG/{date_time}"
-load_path = f"./saved_models/{game}/DDPG/20231003174054"
+load_path = f"./saved_models/{game}/DDPG/20231003213906"
 
 # 연산 장치
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -195,7 +195,7 @@ if __name__ == '__main__':
     # 유니티 브레인 설정
     behavior_name = list(env.behavior_specs.keys())[0]
     spec = env.behavior_specs[behavior_name]
-    engine_configuration_channel.set_configuration_parameters(time_scale=12.0)
+    engine_configuration_channel.set_configuration_parameters(time_scale=3.0)
     dec, term = env.get_steps(behavior_name)
 
     # DDPGAgent 클래스를 agent로 정의
@@ -208,7 +208,7 @@ if __name__ == '__main__':
                 agent.save_model()
             print("TEST START")
             train_mode = False
-            engine_configuration_channel.set_configuration_parameters(time_scale=1.0)
+            engine_configuration_channel.set_configuration_parameters(time_scale=3.0)
 
         state = dec.obs[0]
         action = agent.get_action(state, train_mode)
