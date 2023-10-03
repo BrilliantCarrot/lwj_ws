@@ -19,11 +19,11 @@ load_model = False
 train_mode = True
 
 batch_size = 128
-mem_maxlen = 30000
-discount_factor = 0.9
-actor_lr = 1e-4
-critic_lr = 5e-4
-tau = 1e-3
+mem_maxlen = 60000
+discount_factor = 0.99
+actor_lr = 0.0001
+critic_lr = 0.001
+tau = 0.001
 
 # OU noise 파라미터
 mu = 0
@@ -31,8 +31,8 @@ theta = 1e-3
 sigma = 2e-3
 
 # 50000 10000 5000
-run_step = 120000 if train_mode else 0
-test_step = 15000
+run_step = 50000 if train_mode else 0
+test_step = 10000
 train_start_step = 5000
 
 print_interval = 10
@@ -47,7 +47,7 @@ if os_name == 'Windows':
 # 모델 저장 및 불러오기 경로
 date_time = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
 save_path = f"./saved_models/{game}/DDPG/{date_time}"
-load_path = f"./saved_models/{game}/DDPG/20231003111643"
+load_path = f"./saved_models/{game}/DDPG/20231003174054"
 
 # 연산 장치
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

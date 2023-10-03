@@ -12,7 +12,7 @@ public class DroneAgent : Agent
     public GameObject goal;
     public int numOfGoals = 7;
     public GameObject[] Goals = new GameObject[7];
-    public GameObject target;
+    private GameObject target;
     private Material[] mat = new Material[4];
     public GameObject Detection;
     float preDist;
@@ -21,10 +21,10 @@ public class DroneAgent : Agent
     public Transform[] GoalsTrans = new Transform[7];
     private Transform DroneTrans;
     
-    int posx = 0;
-    int posy = 20;
-    int posz = 0;
-
+    public int posx = 0;
+    public int posy = 20;
+    public int posz = 0;
+    bool move = false;
     private Rigidbody agent_Rigidbody;
 
     void Start(){
@@ -109,27 +109,32 @@ public class DroneAgent : Agent
 
         // 0.5 1 10 -1
         if(distance < 1f){
-            SetReward(100f);
+            SetReward(1f);
             ChangeColor();
             EndEpisode();
         }
         // distance 추가
-        else if (distance < 2f){
-            AddReward(50f);
-        }
-        // else if (distance = 10f){
-        //     SetReward(25f);
+        // else if (distance < 2f){
+        //     AddReward(50f);
         // }
-        else if(distance > 30f){
-			SetReward(-10f);
+        else if (distance <= 1.5f){
+            move = true;
+        }
+        else if(distance > 20f){
+			SetReward(-1f);
+            EndEpisode();
+        }
+        else if(preDist - distance == 0f && move == true){
+            SetReward(-1f);
             EndEpisode();
         }
         else{
             float reward = preDist - distance;
 			// if (reward > 0f)
-			// 	reward = reward * 1.1f;
+			// 	reward = reward * 1.2f;
 			AddReward(reward);
             preDist = distance;
+            
         }
     }
 
@@ -164,8 +169,8 @@ public class DroneAgent : Agent
             }
         }
     }
-
+    // Random.Range(posx+(-5f), posx+(5f))
     public void AreaSetting2(){
-        goalTrans.position = new Vector3(Random.Range(posx+(-5f), posx+(5f)), 20, Random.Range(posz+(-5f), posz+(5f)));
+        goalTrans.position = new Vector3(Random.Range(posx+(-10f), posx+(10f)), 20, Random.Range(posx+(-10f), posz+(10f)));
     }
 }

@@ -3,8 +3,9 @@ using Unity.MLAgents;
 
 public class DroneSetting : MonoBehaviour
 {
+    // public DroneAgent agent;
     public GameObject DroneAgent;
-    // public GameObject Goal;
+    private GameObject Goal;
     // public int numOfGoals = 7;
     // public GameObject[] Goals = new GameObject[7];
     // public GameObject target;
@@ -16,7 +17,7 @@ public class DroneSetting : MonoBehaviour
 
     private Transform AreaTrans;
     public Transform DroneTrans;
-    // private Transform GoalTrans;
+    private Transform GoalTrans;
     // public Transform[] GoalsTrans = new Transform[7];
     private Rigidbody DroneAgent_Rigidbody;
 
