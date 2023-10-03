@@ -32,7 +32,7 @@ sigma = 2e-3
 
 # 50000 10000 5000
 run_step = 120000 if train_mode else 0
-test_step = 25000
+test_step = 15000
 train_start_step = 5000
 
 print_interval = 10
@@ -47,7 +47,7 @@ if os_name == 'Windows':
 # 모델 저장 및 불러오기 경로
 date_time = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
 save_path = f"./saved_models/{game}/DDPG/{date_time}"
-load_path = f"./saved_models/{game}/DDPG/20231001113849"
+load_path = f"./saved_models/{game}/DDPG/20231003111643"
 
 # 연산 장치
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

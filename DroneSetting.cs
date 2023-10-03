@@ -20,8 +20,7 @@ public class DroneSetting : MonoBehaviour
     // public Transform[] GoalsTrans = new Transform[7];
     private Rigidbody DroneAgent_Rigidbody;
 
-    // int posx = 15;
-    // int posy = 20;
+
 
     void Start()
     {
