@@ -17,14 +17,15 @@ public class DroneAgent : Agent
     public int numOfGoals = 7;
     public GameObject[] Goals = new GameObject[7];
     public GameObject[] Ranges = new GameObject[7];
-    // private GameObject target;
+    public GameObject targetRange;      // 목표점의 반경 객체
     // private Material[] mat = new Material[4];
-    // private Material mat;
-    public GameObject Range;
+    private Material matDefault;
+    private Material matDetection;
+    // public GameObject Range;
     // 위치 변수
     private Transform agentTrans;
     public Transform goalTrans;
-    public Transform rangeTrans;
+    public Transform targetRangeTrans;  // 목표점의 위치 
     public Transform[] GoalsTrans = new Transform[7];
     public Transform[] rangesTrans = new Transform[7];
     private Transform DroneTrans;
@@ -32,8 +33,10 @@ public class DroneAgent : Agent
     int posx = 0;
     int posy = 20;
     int posz = 0;
+    
     float cylinderHeight = 0.5f;      // 2f
-    float cylinderRadius = 50f;  
+    float cylinderRadius = 50f;
+    int cylY = 0;
 
     float preDist;
     private Rigidbody agent_Rigidbody;
@@ -42,36 +45,46 @@ public class DroneAgent : Agent
     void Start(){
         DroneTrans = Drone.transform;
         // mat = Resources.LoadAll<Material>("Materials");
-        Material mat = Resources.Load("Materials/Default", typeof(Material)) as Material;
-
+        matDefault = Resources.Load("Materials/Default", typeof(Material)) as Material;
+        matDetection = Resources.Load("Materials/Detection", typeof(Material)) as Material;
         for(int i = 0; i<numOfGoals;i++){
             Goals[i] = GameObject.Find((i+1).ToString());
             GoalsTrans[i] = Goals[i].transform;
-            
+
             // 반경을 나타내는 Cylinder형 Range의 배열을 초기화
             GameObject cylinder = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
             cylinder.transform.localScale = new Vector3(cylinderRadius,cylinderHeight,cylinderRadius);
             cylinder.transform.position = new Vector3(GoalsTrans[i].position.x, 0, GoalsTrans[i].position.z);
-            cylinder.GetComponent<Renderer>().material = mat;
+            cylinder.GetComponent<Renderer>().material = matDefault;
             Ranges[i] = cylinder;
             rangesTrans[i] = cylinder.transform;
             
-            
-            
-            
         }
-        goal = SearchGoal();
-        goalTrans = goal.transform;
+        // var (goal,targetRange) = SearchGoal();
+        // goalTrans = goal.transform;
+        // targetRangeTrans = targetRange.transform;
+        
         // droneInitPos = DroneTrans.position;
         // droneInitRot = DroneTrans.rotation;
     }
 
-    // Range 한개 객체 Material 변경 Test
-    public void ChangeColor(){
-        // Range.GetComponent<MeshRenderer>().material = mat[1];
-    }
+    // public GameObject SearchGoal(){
+    //     // target = null;
+    //     float closestDistanceSqr = Mathf.Infinity;
 
-    public GameObject SearchGoal(){
+    //     for(int i = 0; i<numOfGoals;i++){
+    //         Vector3 directionToTarget = (GoalsTrans[i].position - DroneTrans.position);
+    //         float dSqrToTarget = directionToTarget.sqrMagnitude;
+
+    //         if(dSqrToTarget < closestDistanceSqr){
+    //             closestDistanceSqr = dSqrToTarget;
+    //             goal = Goals[i];
+    //         }
+    //     }
+    //     return goal;
+    // }
+
+    public (GameObject goal,GameObject targetRange) SearchGoal(){
         // target = null;
         float closestDistanceSqr = Mathf.Infinity;
 
@@ -82,9 +95,16 @@ public class DroneAgent : Agent
             if(dSqrToTarget < closestDistanceSqr){
                 closestDistanceSqr = dSqrToTarget;
                 goal = Goals[i];
+                targetRange = Ranges[i];
             }
         }
-        return goal;
+        return (goal,targetRange);
+    }
+
+    // Range 한개 객체 Material 변경
+    public void ChangeColor(GameObject targetRange, Material matDetection){
+        // Range.GetComponent<MeshRenderer>().material = mat[1];
+        targetRange.GetComponent<Renderer>().material = matDetection;
     }
 
     public override void Initialize()
@@ -106,6 +126,9 @@ public class DroneAgent : Agent
 
     public override void OnEpisodeBegin()
     {
+        var (goal,targetRange) = SearchGoal();
+        goalTrans = goal.transform;
+        targetRangeTrans = targetRange.transform;
         // watch.Start();
         // timePassed = 0f;
         // timePassed += Time.deltaTime;
@@ -141,7 +164,7 @@ public class DroneAgent : Agent
         // 1 2 20 -1
         if(distance < 1f){
             SetReward(2f);
-            ChangeColor();
+            ChangeColor(targetRange,matDetection);
             EndEpisode();
         }
         // distance 추가
@@ -205,8 +228,10 @@ public class DroneAgent : Agent
             }
         }
     }
-    // Random.Range(posx+(-5f), posx+(5f))
+
+    // 목표점의 위치를 랜덤하게 생성(학습에 용이)
     public void GoalTransSet(){
-        goalTrans.position = new Vector3(Random.Range(posx+(-10f), posx+(10f)), 20, Random.Range(posx+(-10f), posz+(10f)));
+        goalTrans.position = new Vector3(Random.Range(posx+(-10f), posx+(10f)), posy, Random.Range(posz+(-10f), posz+(10f)));
+        targetRangeTrans.position = new Vector3(goalTrans.position.x, cylY, goalTrans.position.z);
     }
 }
