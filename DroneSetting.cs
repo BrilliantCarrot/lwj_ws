@@ -4,13 +4,13 @@ using Unity.MLAgents;
 public class DroneSetting : MonoBehaviour
 {
     // public DroneAgent agent;
-    public GameObject DroneAgent;
+    public GameObject DroneAgent;   //DroneAgent에서는 Drone
     private GameObject Goal;
     // public int numOfGoals = 7;
     // public GameObject[] Goals = new GameObject[7];
     // public GameObject target;
     Vector3 areaInitPos;
-    Vector3 droneInitPos;
+    public Vector3 droneInitPos;
     Quaternion droneInitRot;
 
     EnvironmentParameters m_ResetParams;
@@ -38,7 +38,7 @@ public class DroneSetting : MonoBehaviour
         // GoalTrans = Goal.transform;
 
         areaInitPos = AreaTrans.position;
-        droneInitPos = DroneTrans.position;
+        droneInitPos = DroneTrans.position; // Transform 형의 position을 저장하는 Vector3 형
         droneInitRot = DroneTrans.rotation;
 
         DroneAgent_Rigidbody = DroneAgent.GetComponent<Rigidbody>();

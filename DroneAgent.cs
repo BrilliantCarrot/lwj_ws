@@ -12,7 +12,7 @@ public class DroneAgent : Agent
     private PA_DroneController dcoScript;
     // 오브젝트 변수
     public GameObject Drone;
-    public DroneSetting area;
+    public DroneSetting area;           // AreaSetting에서 드론의 초기 상태도 초기화
     public GameObject goal;
     public int numOfGoals = 7;
     public GameObject[] Goals = new GameObject[7];
@@ -22,14 +22,15 @@ public class DroneAgent : Agent
     private Material matDefault;
     private Material matDetection;
     // public GameObject Range;
-    // 위치 변수
+    // 에이전트, 목표점, 목표점 반경 위치 변수 및 배열 초기화
     private Transform agentTrans;
+    private Transform DroneTrans;
     public Transform goalTrans;
-    public Transform targetRangeTrans;  // 목표점의 위치 
+    public Transform targetRangeTrans;  // 목표점의 위치 선언
+    Vector3 droneInitPos;               // 드론위치 설정 Vector3 변수
     public Transform[] GoalsTrans = new Transform[7];
     public Transform[] rangesTrans = new Transform[7];
-    private Transform DroneTrans;
-    // 크기, 위치 변수
+    // 크기, 위치 변수 선언 & 초기화
     int posx = 0;
     int posy = 20;
     int posz = 0;
@@ -40,7 +41,7 @@ public class DroneAgent : Agent
 
     float preDist;
     private Rigidbody agent_Rigidbody;
-    // bool move = false;
+    bool hit = false;
 
     void Start(){
         DroneTrans = Drone.transform;
@@ -58,14 +59,10 @@ public class DroneAgent : Agent
             cylinder.GetComponent<Renderer>().material = matDefault;
             Ranges[i] = cylinder;
             rangesTrans[i] = cylinder.transform;
-            
         }
         // var (goal,targetRange) = SearchGoal();
         // goalTrans = goal.transform;
         // targetRangeTrans = targetRange.transform;
-        
-        // droneInitPos = DroneTrans.position;
-        // droneInitRot = DroneTrans.rotation;
     }
 
     // public GameObject SearchGoal(){
@@ -84,19 +81,35 @@ public class DroneAgent : Agent
     //     return goal;
     // }
 
+    // 최근접 목표점 탐색 함수
     public (GameObject goal,GameObject targetRange) SearchGoal(){
-        // target = null;
         float closestDistanceSqr = Mathf.Infinity;
 
         for(int i = 0; i<numOfGoals;i++){
-            Vector3 directionToTarget = (GoalsTrans[i].position - DroneTrans.position);
+            if(hit == false){Vector3 directionToTarget = (GoalsTrans[i].position - DroneTrans.position);
             float dSqrToTarget = directionToTarget.sqrMagnitude;
-
-            if(dSqrToTarget < closestDistanceSqr){
-                closestDistanceSqr = dSqrToTarget;
-                goal = Goals[i];
-                targetRange = Ranges[i];
+                if(dSqrToTarget < closestDistanceSqr){
+                    closestDistanceSqr = dSqrToTarget;
+                    goal = Goals[i];
+                    targetRange = Ranges[i];
             }
+            }
+            else if(hit == true){
+                Vector3 directionToTarget = (GoalsTrans[i].position - area.droneInitPos);
+                float dSqrToTarget = directionToTarget.sqrMagnitude;
+                if(dSqrToTarget < closestDistanceSqr){
+                    closestDistanceSqr = dSqrToTarget;
+                    goal = Goals[i];
+                    targetRange = Ranges[i];
+            }
+            }
+            // float dSqrToTarget = directionToTarget.sqrMagnitude;
+
+            // if(dSqrToTarget < closestDistanceSqr){
+            //     closestDistanceSqr = dSqrToTarget;
+            //     goal = Goals[i];
+            //     targetRange = Ranges[i];
+            // }
         }
         return (goal,targetRange);
     }
@@ -105,6 +118,18 @@ public class DroneAgent : Agent
     public void ChangeColor(GameObject targetRange, Material matDetection){
         // Range.GetComponent<MeshRenderer>().material = mat[1];
         targetRange.GetComponent<Renderer>().material = matDetection;
+    }
+
+    // 목표점의 위치를 랜덤하게 생성(학습에 용이하도록 랜덤성을 부여)
+    public void GoalTransSet(){
+        goalTrans.position = new Vector3(Random.Range(posx+(-10f), posx+(10f)), posy, Random.Range(posz+(-10f), posz+(10f)));
+        targetRangeTrans.position = new Vector3(goalTrans.position.x, cylY, goalTrans.position.z);
+    }
+
+    public void MoveDronePos(){
+        // DroneTrans 형 position을 저장하는 Vector3 형 droneInitPos
+        // area.droneInitPos = DroneTrans.position;
+        area.droneInitPos = goalTrans.position;
     }
 
     public override void Initialize()
@@ -126,7 +151,7 @@ public class DroneAgent : Agent
 
     public override void OnEpisodeBegin()
     {
-        var (goal,targetRange) = SearchGoal();
+        var (goal,targetRange) = SearchGoal();      // 에피소드 시작시마다 가장 가까운 목표점 탐색
         goalTrans = goal.transform;
         targetRangeTrans = targetRange.transform;
         // watch.Start();
@@ -165,6 +190,8 @@ public class DroneAgent : Agent
         if(distance < 1f){
             SetReward(2f);
             ChangeColor(targetRange,matDetection);
+            hit = true;
+            MoveDronePos();
             EndEpisode();
         }
         // distance 추가
@@ -175,6 +202,10 @@ public class DroneAgent : Agent
         //     move = true;
         // }
         else if(distance > 20f){
+            // if(hit != true){
+            //     area.droneInitPos = new Vector3(0, 20, 0);
+            // }
+            hit = false;
 			SetReward(-2f);
             EndEpisode();
         }
@@ -192,8 +223,7 @@ public class DroneAgent : Agent
 			// if (reward > 0f)
 			// 	reward = reward * 1.2f;
 			AddReward(reward);
-            preDist = distance;
-            
+            preDist = distance;  
         }
     }
 
@@ -227,11 +257,5 @@ public class DroneAgent : Agent
                 m_currentTime += Time.fixedDeltaTime;
             }
         }
-    }
-
-    // 목표점의 위치를 랜덤하게 생성(학습에 용이)
-    public void GoalTransSet(){
-        goalTrans.position = new Vector3(Random.Range(posx+(-10f), posx+(10f)), posy, Random.Range(posz+(-10f), posz+(10f)));
-        targetRangeTrans.position = new Vector3(goalTrans.position.x, cylY, goalTrans.position.z);
     }
 }
