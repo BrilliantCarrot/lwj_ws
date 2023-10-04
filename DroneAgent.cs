@@ -8,14 +8,15 @@ using PA_DronePack;
 public class DroneAgent : Agent
 {
     // Stopwatch watch = new Stopwatch();
-    float timePassed = 0f;
+    // float timePassed = 0f;
     private PA_DroneController dcoScript;
     public GameObject Drone;
     public DroneSetting area;
     public GameObject goal;
     public int numOfGoals = 7;
     public GameObject[] Goals = new GameObject[7];
-    private GameObject target;
+    public GameObject[] Ranges = new GameObject[7];
+    // private GameObject target;
     private Material[] mat = new Material[4];
     public GameObject Range;
     float preDist;
@@ -24,9 +25,9 @@ public class DroneAgent : Agent
     public Transform[] GoalsTrans = new Transform[7];
     private Transform DroneTrans;
     
-    public int posx = 0;
-    public int posy = 20;
-    public int posz = 0;
+    int posx = 0;
+    int posy = 20;
+    int posz = 0;
     bool move = false;
     private Rigidbody agent_Rigidbody;
 
@@ -35,6 +36,7 @@ public class DroneAgent : Agent
         for(int i = 0; i<numOfGoals;i++){
             Goals[i] = GameObject.Find((i+1).ToString());
             GoalsTrans[i] = Goals[i].transform;
+            // 
         }
         goal = SearchGoal();
         goalTrans = goal.transform;
@@ -47,7 +49,7 @@ public class DroneAgent : Agent
     }
 
     public GameObject SearchGoal(){
-        target = null;
+        // target = null;
         float closestDistanceSqr = Mathf.Infinity;
 
         for(int i = 0; i<numOfGoals;i++){
@@ -82,10 +84,10 @@ public class DroneAgent : Agent
     public override void OnEpisodeBegin()
     {
         // watch.Start();
-        timePassed = 0f;
-        timePassed += Time.deltaTime;
+        // timePassed = 0f;
+        // timePassed += Time.deltaTime;
         area.AreaSetting();
-        AreaSetting2();
+        GoalTransSet();
         // goal = area.Goal;
         // goalTrans = goal.transform;
         preDist = Vector3.Magnitude(goalTrans.position - agentTrans.position);
@@ -158,7 +160,7 @@ public class DroneAgent : Agent
         continuousActionsOut[2] = Input.GetAxis("Mouse ScrollWheel");
     }
 
-    public float DecisionWaitingTime = 0.01f;
+    float DecisionWaitingTime = 0.01f;
     float m_currentTime = 0f;
 
     public void WaitTimeInference(int action)
@@ -181,7 +183,7 @@ public class DroneAgent : Agent
         }
     }
     // Random.Range(posx+(-5f), posx+(5f))
-    public void AreaSetting2(){
+    public void GoalTransSet(){
         goalTrans.position = new Vector3(Random.Range(posx+(-10f), posx+(10f)), 20, Random.Range(posx+(-10f), posz+(10f)));
     }
 }
