@@ -4,24 +4,22 @@ using Unity.MLAgents;
 public class DroneSetting : MonoBehaviour
 {
     // public DroneAgent agent;
-    public GameObject DroneAgent;   //DroneAgent에서는 Drone
-    private GameObject Goal;
+    // public GameObject DroneAgent;   //DroneAgent에서는 Drone
+    // private GameObject Goal;
     // public int numOfGoals = 7;
     // public GameObject[] Goals = new GameObject[7];
     // public GameObject target;
-    Vector3 areaInitPos;
-    public Vector3 droneInitPos;
-    Quaternion droneInitRot;
+    // Vector3 areaInitPos;
+    // public Vector3 droneInitPos;
+    // Quaternion droneInitRot;
 
-    EnvironmentParameters m_ResetParams;
+    // EnvironmentParameters m_ResetParams;
 
-    private Transform AreaTrans;
-    public Transform DroneTrans;
-    private Transform GoalTrans;
+    // private Transform AreaTrans;
+    // public Transform DroneTrans;
+    // private Transform GoalTrans;
     // public Transform[] GoalsTrans = new Transform[7];
-    private Rigidbody DroneAgent_Rigidbody;
-
-
+    // private Rigidbody DroneAgent_Rigidbody;
 
     void Start()
     {
@@ -29,28 +27,29 @@ public class DroneSetting : MonoBehaviour
         //     Goals[i] = GameObject.Find((i+1).ToString());
         //     GoalsTrans[i] = Goals[i].transform;
         // }
-        Debug.Log(m_ResetParams);
 
-        AreaTrans = gameObject.transform;
-        DroneTrans = DroneAgent.transform;
+        // Debug.Log(m_ResetParams);
+
+        // AreaTrans = gameObject.transform;
+        // DroneTrans = DroneAgent.transform;
         // GoalTrans = Goal.transform;
         // Goal = SearchGoal();
         // GoalTrans = Goal.transform;
 
-        areaInitPos = AreaTrans.position;
-        droneInitPos = DroneTrans.position; // Transform 형의 position을 저장하는 Vector3 형
-        droneInitRot = DroneTrans.rotation;
+        // areaInitPos = AreaTrans.position;
+        // droneInitPos = DroneTrans.position; // Transform 형의 position을 저장하는 Vector3 형
+        // droneInitRot = DroneTrans.rotation;
 
-        DroneAgent_Rigidbody = DroneAgent.GetComponent<Rigidbody>();
+        // DroneAgent_Rigidbody = DroneAgent.GetComponent<Rigidbody>();
     }
 
     public void AreaSetting()
     {
-        DroneAgent_Rigidbody.velocity = Vector3.zero;
-        DroneAgent_Rigidbody.angularVelocity = Vector3.zero;
+        // DroneAgent_Rigidbody.velocity = Vector3.zero;
+        // DroneAgent_Rigidbody.angularVelocity = Vector3.zero;
 
-        DroneTrans.position = droneInitPos;
-        DroneTrans.rotation = droneInitRot;
+        // DroneTrans.position = droneInitPos;
+        // DroneTrans.rotation = droneInitRot;
 
         // Goal = SearchGoal();
         // GoalTrans = Goal.transform;
