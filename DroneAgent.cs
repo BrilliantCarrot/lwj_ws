@@ -95,6 +95,8 @@ public class DroneAgent : Agent
                 targetRange = Ranges[i];
                 j = i;
             }
+            // goalDiff 초기화
+            goalDiffArray[i] = float.NaN;
         }
         Debug.Log("SEARCHGOAL FUNC: Number "+(j+1)+" Goal is now new Goal");
         return (goal,targetRange);
@@ -205,7 +207,7 @@ public class DroneAgent : Agent
             // hit = true;
             MoveDronePos();     // 목표점 도달 시 드론 초기 위치를 이동
             RemoveGoals();      // 목표점 근처 겹치는 반경의 목표점들을 제거
-            NextGoal();         // 제거 후 드론과 가장 가까운 다른 목표점을 새로운 목표점으로 지정
+            // NextGoal();         // 제거 후 드론과 가장 가까운 다른 목표점을 새로운 목표점으로 지정
             // GoalTransReset();
             EndEpisode();
         }
