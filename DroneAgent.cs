@@ -218,7 +218,7 @@ public class DroneAgent : Agent
         // else if (distance <= 1.5f){
         //     move = true;
         // }
-        else if(distance > 500f){
+        else if(distance > 65f){
             // if(hit != true){
             //     area.droneInitPos = new Vector3(0, 20, 0);
             // }
