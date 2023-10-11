@@ -31,7 +31,7 @@ theta = 1e-3
 sigma = 2e-3
 
 # 50000 10000 5000
-run_step = 50000 if train_mode else 0
+run_step = 80000 if train_mode else 0
 test_step = 10000
 train_start_step = 2500
 
