@@ -29,12 +29,12 @@ public class DroneAgent : Agent
     private Vector3 droneInitPos;               // DroneTrans 형 position을 저장하는 Vector3 형 droneInitPos
     private Quaternion droneInitRot;
     // 3D 오브젝트 크기, 위치 변수 선언 & 초기화
-    int posx = 0;   // x값 레퍼런스
-    int posy = 20;  // y값 레퍼런스
-    int posz = 0;   // z값 레퍼런스
+    // int posx = 0;   // x값 레퍼런스
+    // int posy = 20;  // y값 레퍼런스
+    // int posz = 0;   // z값 레퍼런스
+    // int cylY = 0;
     float cylinderHeight = 0.5f;
     float cylinderRadius = 40f;
-    int cylY = 0;
 
     float goalDiff;
     float[] goalDiffArray = new float[47];     // 거리 비교 goalDiff가 저장될 배열  
@@ -44,6 +44,7 @@ public class DroneAgent : Agent
     private Text statusText;
     bool hit = false;
     bool first = true;
+    // int cnt = 0;
 
     void Start(){
         Debug.Log("Start함수 실행");
@@ -147,6 +148,10 @@ public class DroneAgent : Agent
         else if(first == false && hit == true){
             var (goal,targetRange) = SearchGoal();
             statusText.text = "새 목표점 탐색 실행";
+            // if(cnt == 10){
+            //     Debug.Log("게임을 종료합니다");
+            //     Application.Quit();
+            // }
         }
         // 그렇지 않으면(에피소드가 두번째부터이며 목표점을 몾 찾았다면) pass
         else if(first == false && hit == false){
@@ -173,16 +178,16 @@ public class DroneAgent : Agent
         float distance = Vector3.Magnitude(goalTrans.position - agentTrans.position);
 
         if(distance < 1f){
-            SetReward(2f);     // 2f
+            SetReward(10f);     // 2f
             ChangeColor(targetRange,matDetection);
             MoveDronePos();     // 목표점 도달 시 드론 초기 위치를 이동
             RemoveGoals();      // 목표점 근처 겹치는 반경의 목표점들을 제거
             EndEpisode();
             hit = true;
-            
+            // cnt++;
         }
-        else if(distance > 65f){
-			SetReward(-2f);   // -2f
+        else if(distance > 60f){
+			SetReward(-50f);   // -2f
             EndEpisode();
             hit = false;
             

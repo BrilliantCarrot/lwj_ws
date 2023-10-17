@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.pyplot as plt
 import random
 import copy
 import datetime
@@ -37,6 +38,7 @@ train_start_step = 2500
 
 print_interval = 10
 save_interval = 100
+score_list = []
 
 # 유니티 환경 경로
 game = "Drone"
@@ -238,6 +240,8 @@ if __name__ == '__main__':
         if done:
             episode += 1
             scores.append(score)
+            score_list.append(score)
+            print(score)
             score = 0
 
             # 게임 진행 상황 출력 및 텐서 보드에 보상과 손실함수 값 기록
@@ -250,6 +254,11 @@ if __name__ == '__main__':
 
                 print(f"{episode} Episode / Step: {step} / Score: {mean_score:.2f} / " +\
                       f"Actor loss: {mean_actor_loss:.2f} / Critic loss: {mean_critic_loss:.4f}")
+                
+                # plt.plot(range(1, len(score_list) + 1), score_list, linestyle='-',color='blue')
+                # plt.xlabel('Episode')
+                # plt.ylabel('Reward')
+                # plt.show()
 
             # 네트워크 모델 저장
             if train_mode and episode % save_interval == 0:
