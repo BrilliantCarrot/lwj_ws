@@ -31,10 +31,10 @@ mu = 0
 theta = 1e-3
 sigma = 2e-3
 
-# 50000 10000 5000
-run_step = 80000 if train_mode else 0
+# 80000 10000 2500
+run_step = 250000 if train_mode else 0
 test_step = 10000
-train_start_step = 2500
+train_start_step = 5000
 
 print_interval = 10
 save_interval = 100
@@ -44,7 +44,7 @@ score_list = []
 game = "Drone"
 os_name = platform.system()
 if os_name == 'Windows':
-    env_name = f"./Build/{game}"
+    env_name = f"./Build_Test/{game}"
 
 # 모델 저장 및 불러오기 경로
 date_time = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
@@ -241,7 +241,7 @@ if __name__ == '__main__':
             episode += 1
             scores.append(score)
             score_list.append(score)
-            print(score)
+            print("Episode: %d, Score: %f" % (episode, score))
             score = 0
 
             # 게임 진행 상황 출력 및 텐서 보드에 보상과 손실함수 값 기록
@@ -255,10 +255,11 @@ if __name__ == '__main__':
                 print(f"{episode} Episode / Step: {step} / Score: {mean_score:.2f} / " +\
                       f"Actor loss: {mean_actor_loss:.2f} / Critic loss: {mean_critic_loss:.4f}")
                 
-                # plt.plot(range(1, len(score_list) + 1), score_list, linestyle='-',color='blue')
-                # plt.xlabel('Episode')
-                # plt.ylabel('Reward')
-                # plt.show()
+            if episode % 300 == 0:      # 300에피소드마다 결과 출력
+                plt.plot(range(1, len(score_list) + 1), score_list, linestyle='-',color='blue')
+                plt.xlabel('Episode')
+                plt.ylabel('Reward')
+                plt.show()
 
             # 네트워크 모델 저장
             if train_mode and episode % save_interval == 0:

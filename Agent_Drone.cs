@@ -28,11 +28,6 @@ public class DroneAgent : Agent
     private Transform[] rangesTrans = new Transform[47];
     private Vector3 droneInitPos;               // DroneTrans 형 position을 저장하는 Vector3 형 droneInitPos
     private Quaternion droneInitRot;
-    // 3D 오브젝트 크기, 위치 변수 선언 & 초기화
-    // int posx = 0;   // x값 레퍼런스
-    // int posy = 20;  // y값 레퍼런스
-    // int posz = 0;   // z값 레퍼런스
-    // int cylY = 0;
     float cylinderHeight = 0.5f;
     float cylinderRadius = 40f;
 
@@ -44,6 +39,7 @@ public class DroneAgent : Agent
     private Text statusText;
     bool hit = false;
     bool first = true;
+    bool pause = false;
     // int cnt = 0;
 
     void Start(){
@@ -80,6 +76,7 @@ public class DroneAgent : Agent
         DroneAgent_Rigidbody.angularVelocity = Vector3.zero;
         DroneTrans.position = droneInitPos;
         DroneTrans.rotation = droneInitRot;
+        Debug.Log("에이전트 위치 이동됨: "+DroneTrans.position);
     }
 
     // 최근접 목표점 탐색 함수
@@ -109,14 +106,18 @@ public class DroneAgent : Agent
 
     // 목표점을 찾은 후 드론의 초기 위치를 해당 목표점으로 업데이트
     public void MoveDronePos(){
+        Debug.Log("드론 위치를 탐색에 성공한 목표점으로 이동시킵니다");
         droneInitPos = goalTrans.position;
+        DroneInit();
     }
 
     // 도달한 목표점과 영역이 겹치는 다른 목표점 삭제 
     public void RemoveGoals(){
         for(int i = 0; i<numOfGoals;i++){
             goalDiff = Vector3.Magnitude(goalTrans.position - GoalsTrans[i].position);
-            goalDiffArray[i] = goalDiff;
+            if(goalDiff != 0){
+                goalDiffArray[i] = goalDiff;
+            }
             Debug.Log("Goal< " + (i+1) + ">'s goalDiff is< " + goalDiff +">");
             // 반경이 서로 겹치는 범위 내에 존재하며 배열내 같은 목표점끼리 비교하는것이 아니라면 목표점을 삭제
             if(goalDiff < 40 && goalDiff != 0){
@@ -126,6 +127,12 @@ public class DroneAgent : Agent
             }
         }
         goalTrans.position = new Vector3(160,20,160);   // 마지막으로 골도 제거(이동)
+        // puase하면 에피소드 시작이 안되니 서치골도 실행하는게 필요
+        var (goal,targetRange) = SearchGoal();
+        goalTrans = goal.transform;
+        targetRangeTrans = targetRange.transform;
+        preDist = Vector3.Magnitude(goalTrans.position - agentTrans.position);
+        // pause = true;
     }
 
     public override void Initialize()
@@ -137,26 +144,28 @@ public class DroneAgent : Agent
 
     public override void OnEpisodeBegin()
     {
+        // 에피소드가 시작되기 전 스탭 진행 확인
         Debug.Log("episode beginning");
         // 첫번째로 시작되는 에피소드에서 목표점을 탐색
         if(first == true){
             var (goal,targetRange) = SearchGoal();
             first = false;
-            statusText.text = "첫 번째 에피소드 실행";
+            statusText.text = "첫 번째 에피소드";
         }
         // 에피소드가 두번째부터이며 목표점에 전에 도달하였다면 다시 새롭게 목표점을 탐색
-        else if(first == false && hit == true){
-            var (goal,targetRange) = SearchGoal();
-            statusText.text = "새 목표점 탐색 실행";
-            // if(cnt == 10){
-            //     Debug.Log("게임을 종료합니다");
-            //     Application.Quit();
-            // }
-        }
+        // else if(first == false && hit == true){
+        //     var (goal,targetRange) = SearchGoal();
+        //     statusText.text = "새 목표점 탐색 실행";
+        //     // if(cnt == 10){
+        //     //     Debug.Log("게임을 종료합니다");
+        //     //     Application.Quit();
+        //     // }
+        // }
         // 그렇지 않으면(에피소드가 두번째부터이며 목표점을 몾 찾았다면) pass
         else if(first == false && hit == false){
             statusText.text = "목표점 포착 실패";
         }
+
         Debug.Log("Goal: "+goal+"targetRange: "+targetRange);
         goalTrans = goal.transform;
         targetRangeTrans = targetRange.transform;
@@ -166,37 +175,43 @@ public class DroneAgent : Agent
 
     public override void OnActionReceived(ActionBuffers actionBuffers)
     {
-		AddReward(-0.01f);
-        var actions = actionBuffers.ContinuousActions;
-        float moveX = Mathf.Clamp(actions[0], -1, 1f);
-        float moveY = Mathf.Clamp(actions[1], -1, 1f);
-        float moveZ = Mathf.Clamp(actions[2], -1, 1f);
-        dcoScript.DriveInput(moveX);
-        dcoScript.StrafeInput(moveY);
-        dcoScript.LiftInput(moveZ);
+        if(pause == false){
+            AddReward(-0.1f);
+            var actions = actionBuffers.ContinuousActions;
+            float moveX = Mathf.Clamp(actions[0], -1, 1f);
+            float moveY = Mathf.Clamp(actions[1], -1, 1f);
+            float moveZ = Mathf.Clamp(actions[2], -1, 1f);
+            dcoScript.DriveInput(moveX);
+            dcoScript.StrafeInput(moveY);
+            dcoScript.LiftInput(moveZ);
 
-        float distance = Vector3.Magnitude(goalTrans.position - agentTrans.position);
+            float distance = Vector3.Magnitude(goalTrans.position - agentTrans.position);
 
-        if(distance < 1f){
-            SetReward(10f);     // 2f
-            ChangeColor(targetRange,matDetection);
-            MoveDronePos();     // 목표점 도달 시 드론 초기 위치를 이동
-            RemoveGoals();      // 목표점 근처 겹치는 반경의 목표점들을 제거
-            EndEpisode();
-            hit = true;
-            // cnt++;
+            if(distance < 1f){      // 드론이 목표점 위치로 이동에 성공했다면
+                // pause = true;
+                SetReward(10f);     // 보상을 부여하고
+                ChangeColor(targetRange,matDetection);  // 시각화를 위해 색깔을 변경하고
+                MoveDronePos();     // 드론의 초기 위치를 이동하며
+                RemoveGoals();      // 목표점 근처 겹치는 반경의 목표점들을 제거
+                // EndEpisode();
+                // hit = true;
+                // cnt++;
+            }
+
+            else if(distance > 65f){
+                SetReward(-50f);   // -2f
+                EndEpisode();
+                hit = false;
+        
+            }
+
+            else{
+                float reward = preDist - distance;
+                AddReward(reward);
+                preDist = distance;  
+            }
         }
-        else if(distance > 60f){
-			SetReward(-50f);   // -2f
-            EndEpisode();
-            hit = false;
-            
-        }
-        else{
-            float reward = preDist - distance;
-			AddReward(reward);
-            preDist = distance;  
-        }
+
         goalNum.text = "number of goal is: "+ goal;
     }
 
@@ -238,10 +253,4 @@ public class DroneAgent : Agent
             }
         }
     }
-
-    // 목표점의 위치를 랜덤하게 생성(학습에 용이하도록 랜덤성을 부여)
-    // public void GoalTransSet(){
-    //     goalTrans.position = new Vector3(UnityEngine.Random.Range(posx+(-10f), posx+(10f)), posy, UnityEngine.Random.Range(posz+(-10f), posz+(10f)));
-    //     targetRangeTrans.position = new Vector3(goalTrans.position.x, cylY, goalTrans.position.z);
-    // }
 }
