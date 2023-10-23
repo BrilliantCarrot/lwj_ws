@@ -16,8 +16,8 @@ from mlagents_envs.side_channel.engine_configuration_channel\
 state_size = 9
 action_size = 3
 
-load_model = False
-train_mode = True
+load_model = True
+train_mode = False
 
 batch_size = 128
 mem_maxlen = 60000
@@ -39,17 +39,20 @@ train_start_step = 5000
 print_interval = 10
 save_interval = 100
 score_list = []
+cnt = 0
+# p_value = 0
+# c_value = 0
 
 # 유니티 환경 경로
 game = "Drone"
 os_name = platform.system()
 if os_name == 'Windows':
-    env_name = f"./Build_Test/{game}"
+    env_name = f"./Build_2/{game}"
 
 # 모델 저장 및 불러오기 경로
 date_time = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
 save_path = f"./saved_models/{game}/DDPG/{date_time}"
-load_path = f"./saved_models/{game}/DDPG/20231003213906"
+load_path = f"./saved_models/{game}/DDPG/20231016145818"
 
 # 연산 장치
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -241,27 +244,40 @@ if __name__ == '__main__':
             episode += 1
             scores.append(score)
             score_list.append(score)
-            print("Episode: %d, Score: %f" % (episode, score))
+            # print("Episode: %d, Step: %d, Score: %f" % (episode, step, score))
+            print(score)
+
+            # c_value = score
+            if episode > 1:
+                if score_list[episode-1] == score_list[episode-2]:
+                    cnt = cnt + 1
+
             score = 0
 
-            # 게임 진행 상황 출력 및 텐서 보드에 보상과 손실함수 값 기록
-            if episode % print_interval == 0:
+            if episode % save_interval == 0:
                 mean_score = np.mean(scores)
                 mean_actor_loss = np.mean(actor_losses)
                 mean_critic_loss = np.mean(critic_losses)
                 agent.write_summray(mean_score, mean_actor_loss, mean_critic_loss, step)
                 actor_losses, critic_losses, scores = [], [], []
+                print(episode)
 
-                print(f"{episode} Episode / Step: {step} / Score: {mean_score:.2f} / " +\
-                      f"Actor loss: {mean_actor_loss:.2f} / Critic loss: {mean_critic_loss:.4f}")
+                # print(f"{episode} Episode / Step: {step} / Score: {mean_score:.2f} / " +\
+                    #   f"Actor loss: {mean_actor_loss:.2f} / Critic loss: {mean_critic_loss:.4f}")
                 
-            if episode % 300 == 0:      # 300에피소드마다 결과 출력
+            if episode % 300 == 0 or episode % 500 == 0:
                 plt.plot(range(1, len(score_list) + 1), score_list, linestyle='-',color='blue')
                 plt.xlabel('Episode')
                 plt.ylabel('Reward')
                 plt.show()
 
-            # 네트워크 모델 저장
+            if cnt>30:
+                plt.plot(range(1, len(score_list) + 1), score_list, linestyle='-',color='blue')
+                plt.xlabel('Episode')
+                plt.ylabel('Reward')
+                plt.show()
+                cnt = 0
+
             if train_mode and episode % save_interval == 0:
                 agent.save_model()
 
