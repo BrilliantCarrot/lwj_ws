@@ -43,7 +43,6 @@ public class DroneAgent : Agent
     private Text rewardText;
     bool hit = false;
     bool first = true;
-    bool pause = false;
     // int cnt = 0;
 
     void Start(){
@@ -70,7 +69,7 @@ public class DroneAgent : Agent
             GoalsTrans[i] = Goals[i].transform;
 
             GameObject cylinder = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-            // cylinder.GetComponent<CapsuleCollider>().enabled = false;
+            cylinder.GetComponent<CapsuleCollider>().enabled = false;
             cylinder.transform.localScale = new Vector3(cylinderRadius,cylinderHeight,cylinderRadius);
             cylinder.transform.position = new Vector3(GoalsTrans[i].position.x, 0, GoalsTrans[i].position.z);
             cylinder.GetComponent<Renderer>().material = matDefault;
@@ -120,7 +119,8 @@ public class DroneAgent : Agent
         DroneInit();
     }
 
-    // 도달한 목표점과 영역이 겹치는 다른 목표점 삭제 
+    // 도달한 목표점과 영역이 겹치는 다른 목표점 삭제
+    // 반경이 겹치는 목표점들을 제거하면서 동시에 새 목표점 탐색도 수행
     public void RemoveGoals(){
         for(int i = 0; i<numOfGoals;i++){
             goalDiff = Vector3.Magnitude(goalTrans.position - GoalsTrans[i].position);
@@ -136,12 +136,10 @@ public class DroneAgent : Agent
             }
         }
         goalTrans.position = new Vector3(160,20,160);   // 마지막으로 골도 제거(이동)
-        // puase하면 에피소드 시작이 안되니 서치골도 실행하는게 필요
         var (goal,targetRange) = SearchGoal();
         goalTrans = goal.transform;
         targetRangeTrans = targetRange.transform;
         preDist = Vector3.Magnitude(goalTrans.position - agentTrans.position);
-        // pause = true;
     }
 
     public override void Initialize()
@@ -153,7 +151,6 @@ public class DroneAgent : Agent
 
     public override void OnEpisodeBegin()
     {
-        // 에피소드가 시작되기 전 스탭 진행 확인
         Debug.Log("새 에피소드 시작");
         // 첫번째로 시작되는 에피소드에서 목표점을 탐색
         if(first == true){
@@ -161,19 +158,6 @@ public class DroneAgent : Agent
             first = false;
             statusText.text = "첫 번째 에피소드";
         }
-        // 에피소드가 두번째부터이며 목표점에 전에 도달하였다면 다시 새롭게 목표점을 탐색
-        // else if(first == false && hit == true){
-        //     // var (goal,targetRange) = SearchGoal();
-        //     statusText.text = "목표점 도달 성공";
-        //     // if(cnt == 10){
-        //     //     Debug.Log("게임을 종료합니다");
-        //     //     Application.Quit();
-        //     // }
-        // }
-        // 그렇지 않으면(에피소드가 두번째부터이며 목표점을 몾 찾았다면) pass
-        // else if(first == false && hit == false){
-        //     statusText.text = "목표점 도달 실패";
-        // }
 
         Debug.Log(goal+" 이(가) 목표점입니다.");
         goalTrans = goal.transform;
@@ -184,7 +168,6 @@ public class DroneAgent : Agent
 
     public override void OnActionReceived(ActionBuffers actionBuffers)
     {
-            
             AddReward(-0.01f);
             var actions = actionBuffers.ContinuousActions;
             float moveX = Mathf.Clamp(actions[0], -1, 1f);
@@ -195,62 +178,27 @@ public class DroneAgent : Agent
             dcoScript.LiftInput(moveZ);
 
             float distance = Vector3.Magnitude(goalTrans.position - agentTrans.position);
-            // float reward = preDist - distance;
 
             if(distance < 2f){      // 드론이 목표점 위치로 이동에 성공했다면
+                hit = true;
                 SetReward(50f);     // 보상을 부여하고
                 ChangeColor(targetRange,matDetection);  // 시각화를 위해 색깔을 변경하고
                 MoveDronePos();     // 드론의 초기 위치를 이동하며
                 RemoveGoals();      // 목표점 근처 겹치는 반경의 목표점들을 제거
+                EndEpisode();
                 statusText.text = "목표점 도달 성공";
             }
 
-            // if(distance <= 10f && distance >= 5f){
-            //     AddReward(0.05f);    // 가까워지면 +
-            // }
-            // if(distance < 5f && distance >= 2f){
-            //     AddReward(0.1f);    // 가까워지면 +
-            // }
-
             if(distance > 65f){
-                SetReward(-100f);    // 도달 실패하면 -
+                hit = false;
+                SetReward(-50f);    // 도달 실패하면 -
                 EndEpisode();
                 statusText.text = "목표점 도달 실패";
             }
             
             else{
-            //     if(Mathf.Abs(goalTrans.position.y - agentTrans.position.y) <= 10f){
-            //         AddReward(Mathf.Abs(goalTrans.position.y - agentTrans.position.y));  // 고도 유지하면 +
-            //     }
-            //     if(Mathf.Abs(goalTrans.position.y - agentTrans.position.y) > 5f){
-            //         AddReward(-0.001f); // 고도 유지 못하면 -
-            //     }
-
-            //     if(Mathf.Abs(goalTrans.position.x - agentTrans.position.x) <= 10f){
-            //         AddReward(Mathf.Abs(goalTrans.position.x - agentTrans.position.x));  // x축 상 가까워지면 +
-            //     }
-            //     if(Mathf.Abs(goalTrans.position.x - agentTrans.position.x) > 5f){
-            //         AddReward(-0.001f); // 그렇지 못하면 -
-            //     }
-
-            //     if(Mathf.Abs(goalTrans.position.z - agentTrans.position.z) <= 10f){
-            //         AddReward(Mathf.Abs(goalTrans.position.z - agentTrans.position.z));  // z축 상 가까워지면 +
-            //     }
-            //     if(Mathf.Abs(goalTrans.position.z - agentTrans.position.z) > 5f){
-            //         AddReward(-0.001f); // 그렇지 못하면 -
-            //     }            
-                    
                 float reward = preDist - distance;
-                // reward+=0.1f;
                 AddReward(reward);
-                // if(reward > 0f){   
-                //     reward += 0.1f;
-                //     AddReward(reward);  // 가까워지면 +
-                // }
-                // else if(reward <= 0f){
-                //     reward -= 0.1f;
-                //     AddReward(reward);   // 멀어지면 -
-                // }
                 preDist = distance;  
                 rewardText.text = "보상: "+reward;
             }

@@ -2,8 +2,9 @@ import matplotlib.pyplot as plt
 
 # 파일 읽고 줄 바꿈을 콤마로 변경
 
+
 # # Open and read the text file
-# with open('./Assets/Scripts/10_-90.txt', 'r') as file:
+# with open('./Assets/Scripts/50_-50.txt', 'r') as file:
 #     data = file.read()
 
 # # Replace line breaks with commas
@@ -19,16 +20,16 @@ import matplotlib.pyplot as plt
 # # Now, your_list contains the numbers from the file as individual elements
 # # print(your_list)
 
-# with open('./Assets/Scripts/new_10_-90.txt', 'w') as output_file:
+# with open('./Assets/Scripts/new_50_-50.txt', 'w') as output_file:
 #     output_file.write(','.join(your_list))
 
-# print("Data has been saved to output_file.txt")
 
 # 그래프 출력
 
+
 score_list = []
 
-with open('./Assets/Scripts/10_-90.txt', 'r') as file:
+with open('./Assets/Scripts/new_50_-50.txt', 'r') as file:
     for num_str in file.read().split(','):
         num = float(num_str)
         score_list.append(num)

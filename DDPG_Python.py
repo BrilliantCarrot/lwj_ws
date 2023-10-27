@@ -16,8 +16,8 @@ from mlagents_envs.side_channel.engine_configuration_channel\
 state_size = 9
 action_size = 3
 
-load_model = True
-train_mode = False
+load_model = False
+train_mode = True
 
 batch_size = 128
 mem_maxlen = 60000
@@ -52,7 +52,8 @@ if os_name == 'Windows':
 # 모델 저장 및 불러오기 경로
 date_time = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
 save_path = f"./saved_models/{game}/DDPG/{date_time}"
-load_path = f"./saved_models/{game}/DDPG/20231016145818"
+# load_path = f"./saved_models/{game}/DDPG/20231016145818"
+load_path = f"./saved_models/{game}/DDPG/20231023171936"
 
 # 연산 장치
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -174,7 +175,7 @@ class DDPGAgent():
 
     # 네트워크 모델 저장
     def save_model(self):
-        print(f"... Save Model to {save_path}/ckpt ...")
+        # print(f"... Save Model to {save_path}/ckpt ...")
         torch.save({
             "actor" : self.actor.state_dict(),
             "actor_optimizer" : self.actor_optimizer.state_dict(),
