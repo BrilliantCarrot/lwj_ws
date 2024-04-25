@@ -25,43 +25,50 @@ from sympy import Matrix
 # print(U)
 
 ## 문제2
-A = np.array([
-    [1, 2, 0, 2, 1],
-    [-1, -2, 1, 1, 0],
-    [1, 2, -3, -7, -2]
-])
+import numpy as np
+from scipy.linalg import lu, null_space
 
-# # Perform Singular Value Decomposition (SVD)
-# U, s, VT = svd(A)
+# Define the matrix A
+A = np.array([[1, 2, 0, 2, 1],
+              [-1, -2, 1, 1, 0],
+              [1, 2, -3, -7, -2]])
 
-# Perform LU decomposition
+# Compute the LU decomposition of A
 P, L, U = lu(A)
 
-# # The rank of the matrix is the number of non-zero singular values
-# rank = np.sum(s > 1e-10)
+# Compute the four fundamental subspaces
+# 1. Column space, C(A)
+_, _, Vh = np.linalg.svd(A)
+r = np.linalg.matrix_rank(A)
+C_A = Vh.T[:, :r]
 
-# # Column space of A is spanned by the first 'rank' columns of U
-# column_space = U[:, :rank]
+# 2. Null space, N(A)
+N_A = null_space(U)
 
-# # Null space of A is spanned by the last 'n-rank' columns of VT.T
-# null_space = VT.T[:, rank:]
+# 3. Row space, C(A.T)
+_, _, Vh = np.linalg.svd(A.T)
+r = np.linalg.matrix_rank(A.T)
+C_A_T = Vh.T[:, :r]
 
-# # Row space of A is spanned by the first 'rank' rows of VT
-# row_space = VT[:rank, :]
+# 4. Left null space, N(A.T)
+N_A_T = null_space(A.T)
 
-# # Left null space of A is spanned by the last 'm-rank' columns of U
-# left_null_space = U[:, rank:]
-
-# Print the four fundamental subspaces
-print("U:")
+# Print the results
+print("Matrix A:")
+print(A)
+print("\\nMatrix U:")
 print(U)
-# print("rank of A matrix:")
-# print(rank)
-# print("Column space of A:")
-# print(column_space)
-# print("\\nNull space of A:")
-# print(null_space)
-# print("\\nRow space of A:")
-# print(row_space)
-# print("\\nLeft null space of A:")
-# print(left_null_space)
+print("\\nColumn space of A:")
+print(C_A)
+print("\\nNull space of A:")
+print(N_A)
+print("\\nRow space of A:")
+print(C_A_T)
+print("\\nLeft null space of A:")
+print(N_A_T)
+
+#Add a code section to get the dimension of the four fundamental subspaces
+print("Dimension of the column space of A: ", C_A.shape[1])
+print("Dimension of the null space of A: ", N_A.shape[1])
+print("Dimension of the row space of A: ", C_A_T.shape[1])
+print("Dimension of the left null space of A: ", N_A_T.shape[1])
