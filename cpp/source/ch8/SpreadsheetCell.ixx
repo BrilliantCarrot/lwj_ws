@@ -1,3 +1,5 @@
+module;
+
 export module spreadsheet_cell;
 
 import <string>;
