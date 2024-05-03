@@ -19,6 +19,15 @@ foreach(string name in names){
     WriteLine($"{name} has {name.Length} characters");
 }
 
+// 배열이나 컬렉션처럼 여러 항목을 갖는 형식을 만드는경우 
+// foreach로 해당 형식의 항목을 열거할 수 있는지를 확인해야 한다
+
+// IEnumerator e = names.GetEnumerator();
+// while(e.MoveNext()){
+//     string name = (string)e.Current;    // Current 속성은 읽기 전용이다
+//     WriteLine($"{name}has {name.Length}characters.");
+// }
+
 // Looping with the do statement
 // 
 // string? actualPassword = "Pa$$w0rd";
