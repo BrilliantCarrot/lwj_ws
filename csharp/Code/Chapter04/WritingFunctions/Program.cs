@@ -59,6 +59,11 @@ static decimal CalculateTax(
   return amount * rate;
 }
 
+/// <summary>
+/// 32비트 정수를 서수로 변환한다.
+/// </summary>
+/// <param name="number">1, 2, 3과 같은 기수</param>
+/// <returns>1st, 2nd, 3rd 같은 서수</returns>
 static string CardinalToOrdinal(int number){
     switch(number){
         case 11:
