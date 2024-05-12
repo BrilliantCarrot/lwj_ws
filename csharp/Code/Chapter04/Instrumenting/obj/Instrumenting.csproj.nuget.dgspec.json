@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\leeyj\\lyj_ws\\csharp\\Code\\Chapter04\\WritingFunctions\\WritingFunctions.csproj": {}
+    "C:\\Users\\leeyj\\lyj_ws\\csharp\\Code\\Chapter04\\Instrumenting\\Instrumenting.csproj": {}
   },
   "projects": {
-    "C:\\Users\\leeyj\\lyj_ws\\csharp\\Code\\Chapter04\\WritingFunctions\\WritingFunctions.csproj": {
+    "C:\\Users\\leeyj\\lyj_ws\\csharp\\Code\\Chapter04\\Instrumenting\\Instrumenting.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\leeyj\\lyj_ws\\csharp\\Code\\Chapter04\\WritingFunctions\\WritingFunctions.csproj",
-        "projectName": "WritingFunctions",
-        "projectPath": "C:\\Users\\leeyj\\lyj_ws\\csharp\\Code\\Chapter04\\WritingFunctions\\WritingFunctions.csproj",
+        "projectUniqueName": "C:\\Users\\leeyj\\lyj_ws\\csharp\\Code\\Chapter04\\Instrumenting\\Instrumenting.csproj",
+        "projectName": "Instrumenting",
+        "projectPath": "C:\\Users\\leeyj\\lyj_ws\\csharp\\Code\\Chapter04\\Instrumenting\\Instrumenting.csproj",
         "packagesPath": "C:\\Users\\leeyj\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\leeyj\\lyj_ws\\csharp\\Code\\Chapter04\\WritingFunctions\\obj\\",
+        "outputPath": "C:\\Users\\leeyj\\lyj_ws\\csharp\\Code\\Chapter04\\Instrumenting\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\leeyj\\AppData\\Roaming\\NuGet\\NuGet.Config",

@@ -2,6 +2,12 @@
 	"folders": [
 		{
 			"path": "WritingFunctions"
+		},
+		{
+			"path": "Debugging"
+		},
+		{
+			"path": "Instrumenting"
 		}
 	]
 }
