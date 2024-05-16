@@ -8,7 +8,7 @@ private:
 	char name[100];	
 	int salary;
 public:
-	PermanentWorker(char* name, int money)
+	PermanentWorker(const char* name, int money)
 		: salary(money)
 	{
 		strcpy(this->name, name);
