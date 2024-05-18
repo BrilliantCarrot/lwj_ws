@@ -1,0 +1,96 @@
+{
+  "version": 3,
+  "targets": {
+    "net6.0": {
+      "PacktLibrary/1.0.0": {
+        "type": "project",
+        "framework": ".NETStandard,Version=v2.0",
+        "compile": {
+          "bin/placeholder/PacktLibrary.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/PacktLibrary.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "PacktLibrary/1.0.0": {
+      "type": "project",
+      "path": "../PacktLibrary/PacktLibrary.csproj",
+      "msbuildProject": "../PacktLibrary/PacktLibrary.csproj"
+    }
+  },
+  "projectFileDependencyGroups": {
+    "net6.0": [
+      "PacktLibrary >= 1.0.0"
+    ]
+  },
+  "packageFolders": {
+    "C:\\Users\\leeyj\\.nuget\\packages\\": {}
+  },
+  "project": {
+    "version": "1.0.0",
+    "restore": {
+      "projectUniqueName": "C:\\Users\\leeyj\\lyj_ws\\csharp\\Code\\Chapter05\\PeopleApp\\PeopleApp.csproj",
+      "projectName": "PeopleApp",
+      "projectPath": "C:\\Users\\leeyj\\lyj_ws\\csharp\\Code\\Chapter05\\PeopleApp\\PeopleApp.csproj",
+      "packagesPath": "C:\\Users\\leeyj\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\leeyj\\lyj_ws\\csharp\\Code\\Chapter05\\PeopleApp\\obj\\",
+      "projectStyle": "PackageReference",
+      "configFilePaths": [
+        "C:\\Users\\leeyj\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+      ],
+      "originalTargetFrameworks": [
+        "net6.0"
+      ],
+      "sources": {
+        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+        "https://api.nuget.org/v3/index.json": {}
+      },
+      "frameworks": {
+        "net6.0": {
+          "targetAlias": "net6.0",
+          "projectReferences": {
+            "C:\\Users\\leeyj\\lyj_ws\\csharp\\Code\\Chapter05\\PacktLibrary\\PacktLibrary.csproj": {
+              "projectPath": "C:\\Users\\leeyj\\lyj_ws\\csharp\\Code\\Chapter05\\PacktLibrary\\PacktLibrary.csproj"
+            }
+          }
+        }
+      },
+      "warningProperties": {
+        "warnAsError": [
+          "NU1605"
+        ]
+      },
+      "restoreAuditProperties": {
+        "enableAudit": "true",
+        "auditLevel": "low",
+        "auditMode": "direct"
+      }
+    },
+    "frameworks": {
+      "net6.0": {
+        "targetAlias": "net6.0",
+        "imports": [
+          "net461",
+          "net462",
+          "net47",
+          "net471",
+          "net472",
+          "net48",
+          "net481"
+        ],
+        "assetTargetFallback": true,
+        "warn": true,
+        "frameworkReferences": {
+          "Microsoft.NETCore.App": {
+            "privateAssets": "all"
+          }
+        },
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.204\\RuntimeIdentifierGraph.json"
+      }
+    }
+  }
+}

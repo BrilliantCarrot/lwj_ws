@@ -1,32 +1,32 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\leeyj\\lyj_ws\\csharp\\Code\\Chapter05\\PacktLibrary\\PacktLibrary.csproj": {}
+    "C:\\Users\\leeyj\\lyj_ws\\csharp\\Code\\Chapter05\\Chapter05.csproj": {}
   },
   "projects": {
-    "C:\\Users\\leeyj\\lyj_ws\\csharp\\Code\\Chapter05\\PacktLibrary\\PacktLibrary.csproj": {
+    "C:\\Users\\leeyj\\lyj_ws\\csharp\\Code\\Chapter05\\Chapter05.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\leeyj\\lyj_ws\\csharp\\Code\\Chapter05\\PacktLibrary\\PacktLibrary.csproj",
-        "projectName": "PacktLibrary",
-        "projectPath": "C:\\Users\\leeyj\\lyj_ws\\csharp\\Code\\Chapter05\\PacktLibrary\\PacktLibrary.csproj",
+        "projectUniqueName": "C:\\Users\\leeyj\\lyj_ws\\csharp\\Code\\Chapter05\\Chapter05.csproj",
+        "projectName": "Chapter05",
+        "projectPath": "C:\\Users\\leeyj\\lyj_ws\\csharp\\Code\\Chapter05\\Chapter05.csproj",
         "packagesPath": "C:\\Users\\leeyj\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\leeyj\\lyj_ws\\csharp\\Code\\Chapter05\\PacktLibrary\\obj\\",
+        "outputPath": "C:\\Users\\leeyj\\lyj_ws\\csharp\\Code\\Chapter05\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\leeyj\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
-          "netstandard2.0"
+          "net6.0"
         ],
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
-          "netstandard2.0": {
-            "targetAlias": "netstandard2.0",
+          "net6.0": {
+            "targetAlias": "net6.0",
             "projectReferences": {}
           }
         },
@@ -42,16 +42,8 @@
         }
       },
       "frameworks": {
-        "netstandard2.0": {
-          "targetAlias": "netstandard2.0",
-          "dependencies": {
-            "NETStandard.Library": {
-              "suppressParent": "All",
-              "target": "Package",
-              "version": "[2.0.3, )",
-              "autoReferenced": true
-            }
-          },
+        "net6.0": {
+          "targetAlias": "net6.0",
           "imports": [
             "net461",
             "net462",
@@ -63,6 +55,11 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
           "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.204\\RuntimeIdentifierGraph.json"
         }
       }

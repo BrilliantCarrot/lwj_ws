@@ -10,12 +10,12 @@
 using System;
 using System.Reflection;
 
-[assembly: System.Reflection.AssemblyCompanyAttribute("PacktLibrary")]
+[assembly: System.Reflection.AssemblyCompanyAttribute("PeopleApp")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
 [assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+be02ea04ddd10fef2e5d58a5e0ba96f4ac262c8f")]
-[assembly: System.Reflection.AssemblyProductAttribute("PacktLibrary")]
-[assembly: System.Reflection.AssemblyTitleAttribute("PacktLibrary")]
+[assembly: System.Reflection.AssemblyProductAttribute("PeopleApp")]
+[assembly: System.Reflection.AssemblyTitleAttribute("PeopleApp")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
 
 // MSBuild WriteCodeFragment 클래스에서 생성되었습니다.
