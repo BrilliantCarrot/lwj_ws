@@ -7,22 +7,21 @@ using static System.Console;
 Person bob = new();
 WriteLine(bob.ToString());
 
-// bob.Name = "Bob Smith";
-// bob.DateOfBirth = new DateTime(1965, 12, 22); // C# 1.0 or later
+// Person 클래스의 인스턴스를 만든 뒤 이름과 생년월일을 설정하고 읽기 쉬운 형태로 출력
+bob.Name = "Bob Smith";
+bob.DateOfBirth = new DateTime(1965, 12, 22); // C# 1.0 or later
+WriteLine(format: "{0} was born on {1:dddd, d MMMM yyyy}",
+  arg0: bob.Name,
+  arg1: bob.DateOfBirth);
 
-// WriteLine(format: "{0} was born on {1:dddd, d MMMM yyyy}",
-//   arg0: bob.Name,
-//   arg1: bob.DateOfBirth);
-
-// Person alice = new()
-// {
-//   Name = "Alice Jones",
-//   DateOfBirth = new(1998, 3, 7) // C# 9.0 or later
-// };
-
-// WriteLine(format: "{0} was born on {1:dd MMM yy}",
-//   arg0: alice.Name,
-//   arg1: alice.DateOfBirth);
+Person alice = new()
+{
+  Name = "Alice Jones",
+  DateOfBirth = new(1998, 3, 7) // C# 9.0 or later
+};
+WriteLine(format: "{0} was born on {1:dd MMM yy}",
+  arg0: alice.Name,
+  arg1: alice.DateOfBirth);
 
 // // Storing a value using an enum type
 
