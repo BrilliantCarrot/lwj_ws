@@ -25,13 +25,13 @@ WriteLine(format: "{0} was born on {1:dd MMM yy}",
 
 // // Storing a value using an enum type
 
-// bob.FavoriteAncientWonder = WondersOfTheAncientWorld.StatueOfZeusAtOlympia;
+bob.FavoriteAncientWonder = WondersOfTheAncientWorld.StatueOfZeusAtOlympia;
 
-// WriteLine(
-//   format: "{0}'s favorite wonder is {1}. Its integer is {2}.",
-//   arg0: bob.Name,
-//   arg1: bob.FavoriteAncientWonder,
-//   arg2: (int)bob.FavoriteAncientWonder);
+WriteLine(
+  format: "{0}'s favorite wonder is {1}. Its integer is {2}.",
+  arg0: bob.Name,
+  arg1: bob.FavoriteAncientWonder,
+  arg2: (int)bob.FavoriteAncientWonder);
 
 // // Storing multiple values using an enum type
 

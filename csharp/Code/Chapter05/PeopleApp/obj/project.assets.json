@@ -27,19 +27,24 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\ThinkYun\\.nuget\\packages\\": {}
+    "C:\\Users\\leeyj\\.nuget\\packages\\": {},
+    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\ThinkYun\\lyj_ws\\csharp\\Code\\Chapter05\\PeopleApp\\PeopleApp.csproj",
+      "projectUniqueName": "C:\\Users\\leeyj\\lyj_ws\\csharp\\Code\\Chapter05\\PeopleApp\\PeopleApp.csproj",
       "projectName": "PeopleApp",
-      "projectPath": "C:\\Users\\ThinkYun\\lyj_ws\\csharp\\Code\\Chapter05\\PeopleApp\\PeopleApp.csproj",
-      "packagesPath": "C:\\Users\\ThinkYun\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\ThinkYun\\lyj_ws\\csharp\\Code\\Chapter05\\PeopleApp\\obj\\",
+      "projectPath": "C:\\Users\\leeyj\\lyj_ws\\csharp\\Code\\Chapter05\\PeopleApp\\PeopleApp.csproj",
+      "packagesPath": "C:\\Users\\leeyj\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\leeyj\\lyj_ws\\csharp\\Code\\Chapter05\\PeopleApp\\obj\\",
       "projectStyle": "PackageReference",
+      "fallbackFolders": [
+        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+      ],
       "configFilePaths": [
-        "C:\\Users\\ThinkYun\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\leeyj\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
@@ -53,8 +58,8 @@
         "net6.0": {
           "targetAlias": "net6.0",
           "projectReferences": {
-            "C:\\Users\\ThinkYun\\lyj_ws\\csharp\\Code\\Chapter05\\PacktLibrary\\PacktLibrary.csproj": {
-              "projectPath": "C:\\Users\\ThinkYun\\lyj_ws\\csharp\\Code\\Chapter05\\PacktLibrary\\PacktLibrary.csproj"
+            "C:\\Users\\leeyj\\lyj_ws\\csharp\\Code\\Chapter05\\PacktLibrary\\PacktLibrary.csproj": {
+              "projectPath": "C:\\Users\\leeyj\\lyj_ws\\csharp\\Code\\Chapter05\\PacktLibrary\\PacktLibrary.csproj"
             }
           }
         }
