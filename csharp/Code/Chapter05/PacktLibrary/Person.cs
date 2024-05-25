@@ -8,21 +8,21 @@ namespace Packt.Shared
   public partial class Person : object
   {
     
-    // fields
+    // 필드를 선언
     public string Name;
     public DateTime DateOfBirth;
     public WondersOfTheAncientWorld FavoriteAncientWonder;
     public WondersOfTheAncientWorld BucketList;
     public List<Person> Children = new List<Person>();
 
-    // constants
+    // 상수 필드를 선언
     public const string Species = "Homo Sapiens";
 
-    // read-only fields
+    // 읽기 전용 필드
     public readonly string HomePlanet = "Earth";
     public readonly DateTime Instantiated;
 
-    // constructors 
+    // 생성자로 필드 초기화하기
     public Person()
     {
       // set default values for fields
@@ -31,6 +31,7 @@ namespace Packt.Shared
       Instantiated = DateTime.Now;
     }
 
+    // 입력값 2개가 있는 생성자
     public Person(string initialName, string homePlanet)
     {
       Name = initialName;

@@ -4,60 +4,57 @@ using static System.Console;
 // Setting and outputting field values
 
 // var bob = new Person(); // C# 1.0 or later
-Person bob = new();
-WriteLine(bob.ToString());
+// Person bob = new();
+// WriteLine(bob.ToString());
+
 
 // Person 클래스의 인스턴스를 만든 뒤 이름과 생년월일을 설정하고 읽기 쉬운 형태로 출력
-bob.Name = "Bob Smith";
-bob.DateOfBirth = new DateTime(1965, 12, 22); // C# 1.0 or later
-WriteLine(format: "{0} was born on {1:dddd, d MMMM yyyy}",
-  arg0: bob.Name,
-  arg1: bob.DateOfBirth);
+// bob.Name = "Bob Smith";
+// bob.DateOfBirth = new DateTime(1965, 12, 22); // C# 1.0 or later
+// WriteLine(format: "{0} was born on {1:dddd, d MMMM yyyy}",
+//   arg0: bob.Name,
+//   arg1: bob.DateOfBirth);
 
-Person alice = new()
-{
-  Name = "Alice Jones",
-  DateOfBirth = new(1998, 3, 7) // C# 9.0 or later
-};
-WriteLine(format: "{0} was born on {1:dd MMM yy}",
-  arg0: alice.Name,
-  arg1: alice.DateOfBirth);
+// Person alice = new()
+// {
+//   Name = "Alice Jones",
+//   DateOfBirth = new(1998, 3, 7) // C# 9.0 or later
+// };
+// WriteLine(format: "{0} was born on {1:dd MMM yy}",
+//   arg0: alice.Name,
+//   arg1: alice.DateOfBirth);
+
 
 // // Storing a value using an enum type
+// bob.FavoriteAncientWonder = WondersOfTheAncientWorld.StatueOfZeusAtOlympia;
+// WriteLine(
+//   format: "{0}'s favorite wonder is {1}. Its integer is {2}.",
+//   arg0: bob.Name,
+//   arg1: bob.FavoriteAncientWonder,
+//   arg2: (int)bob.FavoriteAncientWonder);
 
-bob.FavoriteAncientWonder = WondersOfTheAncientWorld.StatueOfZeusAtOlympia;
 
-WriteLine(
-  format: "{0}'s favorite wonder is {1}. Its integer is {2}.",
-  arg0: bob.Name,
-  arg1: bob.FavoriteAncientWonder,
-  arg2: (int)bob.FavoriteAncientWonder);
-
-// // Storing multiple values using an enum type
-
+// Storing multiple values using an enum type
 // bob.BucketList =
 //   WondersOfTheAncientWorld.HangingGardensOfBabylon
 //   | WondersOfTheAncientWorld.MausoleumAtHalicarnassus;
 
-// // bob.BucketList = (WondersOfTheAncientWorld)18; 
-
+// bob.BucketList = (WondersOfTheAncientWorld)18; 
 // WriteLine($"{bob.Name}'s bucket list is {bob.BucketList}");
 
-// // Storing multiple values using collections
 
+// Storing multiple values using collections
 // bob.Children.Add(new Person { Name = "Alfred" }); // C# 3.0 and later
 // bob.Children.Add(new() { Name = "Zoe" }); // C# 9.0 and later
-
 // WriteLine(
 //   $"{bob.Name} has {bob.Children.Count} children:");
-
 // for (int childIndex = 0; childIndex < bob.Children.Count; childIndex++)
 // {
 //   WriteLine($"  {bob.Children[childIndex].Name}");
 // }
 
-// // Making a field static
 
+// Making a field static
 // BankAccount.InterestRate = 0.012M; // store a shared value
 
 // BankAccount jonesAccount = new(); // C# 9.0 and later
@@ -76,31 +73,33 @@ WriteLine(
 //   arg0: gerrierAccount.AccountName,
 //   arg1: gerrierAccount.Balance * BankAccount.InterestRate);
 
-// // Making a field constant
 
+// // Making a field constant
 // WriteLine($"{bob.Name} is a {Person.Species}");
 
-// // Making a field read-only
 
+// // Making a field read-only
 // WriteLine($"{bob.Name} was born on {bob.HomePlanet}");
 
-// // Initializing fields with constructors
 
+// // 생성자로 필드 값을 초기화
 // Person blankPerson = new();
-
 // WriteLine(format:
 //   "{0} of {1} was created at {2:hh:mm:ss} on a {2:dddd}.",
 //   arg0: blankPerson.Name,
 //   arg1: blankPerson.HomePlanet,
 //   arg2: blankPerson.Instantiated);
 
-// Person gunny = new(initialName: "Gunny", homePlanet: "Mars");
 
+// 여러개의 생성자를 정의
+// initialName과 homePlanet이 정의된 형태의 생성자
+// Person gunny = new(initialName: "Gunny", homePlanet: "Mars");
 // WriteLine(format:
 //   "{0} of {1} was created at {2:hh:mm:ss} on a {2:dddd}.",
 //   arg0: gunny.Name,
 //   arg1: gunny.HomePlanet,
 //   arg2: gunny.Instantiated);
+
 
 // // Returning values from methods
 
