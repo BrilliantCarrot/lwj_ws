@@ -3,30 +3,30 @@ using static System.Console;
 
 // Setting and outputting field values
 
-// var bob = new Person(); // C# 1.0 or later
+var bob = new Person(); // C# 1.0 or later
 // Person bob = new();
-// WriteLine(bob.ToString());
+WriteLine(bob.ToString());
 
 
 // Person 클래스의 인스턴스를 만든 뒤 이름과 생년월일을 설정하고 읽기 쉬운 형태로 출력
-// bob.Name = "Bob Smith";
-// bob.DateOfBirth = new DateTime(1965, 12, 22); // C# 1.0 or later
+bob.Name = "Bob Smith";
+bob.DateOfBirth = new DateTime(1965, 12, 22); // C# 1.0 or later
 // WriteLine(format: "{0} was born on {1:dddd, d MMMM yyyy}",
 //   arg0: bob.Name,
 //   arg1: bob.DateOfBirth);
 
-// Person alice = new()
-// {
-//   Name = "Alice Jones",
-//   DateOfBirth = new(1998, 3, 7) // C# 9.0 or later
-// };
+Person alice = new()
+{
+  Name = "Alice Jones",
+  DateOfBirth = new(1998, 3, 7) // C# 9.0 or later
+};
 // WriteLine(format: "{0} was born on {1:dd MMM yy}",
 //   arg0: alice.Name,
 //   arg1: alice.DateOfBirth);
 
 
 // // Storing a value using an enum type
-// bob.FavoriteAncientWonder = WondersOfTheAncientWorld.StatueOfZeusAtOlympia;
+bob.FavoriteAncientWonder = WondersOfTheAncientWorld.StatueOfZeusAtOlympia;
 // WriteLine(
 //   format: "{0}'s favorite wonder is {1}. Its integer is {2}.",
 //   arg0: bob.Name,
@@ -34,18 +34,18 @@ using static System.Console;
 //   arg2: (int)bob.FavoriteAncientWonder);
 
 
-// Storing multiple values using an enum type
-// bob.BucketList =
-//   WondersOfTheAncientWorld.HangingGardensOfBabylon
-//   | WondersOfTheAncientWorld.MausoleumAtHalicarnassus;
+// enum을 통하여 복수의 값 저장
+bob.BucketList =
+  WondersOfTheAncientWorld.HangingGardensOfBabylon
+  | WondersOfTheAncientWorld.MausoleumAtHalicarnassus;
 
 // bob.BucketList = (WondersOfTheAncientWorld)18; 
 // WriteLine($"{bob.Name}'s bucket list is {bob.BucketList}");
 
 
-// Storing multiple values using collections
-// bob.Children.Add(new Person { Name = "Alfred" }); // C# 3.0 and later
-// bob.Children.Add(new() { Name = "Zoe" }); // C# 9.0 and later
+// 컬렉션을 통하여 복수의 값 저장
+bob.Children.Add(new Person { Name = "Alfred" }); // C# 3.0 and later
+bob.Children.Add(new() { Name = "Zoe" }); // C# 9.0 and later
 // WriteLine(
 //   $"{bob.Name} has {bob.Children.Count} children:");
 // for (int childIndex = 0; childIndex < bob.Children.Count; childIndex++)
@@ -54,20 +54,19 @@ using static System.Console;
 // }
 
 
-// Making a field static
-// BankAccount.InterestRate = 0.012M; // store a shared value
-
-// BankAccount jonesAccount = new(); // C# 9.0 and later
-// jonesAccount.AccountName = "Mrs. Jones";
-// jonesAccount.Balance = 2400;
+// static 필드 생성
+BankAccount.InterestRate = 0.012M; // store a shared value
+BankAccount jonesAccount = new(); // C# 9.0 and later
+jonesAccount.AccountName = "Mrs. Jones";
+jonesAccount.Balance = 2400;
 
 // WriteLine(format: "{0} earned {1:C} interest.",
 //   arg0: jonesAccount.AccountName,
 //   arg1: jonesAccount.Balance * BankAccount.InterestRate);
 
-// BankAccount gerrierAccount = new();
-// gerrierAccount.AccountName = "Ms. Gerrier";
-// gerrierAccount.Balance = 98;
+BankAccount gerrierAccount = new();
+gerrierAccount.AccountName = "Ms. Gerrier";
+gerrierAccount.Balance = 98;
 
 // WriteLine(format: "{0} earned {1:C} interest.",
 //   arg0: gerrierAccount.AccountName,
@@ -101,80 +100,74 @@ using static System.Console;
 //   arg2: gunny.Instantiated);
 
 
-// // Returning values from methods
-
+// Returning values from methods
 // bob.WriteToConsole();
 // WriteLine(bob.GetOrigin());
 
-// // Combining multiple returned values using tuples
 
-// (string, int) fruit = bob.GetFruit();
-// WriteLine($"{fruit.Item1}, {fruit.Item2} there are.");
+// 튜플을 이용해 복수의 값을 리턴
+(string, int) fruit = bob.GetFruit();
+WriteLine($"{fruit.Item1}, {fruit.Item2} there are.");
 
-// // Naming the fields of a tuple
 
-// var fruitNamed = bob.GetNamedFruit();
-// WriteLine($"There are {fruitNamed.Number} {fruitNamed.Name}.");
+// 튜플 필드에 고유의 이름을 지정
+var fruitNamed = bob.GetNamedFruit();
+WriteLine($"There are {fruitNamed.Number} {fruitNamed.Name}.");
 
-// // Inferring tuple names
 
+// 튜플 이름 추론
 // var thing1 = ("Neville", 4);
 // WriteLine($"{thing1.Item1} has {thing1.Item2} children.");
-
 // var thing2 = (bob.Name, bob.Children.Count);
 // WriteLine($"{thing2.Name} has {thing2.Count} children.");
 
-// // Deconstructing tuples
 
-// (string fruitName, int fruitNumber) = bob.GetFruit();
-// WriteLine($"Deconstructed: {fruitName}, {fruitNumber}");
+// 반환된 튜플에 새 변수명을 할당
+(string fruitName, int fruitNumber) = bob.GetFruit();
+WriteLine($"Deconstructed: {fruitName}, {fruitNumber}");
 
-// // Deconstructing a Person
 
+// 형식 분해하기
+// Deconstruct 메서드를 갖는 모든 형식은 객체를 부분으로 분해 가능
 // var (name1, dob1) = bob;
 // WriteLine($"Deconstructed: {name1}, {dob1}");
-
 // var (name2, dob2, fav2) = bob;
 // WriteLine($"Deconstructed: {name2}, {dob2}, {fav2}");
 
-// // Defining and passing parameters to methods
 
+// Defining and passing parameters to methods
 // WriteLine(bob.SayHello());
 // WriteLine(bob.SayHello("Emily"));
 
+
 // // Passing optional parameters and naming arguments
-
 // WriteLine(bob.OptionalParameters());
-
 // WriteLine(bob.OptionalParameters("Jump!", 98.5));
 
+
+// 이름 지정 매개 변수
+// 메서드 선언과 다른 순서로 매개 변수를 전달
 // WriteLine(bob.OptionalParameters(
 //   number: 52.7, command: "Hide!"));
-
 // WriteLine(bob.OptionalParameters("Poke!", active: false));
 
-// // Controlling how parameters are passed
 
-// int a = 10;
-// int b = 20;
-// int c = 30;
+// 매개 변수 전달 제어하기
+int a = 10;
+int b = 20;
+int c = 30;
+WriteLine($"Before: a = {a}, b = {b}, c = {c}");
+bob.PassingParameters(a, ref b, out c);
+WriteLine($"After: a = {a}, b = {b}, c = {c}");
 
-// WriteLine($"Before: a = {a}, b = {b}, c = {c}");
 
-// bob.PassingParameters(a, ref b, out c);
-
-// WriteLine($"After: a = {a}, b = {b}, c = {c}");
-
-// int d = 10;
-// int e = 20;
-
-// WriteLine(
-//   $"Before: d = {d}, e = {e}, f doesn't exist yet!");
-
-// // simplified C# 7 syntax for the out parameter
-// bob.PassingParameters(d, ref e, out int f);
-
-// WriteLine($"After: d = {d}, e = {e}, f = {f}");
+int d = 10;
+int e = 20;
+WriteLine(
+  $"Before: d = {d}, e = {e}, f doesn't exist yet!");
+// simplified C# 7 syntax for the out parameter
+bob.PassingParameters(d, ref e, out int f);
+WriteLine($"After: d = {d}, e = {e}, f = {f}");
 
 // // Defining read-only properties
 

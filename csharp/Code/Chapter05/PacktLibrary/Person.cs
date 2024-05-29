@@ -65,11 +65,13 @@ namespace Packt.Shared
       return $"{Name} was born on {HomePlanet}.";
     }
 
+    // 튜플 구문 지원
     public (string, int) GetFruit()
     {
       return ("Apples", 5);
     }
 
+    // 튜플 필드에 고유의 이름을 지정
     public (string Name, int Number) GetNamedFruit()
     {
       return (Name: "Apples", Number: 5);
@@ -97,6 +99,7 @@ namespace Packt.Shared
         arg2: active);
     }
 
+    // 매개 변수 전달 제에허기
     public void PassingParameters(int x, ref int y, out int z)
     {
       // out parameters cannot have a default
