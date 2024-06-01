@@ -165,31 +165,28 @@ int d = 10;
 int e = 20;
 WriteLine(
   $"Before: d = {d}, e = {e}, f doesn't exist yet!");
-// simplified C# 7 syntax for the out parameter
+// out 매개 변수에 대해 단순화된 C# 7 구문
 bob.PassingParameters(d, ref e, out int f);
 WriteLine($"After: d = {d}, e = {e}, f = {f}");
 
-// // Defining read-only properties
 
-// Person sam = new()
-// {
-//   Name = "Sam",
-//   DateOfBirth = new(1972, 1, 27)
-// };
+// Defining read-only properties
+Person sam = new()
+{
+  Name = "Yun",
+  DateOfBirth = new DateTime(1995, 3, 22)
+};
 
 // WriteLine(sam.Origin);
 // WriteLine(sam.Greeting);
 // WriteLine(sam.Age);
 
-// // Defining settable properties
 
-// sam.FavoriteIceCream = "Chocolate Fudge";
-
-// WriteLine($"Sam's favorite ice-cream flavor is {sam.FavoriteIceCream}.");
-
-// sam.FavoritePrimaryColor = "Red";
-
-// WriteLine($"Sam's favorite primary color is {sam.FavoritePrimaryColor}.");
+// Defining settable properties
+sam.FavoriteIceCream = "Chocolate Fudge";
+WriteLine($"Sam's favorite ice-cream flavor is {sam.FavoriteIceCream}.");
+sam.FavoritePrimaryColor = "Red";
+WriteLine($"Sam's favorite primary color is {sam.FavoritePrimaryColor}.");
 
 // // Defining indexers
 

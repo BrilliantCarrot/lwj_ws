@@ -16,6 +16,7 @@ namespace Packt.Shared
 
     public int Age => System.DateTime.Today.Year - DateOfBirth.Year;
 
+    // 설정 가능한 속성을 만들려면 이전 구문을 사용해야 하며 get - set 메서드 쌍을 제공해야 한다
     public string FavoriteIceCream { get; set; } // auto-syntax
 
     private string favoritePrimaryColor;
