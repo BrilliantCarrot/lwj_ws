@@ -259,6 +259,6 @@ WriteLine($"Sam's favorite primary color is {sam.FavoritePrimaryColor}.");
 // WriteLine($"Original car color was {car.Color}.");
 // WriteLine($"New car color is {repaintedCar.Color}.");
 
-// ImmutableAnimal oscar = new("Oscar", "Labrador");
-// var (who, what) = oscar; // calls Deconstruct method
-// WriteLine($"{who} is a {what}.");
+ImmutableAnimal oscar = new("Oscar", "Labrador");
+var (who, what) = oscar; // calls Deconstruct method
+WriteLine($"{who} is a {what}.");
