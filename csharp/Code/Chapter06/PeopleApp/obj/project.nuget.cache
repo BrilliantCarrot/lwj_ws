@@ -1,8 +1,13 @@
 {
   "version": 2,
-  "dgSpecHash": "LEggqA9k5nIS7eDHC0hhVPdiifiLp3kdycIudfkZvIQ1FCDDg96wuCnTcoAC5FxgUWOKCRjM3jmMiezp3aO/vw==",
+  "dgSpecHash": "4SqxFDKlNwas9e3ht0HpggX7AOECWQKhz4dIz7LkYPfvIeKG7EpOvuXtmTTbBYQlc0gd+xUd27vIIY4gKctMzg==",
   "success": true,
   "projectFilePath": "C:\\Users\\leeyj\\lyj_ws\\csharp\\Code\\Chapter06\\PeopleApp\\PeopleApp.csproj",
-  "expectedPackageFiles": [],
+  "expectedPackageFiles": [
+    "C:\\Users\\leeyj\\.nuget\\packages\\microsoft.netcore.app.ref\\6.0.26\\microsoft.netcore.app.ref.6.0.26.nupkg.sha512",
+    "C:\\Users\\leeyj\\.nuget\\packages\\microsoft.windowsdesktop.app.ref\\6.0.26\\microsoft.windowsdesktop.app.ref.6.0.26.nupkg.sha512",
+    "C:\\Users\\leeyj\\.nuget\\packages\\microsoft.aspnetcore.app.ref\\6.0.26\\microsoft.aspnetcore.app.ref.6.0.26.nupkg.sha512",
+    "C:\\Users\\leeyj\\.nuget\\packages\\microsoft.netcore.app.host.win-x64\\6.0.26\\microsoft.netcore.app.host.win-x64.6.0.26.nupkg.sha512"
+  ],
   "logs": []
 }
