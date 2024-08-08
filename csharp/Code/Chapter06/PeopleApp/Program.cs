@@ -27,3 +27,14 @@ Person baby3 = harry * mary;
 //   arg1: harry.Children[0].Name);
 
 WriteLine($"5! is {Person.Factorial(5)}");
+
+System.Collections.Hashtable lookupObject = new();
+lookupObject.Add(key: 1, value: "Apha");
+lookupObject.Add(key: 2, value: "Beat");
+lookupObject.Add(key: 3, value: "Gamma");
+lookupObject.Add(key: harry, value: "Delta");
+
+int key = 2;
+WriteLine(format: "key {0} has value: {1}", arg0: harry, arg1: lookupObject[key]);
+
+WriteLine(format: "key {0} has value {1}", argo: harry, arg1: lookupObject[harry]);
