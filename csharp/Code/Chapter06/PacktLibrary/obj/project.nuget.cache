@@ -1,12 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "iNVlF22g/rAWI12k7e2Eqs/9xpx8n/zVJk+AF7HREOWi/9DjnuRYaxVHr0OZlwPw/1iEQVKCbc4hHqNkZmIHWA==",
+  "dgSpecHash": "Ukngzzx4loKkUYRJhf2Fa5zyA58QpDnHk1LjnpNIvMcJoKWomBpUOp0f0gx5eV2wdv+416NGpzMo/ASBSRUS8w==",
   "success": true,
   "projectFilePath": "C:\\Users\\leeyj\\lyj_ws\\csharp\\Code\\Chapter06\\PacktLibrary\\PacktLibrary.csproj",
-  "expectedPackageFiles": [
-    "C:\\Users\\leeyj\\.nuget\\packages\\microsoft.netcore.app.ref\\6.0.26\\microsoft.netcore.app.ref.6.0.26.nupkg.sha512",
-    "C:\\Users\\leeyj\\.nuget\\packages\\microsoft.windowsdesktop.app.ref\\6.0.26\\microsoft.windowsdesktop.app.ref.6.0.26.nupkg.sha512",
-    "C:\\Users\\leeyj\\.nuget\\packages\\microsoft.aspnetcore.app.ref\\6.0.26\\microsoft.aspnetcore.app.ref.6.0.26.nupkg.sha512"
-  ],
+  "expectedPackageFiles": [],
   "logs": []
 }
