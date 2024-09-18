@@ -73,6 +73,12 @@ Lf = detectability(Pd,Pfa,N,'Swerling1') - detectability(Pd,Pfa,N,'Swerling0');
 radarbudgetplot([D0 -Gi Lf], {'Single-pulse steady target','Pulse integration gain','Fluctuation loss'});
 title('Detectability Factor')
 
+% Substitute the detectability factor into the range form of the radar equation 
+% as the minimum required SNR to evaluate the actual maximum range of the system.
+% radareqrng(lambda,DN,Pt,tau,'Gain',G,'Ts',Ts,'RCS',rcs,'Loss',L,'unitstr','km')
+
+
+
 % 레이더 방정식(radar range equation)을 이용하여 시스템의 최대 탐지 거리를 계산
 RE = radareqrng(lambda,DN,Pt,tau,'Gain',G,'Ts',Ts,'RCS',rcs,'Loss',L,'unitstr','km');
 
