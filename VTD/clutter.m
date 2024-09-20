@@ -2,9 +2,8 @@ clear;
 clc;
 close all;
 
-%% constantGammaClutter에 대한 매트랩 예시
-
-%% --------------------Simulate Clutter for System with Known Power--------------------
+%% << Simulate Clutter for System with Known Power >> %%
+% constantGammaClutter에 대한 매트랩 예시
 
 % Simulate the clutter return from terrain with a gamma value of 0 dB. 
 % The effective transmitted power of the radar system is 5 kW.
@@ -102,7 +101,7 @@ response = phased.RangeDopplerResponse('RangeMethod', 'FFT', 'DopplerOutput', 'F
 % Compute and plot the Range-Doppler map
 plotResponse(response, sig2D);
 
-%% --------------------Simulate Clutter Using Known Transmit Signal--------------------
+%% Simulate Clutter Using Known Transmit Signal %%
 
 % Simulate the clutter return from terrain with a gamma value of 0 dB. 
 % You input the transmit signal of the radar system when creating clutter. 
@@ -162,11 +161,10 @@ response = phased.AngleDopplerResponse('SensorArray',ula,...
     'OperatingFrequency',fc,'PropagationSpeed',c,'PRF',prf);
 plotResponse(response,shiftdim(sig(20,:,:)),'NormalizeDoppler',true)
 
-
-%% 매트랩 웹 페이지 제공 클러터 생성 튜토리얼
-
-% surfaceReflectivityLand를 통한 Constant Gamma Clutter 구현 예시
-
+% ------------------------------------------------------------------------------------------------------------------------------ %
+%% << 매트랩 웹 페이지 제공 클러터 생성 튜토리 >>
+% ------------------------------------------------------------------------------------------------------------------------------ %
+%% 1. 필요 파라미터 설정
 % Introduction to Radar Scenario Clutter Simulation
 
 % This example shows how to generate monostatic surface clutter signals and detections in a radar scenario. 
@@ -180,9 +178,7 @@ plotResponse(response,shiftdim(sig(20,:,:)),'NormalizeDoppler',true)
 % and enabling clutter generation for a specific radar in the scene.
 % Select a Radar Model
 
-clear;
-clc;
-close all;
+
 
 mountAng = [-90 10 0];
 fc = 5e9;
@@ -252,7 +248,7 @@ clut = clutterGenerator(scenario,rdr,'Resolution',clutRes,'UseBeam',true,'RangeL
 % sufficient to completely capture the effect of clutter interference on the detectability of target platforms 
 % when using a radarDataGenerator.
 
-%% Visualize and Run Scenario
+%% 2. Visualize and Run Scenario
 % Theater Plotter
 % The theaterPlot object can be used along with a variety of theater plotters to create customizable visual representations 
 % of the scenario. Start by creating the theater plot.
@@ -279,7 +275,7 @@ dets = detect(scenario);
 % plotDetection(detPlotter,detpos)
 % plotSurface(surfPlotter,surfacePlotterData(scenario.SurfaceManager))
 
-%% Simulate Clutter IQ Signals
+%% 3. Simulate Clutter IQ Signals
 % Now you will create a radarTransceiver with similar radar system parameters and simulate clutter at the signal level. 
 % The function helperMakeTransceiver is provided to quickly create a transceiver with the desired system parameters.
 
@@ -323,7 +319,7 @@ PH = iqsig{1};
 % 
 % helperTheaterPlot(clut)
 
-%% Simulate Surface Range Profiles for a Scanning Radar
+%% 4. Simulate Surface Range Profiles for a Scanning Radar
 % The automatic mainlobe clutter option supports scanning radars. In this section you will re-create the scenario 
 % to use a stationary scanning linear array that collects a single pulse per scan position. 
 % You will add a few stationary surface targets and view the resulting range profiles.
@@ -357,43 +353,43 @@ platform(scenario,'Position',[8e3  2e3 0],'Signatures',rcsSignature('Pattern',tg
 
 rangeGates = (0:ceil((unambRange-rngRes)/rngRes))*rngRes;
 frame = 0;
-while advance(scenario)
-    frame = frame + 1;
-    
-    [iqsig,info] = receive(scenario);
-    
-    lookAng(:,frame) = info.ElectronicAngle;
-    rangeProfiles(:,frame) = 20*log10(abs(sum(iqsig{1},2)));
-    
-    if frame == 1
-        % Initial plotting
-        ax(1) = subplot(1,2,1);
-        helperPlotClutterScenario(scenario,[],[],ax(1))        
-        ax(2) = subplot(1,2,2);
-        rpHndl = plot(ax(2),rangeGates/1e3,rangeProfiles(:,frame));
-        tHndl=title(sprintf('Frame: %d, Azimuth: %.1f deg',frame,lookAng(1,frame)));
-        grid on
-        xlabel('Range (km)')
-        ylabel('Range Profile (dBW)')
-    else
-        % Update plots
-        helperPlotClutterScenario(scenario,[],[],ax(1))
-        rpHndl.YData = rangeProfiles(:,frame);
-        tHndl.String = sprintf('Frame: %d, Azimuth: %.1f deg',frame,lookAng(1,frame));
-    end
-    
-    drawnow limitrate nocallbacks
-end 
+% while advance(scenario)
+%     frame = frame + 1;
+% 
+%     [iqsig,info] = receive(scenario);
+% 
+%     lookAng(:,frame) = info.ElectronicAngle;
+%     rangeProfiles(:,frame) = 20*log10(abs(sum(iqsig{1},2)));
+% 
+%     if frame == 1
+%         % Initial plotting
+%         ax(1) = subplot(1,2,1);
+%         helperPlotClutterScenario(scenario,[],[],ax(1))        
+%         ax(2) = subplot(1,2,2);
+%         rpHndl = plot(ax(2),rangeGates/1e3,rangeProfiles(:,frame));
+%         tHndl=title(sprintf('Frame: %d, Azimuth: %.1f deg',frame,lookAng(1,frame)));
+%         grid on
+%         xlabel('Range (km)')
+%         ylabel('Range Profile (dBW)')
+%     else
+%         % Update plots
+%         helperPlotClutterScenario(scenario,[],[],ax(1))
+%         rpHndl.YData = rangeProfiles(:,frame);
+%         tHndl.String = sprintf('Frame: %d, Azimuth: %.1f deg',frame,lookAng(1,frame));
+%     end
+% 
+%     drawnow limitrate nocallbacks
+% end 
+% 
+% figure
+% imagesc(lookAng(1,:),rangeGates/1e3,rangeProfiles);
+% set(gca,'ydir','normal')
+% xlabel('Azimuth Scan Angle (deg)')
+% ylabel('Range (km)')
+% title('Clutter Range Profiles (dBW)')
+% colorbar
 
-figure
-imagesc(lookAng(1,:),rangeGates/1e3,rangeProfiles);
-set(gca,'ydir','normal')
-xlabel('Azimuth Scan Angle (deg)')
-ylabel('Range (km)')
-title('Clutter Range Profiles (dBW)')
-colorbar
-
-%% Simulate Smooth Surface Clutter for a Range-Doppler Radar
+%% 5. Simulate Smooth Surface Clutter for a Range-Doppler Radar
 % Up till now you have simulated surface clutter using the "uniform" scatterer distribution mode. For flat-Earth scenarios,
 % the radarTransceiver radar model, and smooth surfaces (no terrain or spectral model associated with the surface),
 % a faster range-Doppler-adaptive mode is available which uses a minimal number of clutter scatterers
@@ -424,9 +420,11 @@ platform(scenario,'Position',[8e3  2e3 0],'Signatures',rcsSignature('Pattern',tg
 
 iqsig = receive(scenario);
 PH = iqsig{1};
-helperPlotRDM(PH,rngRes,prf,numPulses);
+% helperPlotRDM(PH,rngRes,prf,numPulses);
 
-%% Clutter from Terrain Data
+%% << Clutter from Terrain Data >>
+% 지형 클러터 생성 단계로 1,3만 필요
+% -------------------------------------------------------------------------------------------------------------- %
 % In the previous sections, you simulated homogeneous clutter from an unbounded flat surface. In this section, 
 % you will use a DTED file to simulate clutter return from real terrain data in an Earth-centered scenario. 
 % You will collect two frames of clutter return - one with shadowing enabled and one without shadowing, and compare the results.
@@ -435,14 +433,20 @@ helperPlotRDM(PH,rngRes,prf,numPulses);
 
 scenario = radarScenario('UpdateRate',0,'IsEarthCentered',true);
 
-refLLA = [39.43; -105.84];
-bdry = refLLA + [0 1;-1/2 1/2]*0.15;
+% refLLA_test = [39.43; -105.84];
+% bdry_test = refLLA_test + [0 1;-1/2 1/2]*0.15;
 
-% 창도군 지역 DTED 적용 법 알아볼 것
-srf = landSurface(scenario,'Terrain','n39_w106_3arc_v2.dt1','Boundary',bdry,'RadarReflectivity',refl);
+refLLA = [38.5001; 127.4999];
+bdry = refLLA + [0 1;-1/2 1/2]*0.15;        % refLLA 좌표를 토대로 주변 영역을 포함하는 바운더리 설정
 
-srfHeight = height(srf,refLLA);
-rdrAlt = srfHeight + rdrAlt;
+% srf = landSurface(scenario,'Terrain','n39_w106_3arc_v2.dt1','Boundary',bdry_test,'RadarReflectivity',refl);
+srf = landSurface(scenario,'Terrain','NK_DTED.dt2','Boundary', bdry, 'RadarReflectivity', refl);
+
+% rdrAlt = 1500;
+rdrAlt = 1000;      % 고도를 높이면 더 잘보임
+
+% srfHeight = height(srf,refLLA);
+% rdrAlt = srfHeight + rdrAlt;
 rdrPos1 = [refLLA; rdrAlt];
 
 rdrVelWest = [-rdrSpd 0 0];
@@ -458,9 +462,14 @@ ringClutterRegion(clut,minrad,maxrad,azspan,azc);
 
 iqsig = receive(scenario);
 PH_withShadowing = iqsig{1};
-
 helperPlotClutterScenario(scenario)
 title('Clutter patches - with terrain shadowing')
+
+clut.UseShadowing = false;
+iqsig = receive(scenario);
+PH_noShadowing = iqsig{1};
+helperPlotClutterScenario(scenario)
+title('Clutter patches - without terrain shadowing')
 
 figure
 subplot(1,2,1)
@@ -478,7 +487,126 @@ set(gcf,'Position',get(gcf,'Position')+[0 0 560 0])
 % and how to specify regions of interest for clutter generation. Surface shadowing is simulated 
 % when generating clutter returns from surfaces with terrain, and a faster range-Doppler-adaptive mode can be used 
 % for flat-Earth scenarios with smooth surfaces.
-%% 
+
+%% 1. 북한 창도군 지형 DTED에 클러터 적용
+% 창도군 지형 데이터 Import(80km*80km의 경우 데이터 로드 5분 소요)
+
+close all;
+% csv 파일로부터 각 셀이 탭으로 구분된 데이터를 생성
+data = readtable(['C:/Users/leeyj/OneDrive - 인하대학교/School/과제/[국방 수직이착륙기 특화연구센터(VTD-13)]/' ...
+    '자료/NK_Flippped_DEM_2.csv'], 'Delimiter', '\t', 'ReadVariableNames', false);
+% 2. 경도, 위도, 고도 데이터를 담을 빈 행렬 선언(원본 데이터와 동일 크기)
+longitude_table = zeros(height(data), width(data));
+latitude_table = zeros(height(data), width(data));
+altitude_table = zeros(height(data), width(data));
+% 3. 각 행을 반복하며 경도, 위도, 고도 데이터를 추출
+for i = 1:height(data)      % 30 행
+    % 한 행의 데이터를 가져오기
+    row_data = table2array(data(i,:));       % 한 행으로만 이루어진 row_data 변수
+    % 각 열에 대해 반복
+    for j = 1:width(row_data)       % 20 열
+        % 각 셀 데이터를 문자형으로 변환
+        current_data = char(row_data{j});
+        % 데이터를 쉼표로 분리하고 문자를 수치로 변경하여 경도, 위도, 고도 정보 담긴 테이블로 저장
+        splitted_data = strsplit(current_data, ',');
+        splitted_data = str2double(splitted_data);
+        longitude_table(i,j) = splitted_data(1);
+        latitude_table(i,j) = splitted_data(2);
+        altitude_table(i,j) = splitted_data(3);
+    end
+end
+
+%% 2. 클러터 생성에 필요한 파라미터 입력 및 실행
+
+% 범위를 제한하여 바운더리 설정 후 해당 영역에서 클러터 시각화
+refLLA = [mean(latitude_table(:)); mean(longitude_table(:))];
+bdry = refLLA + [0 1;-1/2 1/2]*0.15;
+
+mountAng = [0 0 0];
+fc = 5e9;
+rngRes = 150;
+prf = 12e3;
+numPulses = 64;
+fov = [10 10];
+beamwidth3dB = fov;
+angRes = fov;
+c = physconst('lightspeed');
+lambda = freq2wavelen(fc);
+rangeRateRes = lambda/2*prf/numPulses;
+unambRange = time2range(1/prf);
+unambRadialSpd = dop2speed(prf/4,lambda);
+cpiTime = numPulses/prf;
+rdr = radarDataGenerator(1,'No scanning','UpdateRate',1/cpiTime,'MountingAngles',mountAng,...
+    'DetectionCoordinates','Scenario','HasINS',true,'HasElevation',true,'HasFalseAlarms',false, ...
+    'HasRangeRate',true,'HasRangeAmbiguities',true,'HasRangeRateAmbiguities',true, ...
+    'MaxUnambiguousRadialSpeed',unambRadialSpd,'MaxUnambiguousRange',unambRange,'CenterFrequency',fc, ...
+    'FieldOfView',fov,'AzimuthResolution',angRes(1),'ElevationResolution',angRes(2), ...
+    'RangeResolution',rngRes,'RangeRateResolution',rangeRateRes);
+
+scenario = radarScenario('UpdateRate',0,'IsEarthCentered',true);
+
+
+rdrLon = 127.4999;      % 평균 경도
+rdrLat = 38.5001;        % 평균 위도
+rdrAlt = 471.7196;    % 평균 고도
+% rdrAlt = 1500.7196;    % 평균 고도
+rdrSpd = 0;         % 고정형 레이더
+rdrDiveAng = 0;
+rdrPos = [rdrLat; rdrLon; rdrAlt];
+rdrVel = [0 0 0];       % 고정형 레이더
+rdrOrient = rotz(90).';
+% rdrTraj = kinematicTrajectory('Position',rdrPos,'Velocity',rdrVel,'Orientation',rdrOrient);
+% platform(scenario,'Sensors',rdr,'Trajectory',rdrTraj);
+
+refl = surfaceReflectivityLand('Model','ConstantGamma','Gamma',-20);
+srf = landSurface(scenario,'Terrain','NK_DTED.dt2','Boundary', bdry, 'RadarReflectivity', refl);
+clutRes = rngRes/2;
+clutRngLimit = 12e3;
+
+useCustomElem = true;
+rdriq = helperMakeTransceiver(beamwidth3dB,fc,rngRes,prf,useCustomElem);
+rdriq.MountingAngles = mountAng;
+rdriq.NumRepetitions = numPulses;
+
+beamwidthNN = 2.5*beamwidth3dB;
+minel = -mountAng(2) - beamwidthNN(2)/2;
+minrad = -rdrAlt/tand(minel);
+
+maxrad = sqrt(clut.RangeLimit^2 - rdrAlt^2);
+
+azspan = beamwidthNN(1);
+azc = 0;
+
+rdrPos1 = rdrPos;
+rdrVelWest = [-rdrSpd 0 0];
+toa = [0; 1];
+rdrPos2 = enu2lla(rdrVelWest, rdrPos1.', 'ellipsoid').';
+rdrTrajGeo = geoTrajectory('Waypoints', [rdrPos1, rdrPos2].', 'TimeOfArrival', toa, 'ReferenceFrame', 'ENU');
+
+platform(scenario, 'Sensors', rdriq, 'Trajectory', rdrTrajGeo);
+
+clut = clutterGenerator(scenario,rdr,'Resolution',clutRes,'UseBeam',true,'RangeLimit',clutRngLimit);
+
+%% 3. DTED에 대해 시각화
+
+ringClutterRegion(clut,minrad,maxrad,azspan,azc);
+
+helperPlotClutterScenario(scenario)
+title('Clutter patches - with terrain shadowing')
+
+iqsig = receive(scenario);
+PH_withShadowing = iqsig{1};
+figure
+subplot(1,2,1)
+helperPlotRDM(PH_withShadowing,rngRes,prf,numPulses)
+title('RDM - with terrain shadowing')
+
+
+% 바운더리 설정용 임시 코드
+% refLLA = [mean(latitude_table(:)); mean(longitude_table(:))];
+% bdry = refLLA + [0 1;-1/2 1/2]*0.15;
+
+%% constantGammaClutter
 
 % clear;
 % clc;
@@ -540,28 +668,29 @@ set(gcf,'Position',get(gcf,'Position')+[0 0 560 0])
 %     'OperatingFrequency',fc,'PropagationSpeed',c,'PRF',prf);
 % plotResponse(response,shiftdim(sig(20,:,:)),'NormalizeDoppler',true)
 
-%% surfacegamma - gamma value for different terrains
+% surfacegamma - gamma value for different terrains
 
-fc = 3e9;
-g = surfacegamma('Flatland',fc);
-clutter_2 = constantGammaClutter('Gamma',g, ...
-     ...
-    'OperatingFrequency',fc);
-x = clutter_2();
-r = (0:numel(x)-1)/(2*clutter_2.SampleRate) * ...
-    clutter_2.PropagationSpeed;
-plot(r,abs(x))
-xlabel('Range (m)')
-ylabel('Clutter Magnitude (V)')
-title('Clutter Return vs. Range')
+% fc = 3e9;
+% g = surfacegamma('Flatland',fc);
+% clutter_2 = constantGammaClutter('Gamma',g, ...
+%      ...
+%     'OperatingFrequency',fc);
+% x = clutter_2();
+% r = (0:numel(x)-1)/(2*clutter_2.SampleRate) * ...
+%     clutter_2.PropagationSpeed;
+% plot(r,abs(x))
+% xlabel('Range (m)')
+% ylabel('Clutter Magnitude (V)')
+% title('Clutter Return vs. Range')
 
-%% test 2
 
-  fc = 300e6;
-  g = surfacegamma('woods',fc);
-  hclutter = constantGammaClutter('Gamma',g,...
-          'Sensor',phased.CosineAntennaElement,'OperatingFrequency',fc);
-  x = step(hclutter);
-  r = (0:numel(x)-1)/(2*hclutter.SampleRate)*hclutter.PropagationSpeed;
-  plot(r,abs(x)); xlabel('Range (m)'); ylabel('Clutter Magnitude (V)');
-  title('Clutter Return vs. Range');
+% surfacegamma Test 2
+
+% fc = 300e6;
+% g = surfacegamma('woods',fc);
+% hclutter = constantGammaClutter('Gamma',g,...
+%       'Sensor',phased.CosineAntennaElement,'OperatingFrequency',fc);
+% x = step(hclutter);
+% r = (0:numel(x)-1)/(2*hclutter.SampleRate)*hclutter.PropagationSpeed;
+% plot(r,abs(x)); xlabel('Range (m)'); ylabel('Clutter Magnitude (V)');
+% title('Clutter Return vs. Range');
