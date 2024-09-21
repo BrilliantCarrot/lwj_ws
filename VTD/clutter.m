@@ -232,8 +232,16 @@ rdrplat = platform(scenario,'Sensors',rdr,'Trajectory',rdrTraj);
 refl = surfaceReflectivityLand('Model','ConstantGamma','Gamma',-20);
 srf = landSurface(scenario,'RadarReflectivity',refl);
 
+% The ReferenceHeight property gives the constant height of the surface when no terrain is specified, 
+% or the origin height to which terrain is referenced if terrain is specified. The ReflectivityMap property is relevant only 
+% when a custom reflectivity model is used, and allows different reflectivity curves to be associated to 
+% different parts of the surface. The Boundary property gives the rectangular boundary of the surface in two-point form. 
+% Elements of Boundary can be +/-inf to indicate the surface is unbounded in one or more directions. 
+% Check the boundary of the surface created above to see that it is unbounded in all directions.
 srf.Boundary
 
+% Access the SurfaceManager property of the scenario to see the surface objects that have been added, 
+% as well as any additional options related to the scenario surface.
 scenario.SurfaceManager
 
 % Enable Clutter Generation
@@ -290,19 +298,31 @@ rdriq = helperMakeTransceiver(beamwidth3dB,fc,rngRes,prf,useCustomElem);
 rdriq.MountingAngles = mountAng;
 rdriq.NumRepetitions = numPulses;
 
+% Re-create the same scenario, using this new radar model. Start by calling release on System Objects that will be re-used.
+
 release(rdrTraj)
 scenario = radarScenario('UpdateRate',0,'IsEarthCentered',false);
 platform(scenario,'Sensors',rdriq,'Trajectory',rdrTraj);
 landSurface(scenario,'RadarReflectivity',refl);
 
+% Enable clutter generation for the radar. This time, disable the beam footprint clutter region 
+% in favor of a custom ring-shaped region.
+
 clutterGenerator(scenario,rdriq,'Resolution',clutRes,'UseBeam',false,'RangeLimit',clutRngLimit);
 
-clut = getClutterGenerator(scenario,rdriq);
+% If the clutterGenerator method was called without any output argument, as above, 
+% the handle to the constructed ClutterGenerator may still be found with the scenario getClutterGenerator method 
+% by passing in a handle to the associated radar.
 
+clut = getClutterGenerator(scenario,rdriq);
+% After creating the ClutterGenerator, you can use the ringClutterRegion method to create a null-to-null footprint region 
+% for clutter generation. Use a simple estimate of the null-to-null beamwidth as about 2.5 times the 3 dB beamwidth, 
+% then find the minimum elevation angle to encompass the near edge of the beam, and 
+% finally convert that to a minimum ground range for the region.
 beamwidthNN = 2.5*beamwidth3dB;
 minel = -mountAng(2) - beamwidthNN(2)/2;
 minrad = -rdrAlt/tand(minel);
-
+% For the max radius parameter, simply find the ground range corresponding to the clutter range limit specified earlier.
 maxrad = sqrt(clut.RangeLimit^2 - rdrAlt^2);
 
 azspan = beamwidthNN(1);
@@ -422,7 +442,7 @@ iqsig = receive(scenario);
 PH = iqsig{1};
 % helperPlotRDM(PH,rngRes,prf,numPulses);
 
-%% << Clutter from Terrain Data >>
+%% 6. Clutter from Terrain Data 
 % 지형 클러터 생성 단계로 1,3만 필요
 % -------------------------------------------------------------------------------------------------------------- %
 % In the previous sections, you simulated homogeneous clutter from an unbounded flat surface. In this section, 
@@ -458,16 +478,18 @@ platform(scenario,'Sensors',rdriq,'Trajectory',rdrTrajGeo);
 
 clut = clutterGenerator(scenario,rdriq,'Resolution',clutRes,'UseBeam',false,'RangeLimit',clutRngLimit);
 
+
+
 ringClutterRegion(clut,minrad,maxrad,azspan,azc);
 
-iqsig = receive(scenario);
-PH_withShadowing = iqsig{1};
+iqsig_withShadow = receive(scenario);
+PH_withShadowing = iqsig_withShadow{1};
 helperPlotClutterScenario(scenario)
 title('Clutter patches - with terrain shadowing')
 
 clut.UseShadowing = false;
-iqsig = receive(scenario);
-PH_noShadowing = iqsig{1};
+iqsig_noShadow = receive(scenario);
+PH_noShadowing = iqsig_noShadow{1};
 helperPlotClutterScenario(scenario)
 title('Clutter patches - without terrain shadowing')
 
@@ -488,8 +510,8 @@ set(gcf,'Position',get(gcf,'Position')+[0 0 560 0])
 % when generating clutter returns from surfaces with terrain, and a faster range-Doppler-adaptive mode can be used 
 % for flat-Earth scenarios with smooth surfaces.
 
-%% 1. 북한 창도군 지형 DTED에 클러터 적용
-% 창도군 지형 데이터 Import(80km*80km의 경우 데이터 로드 5분 소요)
+%% << 북한 창도군 지형 DTED에 클러터 적용 >>
+%% 1. 창도군 지형 데이터 Import(80km*80km의 경우 데이터 로드 5분 소요)
 
 close all;
 % csv 파일로부터 각 셀이 탭으로 구분된 데이터를 생성

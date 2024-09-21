@@ -72,6 +72,8 @@ for ind = 1:numel(plats)
         continue
     end
     
+    % 클러터의 정보가 clutter에 담겨있음
+    % 그러므로 clutter에 대해서 이 함수에서 시각화를 수행
     clutter = scene.getClutterGenerator(plats{ind}.Sensors{1});
     
     if isempty(clutter)
@@ -120,7 +122,7 @@ for ind = 1:numel(plats)
             end
         end
         plot3(lastPatches(1,:),lastPatches(2,:),lastPatches(3,:),...
-            'Marker','.','LineStyle','none','MarkerEdgeColor','cyan','markersize',6);
+            'Marker','.','LineStyle','none','MarkerEdgeColor','green','markersize',6);
     end
     
     pos = sdata.Position;
