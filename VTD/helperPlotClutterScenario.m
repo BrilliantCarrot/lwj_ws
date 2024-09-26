@@ -94,7 +94,7 @@ for ind = 1:numel(plats)
         sdata.Beam = sd0.Beam;
         sdata.LookAngleSensor = sd0.LookAngleSensor;
 
-        % Convert position, velocity, and the sensor frame basis to ECEF
+        % Convert position, velocity, and t2he sensor frame basis to ECEF
         sdata.Position = fusion.internal.frames.lla2ecef(sd0.Position.');
         R = fusion.internal.frames.enu2ecefrotmat(sd0.Position(1),sd0.Position(2));
         sdata.Velocity = R*sd0.Velocity;
