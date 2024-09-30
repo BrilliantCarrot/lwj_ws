@@ -379,6 +379,7 @@ PH_noShadowing = iqsig_noShadow{1};
 helperPlotClutterScenario(scenario)
 title('Clutter patches - without terrain shadowing')
 
+% Range-Doppler Map 상에서 [dbw]로 표현되는 신호의 세기를 시각화
 figure
 % subplot(1,2,1)
 helperPlotRDM(PH_withShadowing,rngRes,prf,numPulses)
@@ -397,6 +398,8 @@ title('RDM - without terrain shadowing')
 % and how to specify regions of interest for clutter generation. Surface shadowing is simulated 
 % when generating clutter returns from surfaces with terrain, and a faster range-Doppler-adaptive mode can be used 
 % for flat-Earth scenarios with smooth surfaces.
+
+%% << CFAR Detection >>
 
 %% << 북한 창도군 지형 DTED에 클러터 적용 >>
 %% 1. 창도군 지형 데이터 Import(80km*80km의 경우 데이터 로드 5분 소요)
