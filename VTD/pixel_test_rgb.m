@@ -1,4 +1,6 @@
-%% 1개의 이미지에만 대해 픽셀 검출흑백)
+% RGB를 통한 픽셀 검출
+
+%% 1. 1개의 이미지에만 대해 픽셀 검출
 % 코드 경로: C:/Users/leeyj/lab_ws/data/vtd/EO
 
 clear;
@@ -14,7 +16,7 @@ close all;
 % img_bwarea = imread("../data/bwarea.png");
 
 % img = imread("./fog/land/temp/01.png");
-img = imread("C:/Users/leeyj/lab_ws/data/vtd/EO/distance/new_0/01.png");
+img = imread("C:/Users/leeyj/lab_ws/data/vtd/EO/distance/new_0/23.png");
 % figure
 % imshow(img);
 % title("원본 이미지");
@@ -55,7 +57,7 @@ binaryImg = img(:,:,1) >= lower_bound(1) & img(:,:,1) <= upper_bound(1) & ...
 % imshow(binaryImg);
 % title("이진화 적용 이미지");
 
-binaryImg = bwareaopen(binaryImg,5);    % 특정 픽셀보다 작은 인식 결과는 제외
+binaryImg = bwareaopen(binaryImg,2);    % 특정 픽셀보다 작은 인식 결과는 제외
 
 % figure
 % imshow(binaryImg);
@@ -75,16 +77,16 @@ contours = bwperim(binaryImg);
 % title("경계영역만 표현")
 
 % 원 이미지에 테두리를 그려 검출된 헬기 픽셀을 시각화
-% figure
-% imshow(img);
-% hold on;
-% visboundaries(contours, 'Color', 'r');
-% title("픽셀 구분 최종 결과");
-% hold off;
+figure
+imshow(img);
+hold on;
+visboundaries(contours, 'Color', 'r');
+title("픽셀 구분 최종 결과");
+hold off;
 
 fprintf('헬기로 인식된 픽셀의 총 갯수: %d\n', unityPixelsNum);
 
-%% 반복문으로 이미지 파일들에 대해 개별 픽셀 검출 수행
+%% 2. 반복문으로 이미지 파일들에 대해 개별 픽셀 검출 수행
 
 clear;
 clc;
@@ -93,21 +95,23 @@ close all;
 % 경로 설정
 % 파이썬 opencv를 통해 전처리된(마스킹된) 이미지에 대하여 픽셀 검출
 % 파이썬 실행 후 이 매트랩 파일을 실행
-path = './clear/final/180/%02d.png';      % vscode를 통해 미리 생성된 마스킹된 결과 이미지가 있는 경로
-num_files = 19;
+path = 'C:/Users/leeyj/lab_ws/data/vtd/EO/distance/new_0/%02d.png';      % vscode를 통해 미리 생성된 마스킹된 결과 이미지가 있는 경로
+% num_files = 19;
+num_files = 30;
 
 % 결과를 저장할 테이블 초기화
 % results = table('Size', [num_files, 2], 'VariableTypes', {'string', 'double'}, 'VariableNames', {'ImageName', 'UnityPixelsNum'});
 
 % 결과를 저장할 테이블 초기화
-results = table('Size', [num_files, 1], 'VariableTypes', {'double'}, 'VariableNames', {'UnityPixelsNum'});
+results_devide = table('Size', [num_files, 1], 'VariableTypes', {'double'}, 'VariableNames', {'UnityPixelsNum'});
+results_original = table('Size', [num_files, 1], 'VariableTypes', {'double'}, 'VariableNames', {'HelicopterPixelsNum'});
 
 for i = 1:num_files
     img_name = sprintf(path, i-1);
     img = imread(img_name);
 
     % forest
-    upper_bound = [80, 70, 60];
+    upper_bound = [50, 50, 50];
     lower_bound = [0, 0, 0];
     
 
@@ -115,7 +119,7 @@ for i = 1:num_files
                 img(:,:,2) >= lower_bound(2) & img(:,:,2) <= upper_bound(2) & ...
                 img(:,:,3) >= lower_bound(3) & img(:,:,3) <= upper_bound(3);
 
-    binaryImg = bwareaopen(binaryImg, 250);    % 특정 픽셀보다 작은 인식 결과는 제외
+    binaryImg = bwareaopen(binaryImg, 2);    % 특정 픽셀보다 작은 인식 결과는 제외
 
     % 이진화와 불필요 픽셀을 모두 제거한 결과 픽셀들의 sum을 구함
     helicopterPixels = sum(binaryImg(:));
@@ -125,8 +129,8 @@ for i = 1:num_files
     
     % 결과를 테이블에 저장
     % results.ImageName(i) = {img_name};    % 열이 2개 테이블인 경우
-    results.UnityPixelsNum(i) = unityPixelsNum;
-    
+    results_original.HelicopterPixelsNum(i) = helicopterPixels;
+    results_devide.UnityPixelsNum(i) = unityPixelsNum;
 
     % 결과 시각화
     % contours = bwperim(binaryImg);
@@ -139,12 +143,8 @@ for i = 1:num_files
     % hold off;
 end
 
-% 결과 출력
-disp(results);
-
-% 결과를 엑셀이나 csv 파일로 저장
-writetable(results, 'Results.csv');
-
+disp(results_original);
+% writetable(results_original, 'Results.csv');
 close all;
 
 % sky background upper bound 110 110 110
@@ -172,13 +172,13 @@ close all;
 % upper_bound = [135, 125, 85];
 % lower_bound = [0, 0, 0];
 
-%% 히트맵
+%% 3. 히트맵 시각화
 
 clear;
 clc;
 close all;
 
-data = readtable('Pixels.xlsx');
+data = readtable('interpolated_clear_sky.xlsx');
 elevation = data{:, 1};
 azimuth = data{1,:};
 pixel_counts = data{:,:};
@@ -193,7 +193,7 @@ ylabel('Elevation (degrees)');
 title('Helicopter Pixel Count Visualization');
 set(gca, 'YDir', 'normal');
 
-%% 등고선
+%% 4. 등고선으로 시각화
 
 % cl = clear;
 % ml = moderate rain
@@ -271,7 +271,8 @@ forest_pixel_counts_percentage = (forest_pixel_counts/max(cl_pixel_counts(:)))*1
 % pixel_counts = flipud(pixel_counts);
 % pixel_counts_percentage = flipud(pixel_counts_percentage);
 
-% 픽셀 비율에 대해 등고선 Plot
+
+%%%%%%%%%%% 픽셀 비율에 대해 등고선 Plot %%%%%%%%%%
 
 % 기준 픽셀
 figure;
@@ -372,7 +373,7 @@ set(gca, 'YDir', 'reverse');
 % set(gca, 'YDir', 'reverse');
 
 
-%% 최대, 최소, 평균 값 찾기
+%% 5. 최대, 최소, 평균 값 찾기
 
 clear;
 clc;
@@ -423,7 +424,7 @@ fprintf('평균값: %.2f\n', mean_value);
 fprintf('평균값과 가장 가까운 값: %.2f\n', closest_value);
 
 
-%% 거리 증감에 따른 픽셀 개수 변화 시각화
+%% 6. 거리 증감에 따른 픽셀 개수 변화 시각화
 
 clc;
 clear;
@@ -450,17 +451,17 @@ xticks(x);                  % x축 위치 설정
 xticklabels(x_labels);      % x축 레이블 설정
 grid on;
 
-%% 거리 기반 지수함수 피팅
-
-
-
-%% 새로 뽑은 데이터로, 비선형 회귀 함수
+%% << 거리 기반 지수함수 피팅 >>
+%% 1-1. 새로 뽑은 데이터로, 비선형 회귀 함수
 % x와 y 데이터 정의
 % x = (100:100:1500);
 % y = [9858, 2392, 1037, 580, 362, 250, 186, 138, 108, 84, 69, 58, 52, 45, 39];
 
-x = (200:100:1000);
-y = [2392, 1037, 580, 362, 250, 186, 138, 108, 84];
+% x = (200:100:1000);
+% y = [2392, 1037, 580, 362, 250, 186, 138, 108, 84];
+
+x = (300:100:3000);
+y = [2847, 1595, 989, 694, 500, 377, 298, 240, 202, 165, 142, 116, 103, 94, 82, 69, 65, 55, 49, 45, 41, 36, 35, 34, 33, 29, 22, 21];
 
 % 지수함수 모델을 정의하는 익명함수 (a * exp(b * x))
 exp_model = @(a, b, x) a * exp(b * x);
@@ -494,7 +495,7 @@ legend('Original Data', 'Fitted Exponential Curve');
 grid on;
 
 
-%% 새로 뽑은 데이터로, lsqcurvefit
+%% 1-2. 새로 뽑은 데이터로, lsqcurvefit
 
 % 데이터 설정
 x = 100:100:1500; % x값
@@ -525,7 +526,7 @@ ylabel('y');
 legend('Data', 'Exponential Fit');
 grid on;
 
-%% 이전 데이터로
+%% 2. 이전 데이터로
 
 x = (200:100:1100);
 y = [4997, 2182, 1208, 773, 528, 365, 284, 216, 173, 146];
@@ -558,6 +559,40 @@ ylabel('y');
 title('Exponential Fit to Data');
 legend('Original Data', 'Fitted Exponential Curve');
 grid on;
+
+%% << 기하 기반 함수화 >>
+%% 1. 기존 10도 단위 PPM 테이블에 대해 1도 단위로 보간 수행
+
+% 1. 엑셀 파일에서 데이터 불러오기
+filename = 'C:/Users/leeyj/lab_ws/data/vtd/EO/clear/clear sky.xlsx';  % 엑셀 파일 이름
+sheet = 1;  % 첫 번째 시트
+data = readmatrix(filename, 'Sheet', sheet);
+
+% 불러온 데이터의 열과 행 각도 (10도 단위)
+x = -90:10:90;  % 행 각도 (위도)
+y = 0:10:180;   % 열 각도 (경도)
+
+% 데이터에서 필요한 부분만 추출 (두 번째 행 및 열부터 끝까지가 실제 데이터)
+data = data(2:end, 2:end);  % 첫 번째 행, 열은 각도이므로 제외
+
+% 2. 2D 보간 수행 (1도 단위로 보간)
+xq = -90:1:90;   % 1도 단위로 보간된 행 각도 (위도)
+yq = 0:1:180;    % 1도 단위로 보간된 열 각도 (경도)
+
+% 보간 수행 (기본적으로 'linear' 방식)
+[X, Y] = meshgrid(x, y);
+[Xq, Yq] = meshgrid(xq, yq);
+data_interp = interp2(X, Y, data', Xq, Yq, 'linear');
+
+% 보간된 결과를 다시 원래의 행렬로 변환
+data_interp = data_interp';
+
+% 3. 보간된 데이터를 엑셀로 저장
+output_filename = 'interpolated_clear_sky.xlsx';
+writematrix(data_interp, output_filename);
+
+% 결과 출력
+disp('보간된 데이터가 interpolated_clear_sky.xlsx 파일에 저장되었습니다.');
 
 % [height, width, numChannels] = size(img);
 % fprintf('Image size: %d x %d x %d\n', height, width, numChannels);
