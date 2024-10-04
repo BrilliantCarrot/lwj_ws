@@ -519,6 +519,137 @@ title('RDM - with terrain shadowing')
 % refLLA = [mean(latitude_table(:)); mean(longitude_table(:))];
 % bdry = refLLA + [0 1;-1/2 1/2]*0.15;
 
+
+%% << Radar Performance Analysis over Terrain >>
+
+
+rdrppower = 1e3;            % Peak power (W)
+fc = 6e9;                   % Operating frequency (Hz)
+hpbw = [2; 5];              % Half-power beamwidth [azimuth; elevation] (deg)
+rdrpulsew = 1e-6;           % Pulse width (s)
+lambda = freq2wavelen(fc);  % Wavelength (m)
+
+
+rdrgain = beamwidth2gain(hpbw,"CosineRectangular"); % Transmitter and receiver gain (dB)
+
+
+rdrlat = 39.913756;         % Radar latitude (deg)
+rdrlon = -105.118062;       % Radar longitude (deg)
+rdrtowerht = 10;            % Antenna height (m)
+rdralt = 1717 + rdrtowerht; % Radar altitude (m)
+
+
+dtedfile = "n39_w106_3arc_v2.dt1";
+attribution = "SRTM 3 arc-second resolution. Data available from the U.S. Geological Survey.";
+[Zterrain,Rterrain] = readgeoraster(dtedfile,"OutputType","double");
+
+% Visualize the location using the geographic globe plot.
+% addCustomTerrain("southboulder",dtedfile,Attribution=attribution);
+fig = uifigure;
+g = geoglobe(fig,Terrain="southboulder");
+% hold(g,"on")
+% h_rdrtraj = geoplot3(g,rdrlat,rdrlon,rdralt,"ro",LineWidth=6,MarkerSize=10);
+
+
+%%
+
+tlat0 = 39.80384;           % Target initial latitude (deg)
+tlon0 = -105.49916;         % Target initial longitude (deg)
+tht0 = 3000;                % Target initial height (m)
+azs = 1:2:540;              % Target azimuth (deg)
+r = 5000;                   % Target slant range (m)
+
+% Convert from polar coordinates to Cartesian East, North, Up (ENU).
+[X,Y] = pol2cart(deg2rad(azs),r);
+
+% Convert ENU to geodetic.
+Z = linspace(0,1000,numel(azs));
+wgs84 = wgs84Ellipsoid;
+[tlat,tlon,tht] = enu2geodetic(X,Y,Z,tlat0,tlon0,tht0,wgs84);
+
+% Define the target altitude relative to the geoid. 
+talt = tht - egm96geoid(tlat,tlon); % Target altitude (m)
+
+
+fs = 0.1;
+t = (0:length(X)-1)/fs;
+ttraj = geoTrajectory([tlat.' tlon.' tht.'],t,SampleRate=fs);
+
+
+% h_ttraj = geoplot3(g,tlat,tlon,talt,"yo",LineWidth=3);
+% campos(g,39.77114,-105.62662,6670)
+% camheading(g,70)
+% campitch(g,-12)
+
+
+trcs = pow2db(10);          % Target RCS (dBsm)
+
+
+scene = radarScenario(IsEarthCentered=true,UpdateRate=fs,StopTime=t(end));
+rdrplatform = platform(scene,Position=[rdrlat,rdrlon,rdralt],Sensor=radarDataGenerator);
+tplatform = platform(scene,Trajectory=ttraj,Signatures= ...
+    {rcsSignature(Azimuth=[-180 180],Elevation=[-90 90],Pattern=trcs)});
+
+
+
+temp = 21.1;                % Ambient temperature (degrees Celsius)
+gwc = 0.3;                  % Gravimetric water content
+[~,~,epsc] = earthSurfacePermittivity("vegetation",fc,temp,gwc);
+
+
+
+tsnr = -inf(size(t));
+F = zeros(size(t));
+trange = zeros(size(t));
+isVisible = false(size(t));
+idx = 1;
+
+while advance(scene)
+    tpose = pose(tplatform,CoordinateSystem="Geodetic");
+    tpos = tpose.Position;
+    [isVisible(idx),~,~,h] = los2(Zterrain,Rterrain,rdrlat,rdrlon, ...
+        tpos(1),tpos(2),rdralt,tpos(3),"MSL","MSL");
+    hgtStdDev = std(h); 
+    if isVisible(idx)
+        trange(idx) = llarangeangle([rdrlat rdrlon rdralt],tpos,1); 
+        F(idx) = radarpropfactor(trange(idx),fc,rdralt,tpos(3), ...
+            SurfaceRelativePermittivity=epsc,...
+            SurfaceHeightStandardDeviation=hgtStdDev, ...
+            ElevationBeamwidth=hpbw(2));
+    end
+    idx = idx+1;
+end
+
+
+tsnr(isVisible) = radareqsnr(lambda,trange(isVisible).',rdrppower,rdrpulsew,...
+    RCS=trcs,Gain=rdrgain,PropagationFactor=F(isVisible).');
+
+
+
+tsnr_finiteidx = ~isinf(tsnr);
+tsnr_cidx = zeros(size(tsnr));
+cmap = colormap(g);
+numclvls = size(cmap,1);
+tsnr_cidx(tsnr_finiteidx) = discretize(tsnr(tsnr_finiteidx),numclvls-1);
+tsnr_cidx(~tsnr_finiteidx) = numclvls;
+
+delete(h_ttraj);
+hsnr = zeros(size(tsnr));
+for m = 1:numel(tsnr)
+    hsnr(m) = geoplot3(g,tlat(m),tlon(m),talt(m), ...
+        Marker="o",LineWidth=2,MarkerSize=1);
+    if tsnr_finiteidx(m)
+        set(hsnr(m),"Color",cmap(tsnr_cidx(m),:));
+    else
+        set(hsnr(m),"Color","r");
+    end
+end
+
+
+
+
+
+
 %% << Simulate Clutter for System with Known Power >> %%
 % constantGammaClutter에 대한 매트랩 예시
 
