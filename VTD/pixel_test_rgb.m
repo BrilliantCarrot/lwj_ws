@@ -584,15 +584,24 @@ yq = 0:1:180;    % 1도 단위로 보간된 열 각도 (경도)
 [Xq, Yq] = meshgrid(xq, yq);
 data_interp = interp2(X, Y, data', Xq, Yq, 'linear');
 
-% 보간된 결과를 다시 원래의 행렬로 변환
-data_interp = data_interp';
+% 3. 각도를 첫 행과 첫 열에 추가
+data_interp_with_angles = [[NaN, yq];  % 첫 번째 행 (0~180도의 경도)
+                           [xq', data_interp]]; % 첫 번째 열 (위도) 추가
+% 4. 보간된 데이터를 엑셀로 저장
+output_filename = 'C:/Users/leeyj/lab_ws/data/vtd/EO/clear/interpolated_clear_sky_with_angles.xlsx';
+writematrix(data_interp_with_angles, output_filename);
 
-% 3. 보간된 데이터를 엑셀로 저장
-output_filename = 'interpolated_clear_sky.xlsx';
-writematrix(data_interp, output_filename);
 
-% 결과 출력
-disp('보간된 데이터가 interpolated_clear_sky.xlsx 파일에 저장되었습니다.');
+
+% % 보간된 결과를 다시 원래의 행렬로 변환
+% data_interp = data_interp';
+% % 3. 보간된 데이터를 엑셀로 저장
+% output_filename = 'C:/Users/leeyj/lab_ws/data/vtd/EO/clear/interpolated_clear_sky.xlsx';
+% writematrix(data_interp, output_filename);
+% % 결과 출력
+% disp('보간된 데이터가 interpolated_clear_sky.xlsx 파일에 저장되었습니다.');
+
+%% 
 
 % [height, width, numChannels] = size(img);
 % fprintf('Image size: %d x %d x %d\n', height, width, numChannels);
