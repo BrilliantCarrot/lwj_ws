@@ -461,7 +461,8 @@ grid on;
 % y = [2392, 1037, 580, 362, 250, 186, 138, 108, 84];
 
 x = (300:100:3000);
-y = [2847, 1595, 989, 694, 500, 377, 298, 240, 202, 165, 142, 116, 103, 94, 82, 69, 65, 55, 49, 45, 41, 36, 35, 34, 33, 29, 22, 21];
+y = [2847, 1595, 989, 694, 500, 377, 298, 240, 202, 165, 142, 116,...
+    103, 94, 82, 69, 65, 55, 49, 45, 41, 36, 35, 34, 33, 29, 22, 21];
 
 % 지수함수 모델을 정의하는 익명함수 (a * exp(b * x))
 exp_model = @(a, b, x) a * exp(b * x);
@@ -560,11 +561,67 @@ title('Exponential Fit to Data');
 legend('Original Data', 'Fitted Exponential Curve');
 grid on;
 
-%% << 기하 기반 함수화 >>
-%% 1. 기존 10도 단위 PPM 테이블에 대해 1도 단위로 보간 수행
+%% << 함수화 >>
+
+%% 기하, 배경 투명도, 거리에 따른 픽셀 수 검출 함수를 작성
+
+% 테이블을 먼저 입력받음
+
+clear_table = 'C:/Users/leeyj/lab_ws/data/vtd/EO/tables/clear_sky.xlsx';
+forest_table = 'C:/Users/leeyj/lab_ws/data/vtd/EO/tables/forest.xlsx';
+moderate_rain_table = 'C:/Users/leeyj/lab_ws/data/vtd/EO/tables/moderate_rain.xlsx';
+heavy_rain_table = 'C:/Users/leeyj/lab_ws/data/vtd/EO/tables/heavy_rain.xlsx';
+snow_table = 'C:/Users/leeyj/lab_ws/data/vtd/EO/tables/snow.xlsx';
+fog_table = 'C:/Users/leeyj/lab_ws/data/vtd/EO/tables/fog.xlsx';
+cloud_table = 'C:/Users/leeyj/lab_ws/data/vtd/EO/tables/cloud.xlsx';
+sheet = 1;  % 첫 번째 시트
+
+
+% 입력 파라미터의 날씨 및 배경에 따라 조건문을 거쳐 테이블을 선정
+disp("weather conditions: clear, moderate rain, heavy rain, snow, fog, cloud, forest")
+weather = input('Enter the weather conditio: ', 's');
+
+if strcmpi(weather, 'clear')
+    % 각 날씨상황에 맞는 table을 입력받음
+    % table = clear_table;
+    disp("clear 선택됨");
+    table = readmatrix(clear_table, 'Sheet', sheet);
+elseif strcmpi(weather, 'cloudy')
+    disp('The weather is cloudy. It might rain later.');
+    % cloudy에 해당하는 추가 작업 수행
+elseif strcmpi(weather, 'rain')
+    disp('It is raining. Take an umbrella!');
+    % rain에 해당하는 추가 작업 수행
+else
+    disp('Invalid input. Please enter clear, cloudy, or rain.');
+    % 잘못된 입력 처리
+end
+
+
+% 수직이착륙기 기하(고각, 방위각)를 입력받음
+ele = input('Enter elevation: ');
+azi = input('Enter azimuth: ');
+azi = azi+2;
+ele = ele+92;
+% disp(['Azimuth: ', num2str(azi), ', Elevation: ', num2str(ele)]);
+
+
+% 수직이착륙기와 레이더 간 거리를 입력받음
+% 300미터부터 3000미터 까지 100미터 단위로 입력받음
+dist = input("Enter distance betweenn radar and helicopter: ");
+disp(dist);
+
+table(ele,azi);
+
+% function PPM = helperPPMCalc(dist, azi, ele, weather, background)
+
+% helperPPMCalc()
+
+
+%% 기존 10도 단위 PPM 테이블에 대해 1도 단위로 보간 수행
 
 % 1. 엑셀 파일에서 데이터 불러오기
-filename = 'C:/Users/leeyj/lab_ws/data/vtd/EO/clear/clear sky.xlsx';  % 엑셀 파일 이름
+filename = 'C:/Users/leeyj/lab_ws/data/vtd/EO/tables/clear_sky.xlsx';  % 엑셀 파일 이름
 sheet = 1;  % 첫 번째 시트
 data = readmatrix(filename, 'Sheet', sheet);
 
@@ -588,7 +645,7 @@ data_interp = interp2(X, Y, data', Xq, Yq, 'linear');
 data_interp_with_angles = [[NaN, yq];  % 첫 번째 행 (0~180도의 경도)
                            [xq', data_interp]]; % 첫 번째 열 (위도) 추가
 % 4. 보간된 데이터를 엑셀로 저장
-output_filename = 'C:/Users/leeyj/lab_ws/data/vtd/EO/clear/interpolated_clear_sky_with_angles.xlsx';
+output_filename = 'C:/Users/leeyj/lab_ws/data/vtd/EO/clear_sky.xlsx';
 writematrix(data_interp_with_angles, output_filename);
 
 
