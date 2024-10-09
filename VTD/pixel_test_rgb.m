@@ -16,13 +16,13 @@ close all;
 % img_bwarea = imread("../data/bwarea.png");
 
 % img = imread("./fog/land/temp/01.png");
-img = imread("C:/Users/leeyj/lab_ws/data/vtd/EO/distance/new_0/23.png");
+img = imread("C:/Users/leeyj/lab_ws/data/vtd/EO/forest/temp/forest+fog.png");
 % figure
 % imshow(img);
 % title("원본 이미지");
 
-upper_bound = [50, 50, 50];
-lower_bound = [0, 0, 0];
+upper_bound = [160, 160, 145];
+lower_bound = [150, 150, 135];
 
 % 경계 값 설정을 통해 특정 색상의 헬기 픽셀 검출
 % lower_bound = [70, 120, 60];
@@ -57,7 +57,7 @@ binaryImg = img(:,:,1) >= lower_bound(1) & img(:,:,1) <= upper_bound(1) & ...
 % imshow(binaryImg);
 % title("이진화 적용 이미지");
 
-binaryImg = bwareaopen(binaryImg,2);    % 특정 픽셀보다 작은 인식 결과는 제외
+binaryImg = bwareaopen(binaryImg,1000);    % 특정 픽셀보다 작은 인식 결과는 제외
 
 % figure
 % imshow(binaryImg);

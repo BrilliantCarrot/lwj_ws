@@ -543,12 +543,13 @@ dtedfile = "n39_w106_3arc_v2.dt1";
 attribution = "SRTM 3 arc-second resolution. Data available from the U.S. Geological Survey.";
 [Zterrain,Rterrain] = readgeoraster(dtedfile,"OutputType","double");
 
+
 % Visualize the location using the geographic globe plot.
 % addCustomTerrain("southboulder",dtedfile,Attribution=attribution);
 fig = uifigure;
 g = geoglobe(fig,Terrain="southboulder");
-% hold(g,"on")
-% h_rdrtraj = geoplot3(g,rdrlat,rdrlon,rdralt,"ro",LineWidth=6,MarkerSize=10);
+hold(g,"on")
+h_rdrtraj = geoplot3(g,rdrlat,rdrlon,rdralt,"ro",LineWidth=6,MarkerSize=10);
 
 
 %%
@@ -576,10 +577,10 @@ t = (0:length(X)-1)/fs;
 ttraj = geoTrajectory([tlat.' tlon.' tht.'],t,SampleRate=fs);
 
 
-% h_ttraj = geoplot3(g,tlat,tlon,talt,"yo",LineWidth=3);
-% campos(g,39.77114,-105.62662,6670)
-% camheading(g,70)
-% campitch(g,-12)
+h_ttraj = geoplot3(g,tlat,tlon,talt,"yo",LineWidth=3);
+campos(g,39.77114,-105.62662,6670)
+camheading(g,70)
+campitch(g,-12)
 
 
 trcs = pow2db(10);          % Target RCS (dBsm)
