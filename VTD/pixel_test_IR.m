@@ -11,15 +11,15 @@ clear;
 clc;
 close all;
 
-all = imread("./temp/대기및헬기.png");               % 헬기 및 배경을 모두 포함하는 이미지
-all_temp = all;                                 % 픽셀 비교 임시 이미지(헬기 영역만 픽셀 값이 없는 이미지)를 위한 위의 복사본
-land = imread("./temp/대기.png");                 % 지표에 대한 정보만을 포함하는 이미지
+all = imread("C:/Users/leeyj/lab_ws/data/VTD/IR/temp/대기및헬기.png");    % 헬기 및 배경을 모두 포함하는 이미지
+all_temp = all;    % 픽셀 비교 임시 이미지(헬기 영역만 픽셀 값이 없는 이미지)를 위한 위의 복사본
+land = imread("C:/Users/leeyj/lab_ws/data/VTD/IR/temp/대기.png");    % 지표에 대한 정보만을 포함하는 이미지
 
 all_gray = rgb2gray(all);                   % rgb2gray 결과는 0~255의 값을 가짐
 all_temp_gray = rgb2gray(all);
 land_gray = rgb2gray(land);
 
-all_double = im2double(all_gray);               % 회색조로 변환
+all_double = im2double(all_gray);               % 0~1 사이의 값으로 변환
 all_temp_double = im2double(all_temp_gray);
 land_double = im2double(land_gray);
 
@@ -63,6 +63,7 @@ for i = 1:500
     end
 end
 
+% 평균을 구한 값을 통하여 detectability 산출
 diff = abs(sum(land_only(:))/land_cnt - sum(heli_only(:))/heli_cnt);
 
 % 헬기에 해당하는 영역을 1로, 아닌영역을 0으로 이진화 시켜 헬기만 검출된게 맞는지 확인
