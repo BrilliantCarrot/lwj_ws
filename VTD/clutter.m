@@ -647,9 +647,44 @@ for m = 1:numel(tsnr)
 end
 
 
+%% SCR 및 CNR 구하기 예제 코드
 
+% Radar Parameters
+Pt = 1000;            % Transmit power (W)
+Gt = 30;              % Transmit antenna gain (dB)
+Gr = 30;              % Receive antenna gain (dB)
+lambda = 0.03;        % Wavelength (m)
+R = 5000;             % Range to target or clutter (m)
+sigma_target = 1;     % Target Radar Cross Section (RCS) in m^2
+sigma_clutter = 0.5;  % Clutter RCS (m^2)
+Ts = 290;             % System noise temperature (K)
+B = 1e6;              % Bandwidth (Hz)
+k = 1.38e-23;         % Boltzmann constant (J/K)
 
+% Convert gains from dB to linear scale
+Gt_lin = 10^(Gt / 10);
+Gr_lin = 10^(Gr / 10);
 
+% Calculate Clutter Power (Pc) using Radar Equation for Clutter
+Pc = (Pt * Gt_lin * Gr_lin * sigma_clutter * lambda^2) / ((4 * pi)^3 * R^4);
+
+% Calculate Noise Power (Pn)
+Pn = k * Ts * B;
+
+% Calculate CNR (Clutter-to-Noise Ratio)
+CNR = Pc / Pn;
+CNR_dB = 10 * log10(CNR);
+
+% Calculate Target Power (Ptgt) using Radar Equation for Target
+Ptgt = (Pt * Gt_lin * Gr_lin * sigma_target * lambda^2) / ((4 * pi)^3 * R^4);
+
+% Calculate SCR (Signal-to-Clutter Ratio)
+SCR = Ptgt / Pc;
+SCR_dB = 10 * log10(SCR);
+
+% Display Results
+fprintf('Clutter-to-Noise Ratio (CNR): %.2f dB\n', CNR_dB);
+fprintf('Signal-to-Clutter Ratio (SCR): %.2f dB\n', SCR_dB);
 
 %% << Simulate Clutter for System with Known Power >> %%
 % constantGammaClutter에 대한 매트랩 예시

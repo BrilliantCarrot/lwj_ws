@@ -1,9 +1,8 @@
 %% IR영상 이미지를 불러온 후 temperature_date 셀에 저장
 
-% IR 쪽 진행해야될 내용
-% 논문에 맞게 색칠을 하고
-% 기하를 이전에 했던 테이블 대로 맞춰서 테이블 형태의 데이터를 만들되(테이블 내용은 temp_pixel)
-% 그 테이블을 밑의 코드대로 셀 형식으로 기존 엑셀의 테이블과 같은 구조를 만들음
+% 알고리즘대로 각각의 배경에 대해 Detectability를 제대로 산출하기 위해서
+% 헬기를 촬영할 시의 캡처 화면 크기를 전부 동일하게 설정하는것이 중요함
+% 이미지의 가로, 세로 사이즈를 기반으로 평균을 내기 때문
 
 %% 이미지 파일 하나만 예시로 
 
@@ -31,14 +30,16 @@ all_sum = sum(all_norm(:));                 % 픽셀값의 총 합 구하기
 land_sum = sum(land_norm(:));
 heli_only_sum = all_sum - land_sum;
 
+[rows,cols] = size(all_gray);
+
 % 지형 배경과 헬기를 포함하는 모든 이미지의 차이를 구함
 % 차이가 존재하면 헬기 영역이기에 그 영역을 0으로 만듦
-% 500 X 500 이미지에 대해 반복문을 통해 수행
 heli_diff = all_norm - land_norm; 
-for i = 1:500
-    for j = 1:500
+for i = 1:rows
+    for j = 1:cols
         if heli_diff(i,j) ~= 0
-            all_temp_gray(i,j) = 0;
+            all_temp_gray(i,j) = 0;     % 헬기 영역이 0으로 표현된 테이블
+            % fprintf('i = %d, j = %d\n', i, j);
         end
     end
 end
@@ -52,8 +53,8 @@ heli_cnt = 0;
 land_cnt = 0;
 
 % 반복문을 통해 헬기만의 픽셀 수와 지표만의 픽셀 수를 구함
-for i = 1:500
-    for j = 1:500
+for i = 1:rows
+    for j = 1:cols
         if heli_only(i,j) ~= 0
             heli_cnt = heli_cnt + 1;
         end
@@ -64,6 +65,7 @@ for i = 1:500
 end
 
 % 평균을 구한 값을 통하여 detectability 산출
+% 0~1까지의 정규화를 수행한 값이므로 타당
 diff = abs(sum(land_only(:))/land_cnt - sum(heli_only(:))/heli_cnt);
 
 % 헬기에 해당하는 영역을 1로, 아닌영역을 0으로 이진화 시켜 헬기만 검출된게 맞는지 확인
