@@ -192,7 +192,7 @@ disp(mean(diff))
 
 
 
-helperIRDetectability(heliTemp, background);
+helperIRDetectability(heliTemp, azi, ele, background);
 
 %% 한 폴더에 대해
 
