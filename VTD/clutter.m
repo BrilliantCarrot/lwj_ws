@@ -400,9 +400,9 @@ title('RDM - without terrain shadowing')
 % for flat-Earth scenarios with smooth surfaces.
 
 %% << CFAR Detection >>
-
-%% << 북한 창도군 지형 DTED에 클러터 적용 >>
-%% 1. 창도군 지형 데이터 Import(80km*80km의 경우 데이터 로드 5분 소요)
+%% 북한 창도군 지형 DTED에 클러터 적용
+%% 1. 창도군 지형 데이터 Import
+% (80km*80km의 경우 데이터 로드 5분 소요)
 
 close all;
 % csv 파일로부터 각 셀이 탭으로 구분된 데이터를 생성
@@ -647,9 +647,11 @@ for m = 1:numel(tsnr)
 end
 
 
-%% SCR 및 CNR 구하기 예제 코드
+%% << SCR 및 CNR을 통한 추가 요구 SNR 코드 >>
 
-% Radar Parameters
+clear;
+
+% 레이더 파라미터
 Pt = 1000;            % Transmit power (W)
 Gt = 30;              % Transmit antenna gain (dB)
 Gr = 30;              % Receive antenna gain (dB)
@@ -657,34 +659,39 @@ lambda = 0.03;        % Wavelength (m)
 R = 5000;             % Range to target or clutter (m)
 sigma_target = 1;     % Target Radar Cross Section (RCS) in m^2
 sigma_clutter = 0.5;  % Clutter RCS (m^2)
-Ts = 290;             % System noise temperature (K)
+Ts = 290;             % 시스템 잡음 온도 (K)
 B = 1e6;              % Bandwidth (Hz)
-k = 1.38e-23;         % Boltzmann constant (J/K)
+k = 1.38e-23;         % 볼츠만 상수 (J/K)
 
 % Convert gains from dB to linear scale
 Gt_lin = 10^(Gt / 10);
 Gr_lin = 10^(Gr / 10);
 
-% Calculate Clutter Power (Pc) using Radar Equation for Clutter
+% 클러터 파워 (Pc)
 Pc = (Pt * Gt_lin * Gr_lin * sigma_clutter * lambda^2) / ((4 * pi)^3 * R^4);
-
-% Calculate Noise Power (Pn)
+% 노이즈 파워 (Pn)
 Pn = k * Ts * B;
-
-% Calculate CNR (Clutter-to-Noise Ratio)
 CNR = Pc / Pn;
 CNR_dB = 10 * log10(CNR);
-
-% Calculate Target Power (Ptgt) using Radar Equation for Target
+% 타겟의 파워 (Ptgt)
 Ptgt = (Pt * Gt_lin * Gr_lin * sigma_target * lambda^2) / ((4 * pi)^3 * R^4);
-
-% Calculate SCR (Signal-to-Clutter Ratio)
 SCR = Ptgt / Pc;
 SCR_dB = 10 * log10(SCR);
 
-% Display Results
-fprintf('Clutter-to-Noise Ratio (CNR): %.2f dB\n', CNR_dB);
-fprintf('Signal-to-Clutter Ratio (SCR): %.2f dB\n', SCR_dB);
+% SCR 및 CNR에 따라 레이더에서의 탐지를 위한 추가 SNR을 계산
+required_SNR_cluttered_dB = 10 * log10(1 + CNR / SCR);
+required_SNR_without_CNR = 10 * log10(1 + SCR);
+fprintf('Clutter-to-Noise Ratio: %.2f dB\n', CNR_dB);
+fprintf('Signal-to-Clutter Ratio: %.2f dB\n', SCR_dB);
+fprintf('CNR과 SCR을 전부 고려하였을 시 요구되는 추가 SNR: %.2f dB\n', required_SNR_cluttered_dB);
+fprintf('CNR을 고려 안하였을 시 요구되는 추가 SNR: %.2f dB\n', required_SNR_without_CNR);
+
+% 함수화를 진행한다면 파라미터
+% 수직이착륙기의 기본 SNR
+% 배경 환경(지표면 or 대기)
+% 그 결과의 증가된 SNR치를 반환
+
+% 필요한 파라미터(받아야 되는 값들): 클러터 RCS, 
 
 %% << Simulate Clutter for System with Known Power >> %%
 % constantGammaClutter에 대한 매트랩 예시

@@ -1,0 +1,3 @@
+function helperIRDetectability(heliTemp,background) 
+
+

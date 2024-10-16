@@ -1,5 +1,6 @@
 % RGB를 통한 픽셀 검출
 
+%% << RGB 값을 기반으로 한 수직이착륙기 피탐성 검출 >>
 %% 1. 1개의 이미지에만 대해 픽셀 검출
 % 코드 경로: C:/Users/leeyj/lab_ws/data/vtd/EO
 
@@ -103,8 +104,8 @@ num_files = 30;
 % results = table('Size', [num_files, 2], 'VariableTypes', {'string', 'double'}, 'VariableNames', {'ImageName', 'UnityPixelsNum'});
 
 % 결과를 저장할 테이블 초기화
-results_devide = table('Size', [num_files, 1], 'VariableTypes', {'double'}, 'VariableNames', {'UnityPixelsNum'});
-results_original = table('Size', [num_files, 1], 'VariableTypes', {'double'}, 'VariableNames', {'HelicopterPixelsNum'});
+results_devide = userTable('Size', [num_files, 1], 'VariableTypes', {'double'}, 'VariableNames', {'UnityPixelsNum'});
+results_original = userTable('Size', [num_files, 1], 'VariableTypes', {'double'}, 'VariableNames', {'HelicopterPixelsNum'});
 
 for i = 1:num_files
     img_name = sprintf(path, i-1);
@@ -496,7 +497,46 @@ legend('Original Data', 'Fitted Exponential Curve');
 grid on;
 
 
-%% 1-2. 새로 뽑은 데이터로, lsqcurvefit
+%% 1-2. 이중 지수 함수를 통해 피팅
+% 이 지수 함수 모델을 사용
+
+x = (300:100:3000);
+y = [2847, 1595, 989, 694, 500, 377, 298, 240, 202, 165, 142, 116,...
+    103, 94, 82, 69, 65, 55, 49, 45, 41, 36, 35, 34, 33, 29, 22, 21];
+
+% 이중 지수 함수를 정의 (a * exp(b * x) + c * exp(d * x))
+double_exp_model = @(a, b, c, d, x) a * exp(b * x) + c * exp(d * x);
+
+% 비선형 모델 피팅을 위한 시작 추정값
+% a, b, c, d 초기값 설정
+initial_guess = [y(1), -0.001, y(end), -0.0001];  
+
+% 피팅을 위한 비선형 회귀 함수 (최소 제곱법)
+fit_func = @(params) sum((double_exp_model(params(1), params(2), params(3), params(4), x) - y).^2);
+
+% fminsearch로 최적의 a, b, c, d를 찾음
+optimal_params = fminsearch(fit_func, initial_guess);
+
+a_opt = optimal_params(1);
+b_opt = optimal_params(2);
+c_opt = optimal_params(3);
+d_opt = optimal_params(4);
+fprintf('a = %.4f, b = %.4f, c = %.4f, d = %.4f\n', a_opt, b_opt, c_opt, d_opt);
+
+y_fit = double_exp_model(a_opt, b_opt, c_opt, d_opt, x);
+
+figure;
+plot(x, y, 'bo-', 'LineWidth', 2); % 원래 데이터
+hold on;
+plot(x, y_fit, 'r--', 'LineWidth', 2); % 피팅된 이중 지수 함수
+xlabel('x');
+ylabel('y');
+title('Double Exponential Fit to Data');
+legend('Original Data', 'Fitted Double Exponential Curve');
+grid on;
+
+
+%% 1-3. 새로 뽑은 데이터로, lsqcurvefit
 
 % 데이터 설정
 x = 100:100:1500; % x값
@@ -568,57 +608,73 @@ grid on;
 % 테이블을 먼저 입력받음
 
 clear_table = 'C:/Users/leeyj/lab_ws/data/vtd/EO/tables/clear_sky.xlsx';
-forest_table = 'C:/Users/leeyj/lab_ws/data/vtd/EO/tables/forest.xlsx';
 moderate_rain_table = 'C:/Users/leeyj/lab_ws/data/vtd/EO/tables/moderate_rain.xlsx';
 heavy_rain_table = 'C:/Users/leeyj/lab_ws/data/vtd/EO/tables/heavy_rain.xlsx';
 snow_table = 'C:/Users/leeyj/lab_ws/data/vtd/EO/tables/snow.xlsx';
 fog_table = 'C:/Users/leeyj/lab_ws/data/vtd/EO/tables/fog.xlsx';
 cloud_table = 'C:/Users/leeyj/lab_ws/data/vtd/EO/tables/cloud.xlsx';
+forest_table = 'C:/Users/leeyj/lab_ws/data/vtd/EO/tables/forest.xlsx';
 sheet = 1;  % 첫 번째 시트
-
 
 % 입력 파라미터의 날씨 및 배경에 따라 조건문을 거쳐 테이블을 선정
 disp("weather conditions: clear, moderate rain, heavy rain, snow, fog, cloud, forest")
-weather = input('Enter the weather conditio: ', 's');
+condition = input('Enter the weather conditio: ', 's');
 
-if strcmpi(weather, 'clear')
-    % 각 날씨상황에 맞는 table을 입력받음
-    % table = clear_table;
-    disp("clear 선택됨");
-    table = readmatrix(clear_table, 'Sheet', sheet);
-elseif strcmpi(weather, 'cloudy')
-    disp('The weather is cloudy. It might rain later.');
-    % cloudy에 해당하는 추가 작업 수행
-elseif strcmpi(weather, 'rain')
-    disp('It is raining. Take an umbrella!');
-    % rain에 해당하는 추가 작업 수행
+if strcmpi(condition, 'clear')
+    disp("맑은 날씨 상황이 선택되었습니다.");
+    userTable = readmatrix(clear_table, 'Sheet', sheet);
+elseif strcmpi(condition, 'moderate rain')
+    disp("약간의 비가 오는 날씨 상황이 선택되었습니다.");
+    userTable = readmatrix(moderate_rain_table, 'Sheet', sheet);
+elseif strcmpi(condition, 'heavy rain')
+    disp("거센 비가 오는 날씨 상황이 선택되었습니다.");
+    userTable = readmatrix(heavy_rain_table, 'Sheet', sheet);
+elseif strcmpi(condition, 'snow rain')
+    disp("눈이 오는 날씨 상황이 선택되었습니다.");
+    userTable = readmatrix(heavy_rain_table, 'Sheet', sheet);
+elseif strcmpi(condition, 'fog')
+    disp("안개가 낀 날씨 상황이 선택되었습니다.");
+    userTable = readmatrix(heavy_rain_table, 'Sheet', sheet);Epic
+elseif strcmpi(condition, 'cloud')
+    disp("구름이 낀 날씨 상황이 선택되었습니다.");
+    userTable = readmatrix(cloud_table, 'Sheet', sheet);
+elseif strcmpi(condition, 'forest')
+    disp("숲 배경의 상황이 선택되었습니다.");
+    userTable = readmatrix(forest_table, 'Sheet', sheet);
 else
-    disp('Invalid input. Please enter clear, cloudy, or rain.');
-    % 잘못된 입력 처리
+    disp('입력 값이 잘못되었습니다.');
 end
-
 
 % 수직이착륙기 기하(고각, 방위각)를 입력받음
 ele = input('Enter elevation: ');
 azi = input('Enter azimuth: ');
+if azi <0   % 방위각이 음수일 경우 대칭성을 이용하여 양수의 범위에서 값을 찾음
+    azi = abs(azi);
+end    
 azi = azi+2;
 ele = ele+92;
-% disp(['Azimuth: ', num2str(azi), ', Elevation: ', num2str(ele)]);
-
+% disp(['방위각:', num2str(azi), ' 선택됨, 고각:', num2str(ele),' 선택됨.']);
 
 % 수직이착륙기와 레이더 간 거리를 입력받음
 % 300미터부터 3000미터 까지 100미터 단위로 입력받음
-dist = input("Enter distance betweenn radar and helicopter: ");
-disp(dist);
+dist = input("카메라로부터 수직이착륙기 까지의 거리를 입력하세요(300m부터 3000m까지 입력: ");
+if dist < 300 && dist > 3000
+    disp("잘못된 값을 입력하셨습니다.");
+end
+if dist < 300
+    dist = 300;
+end
+if dist > 3000
+    dist = 3000;
+end
 
-table(ele,azi);
+disp([num2str(dist), '의 거리가 입력되었습니다.']);
 
-% function PPM = helperPPMCalc(dist, azi, ele, weather, background)
+% helperPPMCalc(dist, azi, ele, condition)
+% 테이블은 테이블 이름(행,열)
 
-% helperPPMCalc()
 
-
-%% 기존 10도 단위 PPM 테이블에 대해 1도 단위로 보간 수행
+%% 테이블 보간 함수
 
 % 1. 엑셀 파일에서 데이터 불러오기
 filename = 'C:/Users/leeyj/lab_ws/data/vtd/EO/tables/clear_sky.xlsx';  % 엑셀 파일 이름
