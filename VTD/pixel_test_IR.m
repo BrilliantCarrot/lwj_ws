@@ -10,9 +10,9 @@
 clear;
 clc;
 
-all = imread("C:/Users/leeyj/lab_ws/data/VTD/IR/images_set/winter/40/09.png");    % 헬기 및 배경을 모두 포함하는 이미지
+all = imread("C:/Users/leeyj/lab_ws/data/VTD/IR/images_set/summer/140/09.png");% 헬기 및 배경을 모두 포함하는 이미지
 all_temp = all;    % 픽셀 비교 임시 이미지(헬기 영역만 픽셀 값이 없는 이미지)를 위한 위의 복사본
-land = imread("C:/Users/leeyj/lab_ws/data/VTD/IR/images_set/winter/background.png");    % 지표에 대한 정보만을 포함하는 이미지
+land = imread("C:/Users/leeyj/lab_ws/data/VTD/IR/images_set/summer/background.png");% 지표에 대한 정보만을 포함하는 이미지
 
 all_gray = rgb2gray(all);                   % rgb2gray 결과는 0~255의 값을 가짐
 all_temp_gray = rgb2gray(all);
@@ -85,12 +85,12 @@ disp(diff)
 
 %% 2. 폴더 내 이미지 파일들에 대해 알고리즘을 적용
 
-clc;
-clear;
+% clc;
+% clear;
 
 % 경로 설정
-folder_path = 'C:/Users/leeyj/lab_ws/data/vtd/IR/images_set/spring/40/%02d.png';  % 모든 이미지가 있는 폴더 경로
-land_path = 'C:/Users/leeyj/lab_ws/data/VTD/IR/images_set/spring/background.png';          % 배경 이미지 경로
+folder_path = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/IR/images_set/empty_sky/70/%02d.png';
+land_path = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/IR/images_set/empty_sky/background.png';
 
 num_files = 19;  % 처리할 이미지 수
 results_diff = zeros(num_files, 1);   % diff 값을 저장할 배열
@@ -206,7 +206,7 @@ temperature_data = cell(num_images, num_images);
 
 for col = 1:num_images
     for row = 1:num_images
-        img_path = sprintf(path, row-1);                        % 이미지 파일 이름 생성 후 읽기
+        img_path = sprintf(path, row-1);    % 이미지 파일 이름 생성 후 읽기
         img = imread(img_path);
         hei_gray = rgb2gray(img);
         heli_double = im2double(hei_gray);
@@ -241,13 +241,14 @@ end
 close all
 for row = 1:num_images
     figure;
-    imshow(temperature_data{row, 13}, []);                      % 원하는 열 입력
+    imshow(temperature_data{row, 13}, []);      % 원하는 열 입력
     title(sprintf('Image %02d from the folder', row-1));
 end
 
 %%
 
-img = imread('C:/Users/leeyj/Unity/VTD Project/Assets/3D Haven/Free Fantasy Terrain Textures/Textures/2K Resolution/Temp/3DH FTT Path_001 2K.png');
+img = imread(['C:/Users/leeyj/Unity/VTD Project/Assets/3D Haven/' ...
+    'Free Fantasy Terrain Textures/Textures/2K Resolution/Temp/3DH FTT Path_001 2K.png']);
 hei_gray = rgb2gray(img);
 
 img_rgb = cat(3, hei_gray, hei_gray, hei_gray);
@@ -275,7 +276,8 @@ imshow(img_result)
 
 %%
 
-img = imread('C:/Users/leeyj/Unity/VTD Project/Assets/3D Haven/Free Fantasy Terrain Textures/Textures/2K Resolution/Temp/3DH FTT Path_001 2K.png');
+img = imread(['C:/Users/leeyj/Unity/VTD Project/Assets/3D Haven/' ...
+    'Free Fantasy Terrain Textures/Textures/2K Resolution/Temp/3DH FTT Path_001 2K.png']);
 img_hsv = rgb2hsv(img);
 value = 255;
 img_hsv(:,:,3) = double(value) / 255;
@@ -287,7 +289,8 @@ imshow(img_result)
 %%
 
 % RGB 이미지 불러오기
-rgbImage = imread('C:/Users/leeyj/Unity/VTD Project/Assets/3D Haven/Free Fantasy Terrain Textures/Textures/2K Resolution/Temp/3DH FTT Path_001 2K.png');
+rgbImage = imread(['C:/Users/leeyj/Unity/VTD Project/Assets/3D Haven/' ...
+    'Free Fantasy Terrain Textures/Textures/2K Resolution/Temp/3DH FTT Path_001 2K.png']);
 
 % 회색조 이미지로 변환
 grayImage = rgb2gray(rgbImage);
