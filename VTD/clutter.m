@@ -652,29 +652,30 @@ end
 clear;
 
 % 레이더 파라미터
-Pt = 1000;            % Transmit power (W)
-Gt = 30;              % Transmit antenna gain (dB)
-Gr = 30;              % Receive antenna gain (dB)
-lambda = 0.03;        % Wavelength (m)
-R = 5000;             % Range to target or clutter (m)
-sigma_target = 1;     % Target Radar Cross Section (RCS) in m^2
-sigma_clutter = 0.5;  % Clutter RCS (m^2)
-Ts = 290;             % 시스템 잡음 온도 (K)
-B = 1e6;              % Bandwidth (Hz)
-k = 1.38e-23;         % 볼츠만 상수 (J/K)
+Pt = 5000;                  % Transmit power (W)
+Gt = 34;                    % Transmit antenna gain (dB)
+Gr = 34;                    % Receive antenna gain (dB)
+lambda = 0.03;              % Wavelength (m)
+R = 20000;                   % Range to target or clutter (m)
+% sigma_target = 7.9432;      % 목표물 RCS (m^2), 9dBsm
+sigma_target = 0.12589254117941673;    % -9 dBsm
+% 지형의 클러터
+% 대기의 경우 0.001 m^2으로, 지표면의 경우 5 m^2으로 설정
+sigma_clutter = 5;        % 지형 클러터의 RCS (m^2)
+Ts = 290;                   % 시스템 잡음 온도 (K)
+B = 1e6;                    % Bandwidth (Hz)
+k = 1.38e-23;               % 볼츠만 상수 (J/K)
 
 % Convert gains from dB to linear scale
 Gt_lin = 10^(Gt / 10);
 Gr_lin = 10^(Gr / 10);
 
-% 클러터 파워 (Pc)
-Pc = (Pt * Gt_lin * Gr_lin * sigma_clutter * lambda^2) / ((4 * pi)^3 * R^4);
-% 노이즈 파워 (Pn)
-Pn = k * Ts * B;
+
+Pc = (Pt * Gt_lin * Gr_lin * sigma_clutter * lambda^2) / ((4 * pi)^3 * R^4);    % 클러터 파워 (Pc)
+Pn = k * Ts * B;    % 노이즈 파워 (Pn)
 CNR = Pc / Pn;
 CNR_dB = 10 * log10(CNR);
-% 타겟의 파워 (Ptgt)
-Ptgt = (Pt * Gt_lin * Gr_lin * sigma_target * lambda^2) / ((4 * pi)^3 * R^4);
+Ptgt = (Pt * Gt_lin * Gr_lin * sigma_target * lambda^2) / ((4 * pi)^3 * R^4);   % 타겟의 파워 (Ptgt)
 SCR = Ptgt / Pc;
 SCR_dB = 10 * log10(SCR);
 

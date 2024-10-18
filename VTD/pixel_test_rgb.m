@@ -529,8 +529,8 @@ figure;
 plot(x, y, 'bo-', 'LineWidth', 2); % 원래 데이터
 hold on;
 plot(x, y_fit, 'r--', 'LineWidth', 2); % 피팅된 이중 지수 함수
-xlabel('x');
-ylabel('y');
+xlabel('Distance [m]');
+ylabel('Pixel Number');
 title('Double Exponential Fit to Data');
 legend('Original Data', 'Fitted Double Exponential Curve');
 grid on;
@@ -607,13 +607,13 @@ grid on;
 
 % 테이블을 먼저 입력받음
 
-clear_table = 'C:/Users/leeyj/lab_ws/data/vtd/EO/tables/clear_sky.xlsx';
-moderate_rain_table = 'C:/Users/leeyj/lab_ws/data/vtd/EO/tables/moderate_rain.xlsx';
-heavy_rain_table = 'C:/Users/leeyj/lab_ws/data/vtd/EO/tables/heavy_rain.xlsx';
-snow_table = 'C:/Users/leeyj/lab_ws/data/vtd/EO/tables/snow.xlsx';
-fog_table = 'C:/Users/leeyj/lab_ws/data/vtd/EO/tables/fog.xlsx';
-cloud_table = 'C:/Users/leeyj/lab_ws/data/vtd/EO/tables/cloud.xlsx';
-forest_table = 'C:/Users/leeyj/lab_ws/data/vtd/EO/tables/forest.xlsx';
+clear_table = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/EO/tables/clear_sky.xlsx';
+moderate_rain_table = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/EO/tables/moderate_rain.xlsx';
+heavy_rain_table = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/EO/tables/heavy_rain.xlsx';
+snow_table = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/EO/tables/snow.xlsx';
+fog_table = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/EO/tables/fog.xlsx';
+cloud_table = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/EO/tables/cloud.xlsx';
+forest_table = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/EO/tables/forest.xlsx';
 sheet = 1;  % 첫 번째 시트
 
 % 입력 파라미터의 날씨 및 배경에 따라 조건문을 거쳐 테이블을 선정
@@ -670,14 +670,36 @@ end
 
 disp([num2str(dist), '의 거리가 입력되었습니다.']);
 
-% helperPPMCalc(dist, azi, ele, condition)
-% 테이블은 테이블 이름(행,열)
+refPixel = 202;
+minPixelCnt = 25;
+originalPixel = userTable(ele,azi);
 
+% 사전에 미리 구한 이중 지수 함수의 파라미터를 이용
+a = 20276.7791;
+b = -0.0075;
+c = 1114.5824;
+d = -0.0015;
+
+double_exp_model = @(x) a * exp(b * x) + c * exp(d * x);    % 지수 함수 피팅 모델
+
+calculated_pixel = double_exp_model(dist);  % 비율을 구하기 위해 사용자가 입력한 거리에서 구해진 픽셀 수
+pixelRatio = calculated_pixel/refPixel;     % 두 변수를 통해 비율을 계산
+finalPPM = pixelRatio * originalPixel;     % 구한 비율을 특정 기상 상황 및 특정 기하에서의 픽셀과 곱함
+
+disp(['계산된 PPM 값: ', num2str(finalPPM)]);
+
+if finalPPM > minPixelCnt
+    disp("목표가 식별 됨");
+end
+
+%% 함수 사용
+
+helperPPMCalc
 
 %% 테이블 보간 함수
 
 % 1. 엑셀 파일에서 데이터 불러오기
-filename = 'C:/Users/leeyj/lab_ws/data/vtd/EO/tables/clear_sky.xlsx';  % 엑셀 파일 이름
+filename = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/IR/images_set/reference_table_before.xlsx';  % 엑셀 파일 이름
 sheet = 1;  % 첫 번째 시트
 data = readmatrix(filename, 'Sheet', sheet);
 
@@ -695,13 +717,13 @@ yq = 0:1:180;    % 1도 단위로 보간된 열 각도 (경도)
 % 보간 수행 (기본적으로 'linear' 방식)
 [X, Y] = meshgrid(x, y);
 [Xq, Yq] = meshgrid(xq, yq);
-data_interp = interp2(X, Y, data', Xq, Yq, 'linear');
+data_interp = interp2(X, Y, data, Xq, Yq, 'linear');
 
 % 3. 각도를 첫 행과 첫 열에 추가
 data_interp_with_angles = [[NaN, yq];  % 첫 번째 행 (0~180도의 경도)
                            [xq', data_interp]]; % 첫 번째 열 (위도) 추가
 % 4. 보간된 데이터를 엑셀로 저장
-output_filename = 'C:/Users/leeyj/lab_ws/data/vtd/EO/clear_sky.xlsx';
+output_filename = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/IR/reference_table.xlsx';
 writematrix(data_interp_with_angles, output_filename);
 
 
