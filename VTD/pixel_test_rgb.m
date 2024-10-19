@@ -607,18 +607,27 @@ grid on;
 
 % 테이블을 먼저 입력받음
 
-clear_table = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/EO/tables/clear_sky.xlsx';
-moderate_rain_table = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/EO/tables/moderate_rain.xlsx';
-heavy_rain_table = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/EO/tables/heavy_rain.xlsx';
-snow_table = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/EO/tables/snow.xlsx';
-fog_table = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/EO/tables/fog.xlsx';
-cloud_table = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/EO/tables/cloud.xlsx';
-forest_table = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/EO/tables/forest.xlsx';
+% clear_table = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/EO/tables/clear_sky.xlsx';
+% moderate_rain_table = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/EO/tables/moderate_rain.xlsx';
+% heavy_rain_table = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/EO/tables/heavy_rain.xlsx';
+% snow_table = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/EO/tables/snow.xlsx';
+% fog_table = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/EO/tables/fog.xlsx';
+% cloud_table = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/EO/tables/cloud.xlsx';
+% forest_table = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/EO/tables/forest.xlsx';
+
+clear_table = 'D:/OneDrive - 인하대학교/school/assignment/vtd13/data/EO/보간 후 테이블/clear_sky.xlsx';
+moderate_rain_table = 'D:/OneDrive - 인하대학교/school/assignmen/vtd13/data/EO/보간 후 테이블/moderate_raitn.xlsx';
+heavy_rain_table = 'D:/OneDrive - 인하대학교/school/assignment/vtd13/data/EO/보간 후 테이블/heavy_rain.xlsx';
+snow_table = 'D:/OneDrive - 인하대학교/school/assignment/vtd13/data/EO/보간 후 테이블/snow.xlsx';
+fog_table = 'D:/OneDrive - 인하대학교/school/assignment/vtd13/data/EO/보간 후 테이블/fog.xlsx';
+cloud_table = 'D:/OneDrive - 인하대학교/school/assignment/vtd13/data/EO/보간 후 테이블/cloud.xlsx';
+forest_table = 'D:/OneDrive - 인하대학교/school/assignment/vtd13/data/EO/보간 후 테이블/forest.xlsx';
+
 sheet = 1;  % 첫 번째 시트
 
 % 입력 파라미터의 날씨 및 배경에 따라 조건문을 거쳐 테이블을 선정
-disp("weather conditions: clear, moderate rain, heavy rain, snow, fog, cloud, forest")
-condition = input('Enter the weather conditio: ', 's');
+disp("기상 상황: clear, moderate rain, heavy rain, snow, fog, cloud, forest")
+condition = input('기상 상황을 입력하세요: ', 's');
 
 if strcmpi(condition, 'clear')
     disp("맑은 날씨 상황이 선택되었습니다.");
@@ -629,12 +638,12 @@ elseif strcmpi(condition, 'moderate rain')
 elseif strcmpi(condition, 'heavy rain')
     disp("거센 비가 오는 날씨 상황이 선택되었습니다.");
     userTable = readmatrix(heavy_rain_table, 'Sheet', sheet);
-elseif strcmpi(condition, 'snow rain')
+elseif strcmpi(condition, 'snow')
     disp("눈이 오는 날씨 상황이 선택되었습니다.");
-    userTable = readmatrix(heavy_rain_table, 'Sheet', sheet);
+    userTable = readmatrix(forest_table, 'Sheet', sheet);
 elseif strcmpi(condition, 'fog')
     disp("안개가 낀 날씨 상황이 선택되었습니다.");
-    userTable = readmatrix(heavy_rain_table, 'Sheet', sheet);Epic
+    userTable = readmatrix(fog_table, 'Sheet', sheet);
 elseif strcmpi(condition, 'cloud')
     disp("구름이 낀 날씨 상황이 선택되었습니다.");
     userTable = readmatrix(cloud_table, 'Sheet', sheet);
@@ -646,18 +655,18 @@ else
 end
 
 % 수직이착륙기 기하(고각, 방위각)를 입력받음
-ele = input('Enter elevation: ');
-azi = input('Enter azimuth: ');
-if azi <0   % 방위각이 음수일 경우 대칭성을 이용하여 양수의 범위에서 값을 찾음
-    azi = abs(azi);
+ele_num = input('고각 입력: ');
+azi_num = input('방위각 입력: ');
+if azi_num <0   % 방위각이 음수일 경우 대칭성을 이용하여 양수의 범위에서 값을 찾음
+    azi_num = abs(azi_num);
 end    
-azi = azi+2;
-ele = ele+92;
-% disp(['방위각:', num2str(azi), ' 선택됨, 고각:', num2str(ele),' 선택됨.']);
+azi = azi_num+2;
+ele = ele_num+92;
+disp(['방위각 :', num2str(azi_num), '°선택됨, 고각 :', num2str(ele_num),'°선택됨.']);
 
 % 수직이착륙기와 레이더 간 거리를 입력받음
 % 300미터부터 3000미터 까지 100미터 단위로 입력받음
-dist = input("카메라로부터 수직이착륙기 까지의 거리를 입력하세요(300m부터 3000m까지 입력: ");
+dist = input("카메라로부터 수직이착륙기 까지의 거리를 입력하세요(300m부터 3000m까지 입력): ");
 if dist < 300 && dist > 3000
     disp("잘못된 값을 입력하셨습니다.");
 end
@@ -668,9 +677,9 @@ if dist > 3000
     dist = 3000;
 end
 
-disp([num2str(dist), '의 거리가 입력되었습니다.']);
+disp([num2str(dist), '[m]의 거리가 입력되었습니다.']);
 
-refPixel = 202;
+refPixel = 204;
 minPixelCnt = 25;
 originalPixel = userTable(ele,azi);
 
@@ -690,6 +699,8 @@ disp(['계산된 PPM 값: ', num2str(finalPPM)]);
 
 if finalPPM > minPixelCnt
     disp("목표가 식별 됨");
+else
+    disp("목표 식별 불가")
 end
 
 %% 함수 사용
@@ -698,8 +709,10 @@ helperPPMCalc
 
 %% 테이블 보간 함수
 
+clear;
+
 % 1. 엑셀 파일에서 데이터 불러오기
-filename = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/IR/images_set/reference_table_before.xlsx';  % 엑셀 파일 이름
+filename = 'D:/OneDrive - 인하대학교/school/assignment/vtd13/data/IR/reference_table_before.xlsx';  % 엑셀 파일 이름
 sheet = 1;  % 첫 번째 시트
 data = readmatrix(filename, 'Sheet', sheet);
 
@@ -723,7 +736,7 @@ data_interp = interp2(X, Y, data, Xq, Yq, 'linear');
 data_interp_with_angles = [[NaN, yq];  % 첫 번째 행 (0~180도의 경도)
                            [xq', data_interp]]; % 첫 번째 열 (위도) 추가
 % 4. 보간된 데이터를 엑셀로 저장
-output_filename = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/IR/reference_table.xlsx';
+output_filename = 'D:/OneDrive - 인하대학교/school/assignment/vtd13/data/IR/reference_table_after.xlsx';
 writematrix(data_interp_with_angles, output_filename);
 
 

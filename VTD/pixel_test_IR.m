@@ -221,13 +221,15 @@ fall = 280;
 spring = 290;
 summer = 297;
 
-userTable = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/IR/images_set/reference_table.xlsx';
+userTable = 'D:/OneDrive - 인하대학교/school/assignment/vtd13/data/IR/reference_table_after.xlsx';
 sheet = 1;
-readmatrix(userTable, 'Sheet', sheet);
+userTable = readmatrix(userTable, 'Sheet', sheet);
 
-background = input('IR 카메라로 탐지되는 배경을 입력하세요: ');
+background = input('IR 카메라로 탐지되는 배경을 입력하세요: ','s');
 
 heliTemp = input('수직이착륙기 온도를 입력하세요: ');
+
+distance = input("카메라와 수직이착륙기 간 거리를 입력하세요: ");
 
 % 미리 구해어진 PPM과 곱해질 detectability factor 정의
 detectabilityFactor = [0.128656, 0.277489, 0.43701, 0.457087, 0.477178, 0.8254399];
@@ -249,17 +251,21 @@ sortedVars = varNames(sortedIndices);
 % 크기 차이별로 순서가 정렬된 배열에서 원하는 배경을 찾음
 inputOrder = find(strcmp(sortedVars, background));
 
+% % 수직이착륙기 기하(고각, 방위각)를 입력받음
 ele = input('Enter elevation: ');
 azi = input('Enter azimuth: ');
-
+if azi <0   % 방위각이 음수일 경우 대칭성을 이용하여 양수의 범위에서 값을 찾음
+    azi = abs(azi);
+end  
 azi = azi+2;
 ele = ele+92;
 
 % 테이블은 레퍼런스 테이블을 이용
-PPM = userTable(ele,azi);
+originalPPM = userTable(ele,azi);
 % PPM과 곱하여 최종적인 픽셀 수 산출
-PPM = PPM * detectabilityFactor(inputOrder);
-disp(PPM);
+factoredPPM = originalPPM * detectabilityFactor(inputOrder);
+disp('original PPM: ',originalPPM)
+disp('detectability 비율이 곱해진 PPM 값: ',factoredPPM)
 
 refPixel = 230;
 minPixelCnt = 25;
@@ -278,8 +284,10 @@ finalPPM = pixelRatio * originalPixel;     % 구한 비율을 특정 기상 상�
 
 disp(['계산된 PPM 값: ', num2str(finalPPM)]);
 
-if finalPixelcnt > minPixelCnt
+if finalPPM > minPixelCnt
     disp("목표가 식별 됨");
+else
+    disp("목표 식별 실패");
 end
 
 % helperIRDetectability(heliTemp, azi, ele, background, distance);
