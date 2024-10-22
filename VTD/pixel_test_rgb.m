@@ -696,7 +696,7 @@ pixelRatio = calculated_pixel/refPixel;     % 두 변수를 통해 비율을 계
 finalPPM = pixelRatio * originalPixel;     % 구한 비율을 특정 기상 상황 및 특정 기하에서의 픽셀과 곱함
 
 disp(['계산된 PPM 값: ', num2str(finalPPM)]);
-
+in 
 if finalPPM > minPixelCnt
     disp("목표가 식별 됨");
 else

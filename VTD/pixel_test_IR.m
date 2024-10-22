@@ -11,10 +11,10 @@ clear;
 clc;
 
 all = imread("C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/" + ...
-    "vtd13/data/IR/images_set/winter/00.png");% 헬기 및 배경을 모두 포함하는 이미지
+    "vtd13/data/IR/images/empty_sky/90/09.png");% 헬기 및 배경을 모두 포함하는 이미지
 all_temp = all;    % 픽셀 비교 임시 이미지(헬기 영역만 픽셀 값이 없는 이미지)를 위한 위의 복사본
 land = imread("C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/" + ...
-    "vtd13/data/IR/images_set/winter/01.png");% 지표에 대한 정보만을 포함하는 이미지
+    "vtd13/data/IR/images/empty_sky/background.png");% 지표에 대한 정보만을 포함하는 이미지
 
 all_gray = rgb2gray(all);                   % rgb2gray 결과는 0~255의 값을 가짐
 all_temp_gray = rgb2gray(all);
@@ -23,6 +23,8 @@ land_gray = rgb2gray(land);
 all_double = im2double(all_gray);               % 0~1 사이의 값으로 변환
 all_temp_double = im2double(all_temp_gray);
 land_double = im2double(land_gray);
+
+all_new = (all_gray/255)*100;
 
 all_norm = 256*all_double;                 % 정규화
 all_temp_norm = 256*all_temp_double;
@@ -51,6 +53,9 @@ heli_only = all_gray - all_temp_gray;
 % land_only = all_gray - heli_only;
 land_only = all_gray - heli_only;
 
+heli_only_double = im2double(heli_only)*100;
+land_only_double = im2double(land_only)*100;
+
 % 평균을 구하기 위해 헬기 및 지표만의 픽셀들의 개수를 구하기 위한 count 변수 설정
 heli_cnt = 0;
 land_cnt = 0;
@@ -70,9 +75,14 @@ end
 % 평균을 구한 값을 통하여 detectability 산출
 % 0~1까지의 정규화를 수행한 값이므로 타당
 % 하나의 값을 사용한다 가정하기 위하여 평균값을 이용
-diff = abs(sum(land_only(:))/land_cnt - sum(heli_only(:))/heli_cnt);
-disf(heli_cnt)
+diff = abs(sum(land_only_double(:))/land_cnt - sum(heli_only_double(:))/heli_cnt);
+disp(heli_cnt)
 disp(diff)
+
+% diff = abs(sum(land_only(:))/land_cnt - sum(heli_only(:))/heli_cnt);
+% disp("기존 사용한 코드의 경우")
+% disp(heli_cnt)
+% disp(diff)
 
 % 헬기에 해당하는 영역을 1로, 아닌영역을 0으로 이진화 시켜 헬기만 검출된게 맞는지 확인
 % for i = 1:500
