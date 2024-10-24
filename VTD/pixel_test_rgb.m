@@ -17,13 +17,13 @@ close all;
 % img_bwarea = imread("../data/bwarea.png");
 
 % img = imread("./fog/land/temp/01.png");
-img = imread("C:/Users/leeyj/lab_ws/data/vtd/EO/forest/temp/forest+fog.png");
+img = imread("C:/Users/leeyj/Downloads/VTD Temp/25.png");
 % figure
 % imshow(img);
 % title("원본 이미지");
 
-upper_bound = [160, 160, 145];
-lower_bound = [150, 150, 135];
+upper_bound = [148, 148, 148];
+lower_bound = [69,69,69];
 
 % 경계 값 설정을 통해 특정 색상의 헬기 픽셀 검출
 % lower_bound = [70, 120, 60];
@@ -58,7 +58,7 @@ binaryImg = img(:,:,1) >= lower_bound(1) & img(:,:,1) <= upper_bound(1) & ...
 % imshow(binaryImg);
 % title("이진화 적용 이미지");
 
-binaryImg = bwareaopen(binaryImg,1000);    % 특정 픽셀보다 작은 인식 결과는 제외
+binaryImg = bwareaopen(binaryImg,5);    % 특정 픽셀보다 작은 인식 결과는 제외, 625
 
 % figure
 % imshow(binaryImg);
@@ -87,40 +87,42 @@ hold off;
 
 fprintf('헬기로 인식된 픽셀의 총 갯수: %d\n', unityPixelsNum);
 
+
+
 %% 2. 반복문으로 이미지 파일들에 대해 개별 픽셀 검출 수행
 
 clear;
-clc;
+% clc;
 close all;
 
 % 경로 설정
 % 파이썬 opencv를 통해 전처리된(마스킹된) 이미지에 대하여 픽셀 검출
 % 파이썬 실행 후 이 매트랩 파일을 실행
-path = 'C:/Users/leeyj/lab_ws/data/vtd/EO/distance/new_0/%02d.png';      % vscode를 통해 미리 생성된 마스킹된 결과 이미지가 있는 경로
+path = 'C:/Users/leeyj/Downloads/VTD Temp/%02d.png';      % vscode를 통해 미리 생성된 마스킹된 결과 이미지가 있는 경로
 % num_files = 19;
-num_files = 30;
+num_files = 28;
+
+ppm = [];
 
 % 결과를 저장할 테이블 초기화
 % results = table('Size', [num_files, 2], 'VariableTypes', {'string', 'double'}, 'VariableNames', {'ImageName', 'UnityPixelsNum'});
 
 % 결과를 저장할 테이블 초기화
-results_devide = userTable('Size', [num_files, 1], 'VariableTypes', {'double'}, 'VariableNames', {'UnityPixelsNum'});
-results_original = userTable('Size', [num_files, 1], 'VariableTypes', {'double'}, 'VariableNames', {'HelicopterPixelsNum'});
+results_devide = table('Size', [num_files, 1], 'VariableTypes', {'double'}, 'VariableNames', {'UnityPixelsNum'});
+results_original = table('Size', [num_files, 1], 'VariableTypes', {'double'}, 'VariableNames', {'HelicopterPixelsNum'});
 
 for i = 1:num_files
     img_name = sprintf(path, i-1);
     img = imread(img_name);
 
-    % forest
-    upper_bound = [50, 50, 50];
-    lower_bound = [0, 0, 0];
-    
+upper_bound = [150, 150, 150];
+lower_bound = [69,69,69];
 
     binaryImg = img(:,:,1) >= lower_bound(1) & img(:,:,1) <= upper_bound(1) & ...
                 img(:,:,2) >= lower_bound(2) & img(:,:,2) <= upper_bound(2) & ...
                 img(:,:,3) >= lower_bound(3) & img(:,:,3) <= upper_bound(3);
 
-    binaryImg = bwareaopen(binaryImg, 2);    % 특정 픽셀보다 작은 인식 결과는 제외
+    binaryImg = bwareaopen(binaryImg, 10);    % 특정 픽셀보다 작은 인식 결과는 제외
 
     % 이진화와 불필요 픽셀을 모두 제거한 결과 픽셀들의 sum을 구함
     helicopterPixels = sum(binaryImg(:));
@@ -133,6 +135,8 @@ for i = 1:num_files
     results_original.HelicopterPixelsNum(i) = helicopterPixels;
     results_devide.UnityPixelsNum(i) = unityPixelsNum;
 
+    ppm = [ppm,unityPixelsNum];
+
     % 결과 시각화
     % contours = bwperim(binaryImg);
     % figure
@@ -144,9 +148,13 @@ for i = 1:num_files
     % hold off;
 end
 
-disp(results_original);
+disp(results_devide);
 % writetable(results_original, 'Results.csv');
 close all;
+
+csv_filename = 'finalPPM_results.csv';
+writematrix(ppm, csv_filename);
+disp(['결과가 ', csv_filename, '로 저장되었습니다.']);
 
 % sky background upper bound 110 110 110
 
@@ -162,8 +170,8 @@ close all;
 % lower_bound = [70, 70, 70];
 
 % 눈
-% upper_bound = [168, 162, 159];
-% lower_bound = [70, 70, 70];
+% upper_bound = [161,152,142];
+% lower_bound = [151,142,132];
 
 % heavy_rain
 % upper_bound = [110, 110, 100];
@@ -204,7 +212,7 @@ clear;
 clc;
 close all;
 
-cl = './clear/clear sky.xlsx';
+cl = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/EO/보간 후 테이블/clear_sky.xlsx';
 cl_data = readtable(cl);
 cl_elevation = cl_data{2:end, 1};
 cl_azimuth = cl_data{1,2:end};
@@ -212,53 +220,53 @@ cl_pixel_counts = cl_data{2:end, 2:end};
 cl_pixel_counts_percentage = (cl_pixel_counts/max(cl_pixel_counts(:)))*100;
 [cl_AzimuthGrid, cl_ElevationGrid] = meshgrid(cl_azimuth, cl_elevation);
 
-ml = './moderate_rain/land/지면 배경, 우천시.xlsx';
-ml_data = readtable(ml);
-ml_elevation = ml_data{2:end, 1};
-ml_azimuth = ml_data{1,2:end};
-ml_pixel_counts = ml_data{2:end, 2:end};
-ml_pixel_counts_percentage = (ml_pixel_counts/max(cl_pixel_counts(:)))*100;
-[ml_AzimuthGrid, ml_ElevationGrid] = meshgrid(ml_azimuth, ml_elevation);
-
-hl = './heavy_rain/sky/폭우 환경, 하늘 배경.xlsx';
-hl_data = readtable(hl);
-hl_elevation = hl_data{2:end, 1};
-hl_azimuth = hl_data{1,2:end};
-hl_pixel_counts = hl_data{2:end, 2:end};
-hl_pixel_counts_percentage = (hl_pixel_counts/max(cl_pixel_counts(:)))*100;
-[hl_AzimuthGrid, hl_ElevationGrid] = meshgrid(hl_azimuth, hl_elevation);
-
-fog = './fog/land/지면 배경, 안개.xlsx';
-fog_data = readtable(fog);
-fog_elevation = fog_data{2:end, 1};
-fog_azimuth = fog_data{1,2:end};
-fog_pixel_counts = fog_data{2:end, 2:end};
-fog_pixel_counts_percentage = (fog_pixel_counts/max(cl_pixel_counts(:)))*100;
-[fog_AzimuthGrid, fog_ElevationGrid] = meshgrid(fog_azimuth, fog_elevation);
-
-cloud = './cloud/sky/하늘 배경, 구름.xlsx';
-cloud_data = readtable(cloud);
-cloud_elevation = cloud_data{2:end, 1};
-cloud_azimuth = cloud_data{1,2:end};
-cloud_pixel_counts = cloud_data{2:end, 2:end};
-cloud_pixel_counts_percentage = (cloud_pixel_counts/max(cl_pixel_counts(:)))*100;
-[cloud_AzimuthGrid, cloud_ElevationGrid] = meshgrid(cloud_azimuth, cloud_elevation);
-
-snow = './snow/설원 배경, 강설.xlsx';
-snow_data = readtable(snow);
-snow_elevation = snow_data{2:end, 1};
-snow_azimuth = snow_data{1,2:end};
-snow_pixel_counts = snow_data{2:end, 2:end};
-snow_pixel_counts_percentage = (snow_pixel_counts/max(cl_pixel_counts(:)))*100;
-[snow_AzimuthGrid, snow_ElevationGrid] = meshgrid(snow_azimuth, snow_elevation);
-
-forest = './forest/숲 배경.xlsx';
-forest_data = readtable(forest);
-forest_elevation = forest_data{2:end, 1};
-forest_azimuth = forest_data{1,2:end};
-forest_pixel_counts = forest_data{2:end, 2:end};
-forest_pixel_counts_percentage = (forest_pixel_counts/max(cl_pixel_counts(:)))*100;
-[forest_AzimuthGrid, forest_ElevationGrid] = meshgrid(forest_azimuth, forest_elevation);
+% ml = './moderate_rain/land/지면 배경, 우천시.xlsx';
+% ml_data = readtable(ml);
+% ml_elevation = ml_data{2:end, 1};
+% ml_azimuth = ml_data{1,2:end};
+% ml_pixel_counts = ml_data{2:end, 2:end};
+% ml_pixel_counts_percentage = (ml_pixel_counts/max(cl_pixel_counts(:)))*100;
+% [ml_AzimuthGrid, ml_ElevationGrid] = meshgrid(ml_azimuth, ml_elevation);
+% 
+% hl = './heavy_rain/sky/폭우 환경, 하늘 배경.xlsx';
+% hl_data = readtable(hl);
+% hl_elevation = hl_data{2:end, 1};
+% hl_azimuth = hl_data{1,2:end};
+% hl_pixel_counts = hl_data{2:end, 2:end};
+% hl_pixel_counts_percentage = (hl_pixel_counts/max(cl_pixel_counts(:)))*100;
+% [hl_AzimuthGrid, hl_ElevationGrid] = meshgrid(hl_azimuth, hl_elevation);
+% 
+% fog = './fog/land/지면 배경, 안개.xlsx';
+% fog_data = readtable(fog);
+% fog_elevation = fog_data{2:end, 1};
+% fog_azimuth = fog_data{1,2:end};
+% fog_pixel_counts = fog_data{2:end, 2:end};
+% fog_pixel_counts_percentage = (fog_pixel_counts/max(cl_pixel_counts(:)))*100;
+% [fog_AzimuthGrid, fog_ElevationGrid] = meshgrid(fog_azimuth, fog_elevation);
+% 
+% cloud = './cloud/sky/하늘 배경, 구름.xlsx';
+% cloud_data = readtable(cloud);
+% cloud_elevation = cloud_data{2:end, 1};
+% cloud_azimuth = cloud_data{1,2:end};
+% cloud_pixel_counts = cloud_data{2:end, 2:end};
+% cloud_pixel_counts_percentage = (cloud_pixel_counts/max(cl_pixel_counts(:)))*100;
+% [cloud_AzimuthGrid, cloud_ElevationGrid] = meshgrid(cloud_azimuth, cloud_elevation);
+% 
+% snow = './snow/설원 배경, 강설.xlsx';
+% snow_data = readtable(snow);
+% snow_elevation = snow_data{2:end, 1};
+% snow_azimuth = snow_data{1,2:end};
+% snow_pixel_counts = snow_data{2:end, 2:end};
+% snow_pixel_counts_percentage = (snow_pixel_counts/max(cl_pixel_counts(:)))*100;
+% [snow_AzimuthGrid, snow_ElevationGrid] = meshgrid(snow_azimuth, snow_elevation);
+% 
+% forest = './forest/숲 배경.xlsx';
+% forest_data = readtable(forest);
+% forest_elevation = forest_data{2:end, 1};
+% forest_azimuth = forest_data{1,2:end};
+% forest_pixel_counts = forest_data{2:end, 2:end};
+% forest_pixel_counts_percentage = (forest_pixel_counts/max(cl_pixel_counts(:)))*100;
+% [forest_AzimuthGrid, forest_ElevationGrid] = meshgrid(forest_azimuth, forest_elevation);
 
 % clear = './clear/clear sky.xlsx';
 % clear_data = readtable(clear);
@@ -290,77 +298,77 @@ set(gca, 'YDir', 'reverse');
 % caxis_range = caxis;
 
 % moderate rain 픽셀
-figure;
-contourf(ml_AzimuthGrid, ml_ElevationGrid, ml_pixel_counts_percentage, 'LineColor', 'none');
-colormap(jet);
-colorbar;
-xlabel('Azimuth (degree)');
-ylabel('Elevation (degree)');
-title('Percentage of Pixels - Moderate Rain Env');
-grid on;
-set(gca, 'YDir', 'reverse');
-
-% 컬러맵 범위를 첫 번째 그래프에 맞춤
-% caxis(caxis_range);
-% Colorbar의 범위를 원래 데이터 범위로 설정
-% c.Limits = [0, max(clear_pixel_counts_percentage(:))];
-
-% heavy rain 픽셀
-figure;
-contourf(hl_AzimuthGrid, hl_ElevationGrid, hl_pixel_counts_percentage, 'LineColor', 'none');
-colormap(jet);
-colorbar;
-xlabel('Azimuth (degree)');
-ylabel('Elevation (degree)');
-title('Percentage of Pixels - Heavy Rain Env');
-grid on;
-set(gca, 'YDir', 'reverse');
-% caxis(caxis_range);
-
-% fog 픽셀
-figure;
-contourf(fog_AzimuthGrid, fog_ElevationGrid, fog_pixel_counts_percentage, 'LineColor', 'none');
-colormap(jet);
-colorbar;
-xlabel('Azimuth (degree)');
-ylabel('Elevation (degree)');
-title('Percentage of Pixels - Fog Env');
-grid on;
-set(gca, 'YDir', 'reverse');
-% caxis(caxis_range);
-
-% cloud 픽셀
-figure;
-contourf(cloud_AzimuthGrid, cloud_ElevationGrid, cloud_pixel_counts_percentage, 'LineColor', 'none');
-colormap(jet);
-colorbar;
-xlabel('Azimuth (degree)');
-ylabel('Elevation (degree)');
-title('Percentage of Pixels - Cloud Env');
-grid on;
-set(gca, 'YDir', 'reverse');
-
-% snow 픽셀
-figure;
-contourf(snow_AzimuthGrid, snow_ElevationGrid, snow_pixel_counts_percentage, 'LineColor', 'none');
-colormap(jet);
-colorbar;
-xlabel('Azimuth (degree)');
-ylabel('Elevation (degree)');
-title('Percentage of Pixels - Snow Env');
-grid on;
-set(gca, 'YDir', 'reverse');
-
-% forest 픽셀
-figure;
-contourf(forest_AzimuthGrid, forest_ElevationGrid, forest_pixel_counts_percentage, 'LineColor', 'none');
-colormap(jet);
-colorbar;
-xlabel('Azimuth (degree)');
-ylabel('Elevation (degree)');
-title('Percentage of Pixels - Forest Env');
-grid on;
-set(gca, 'YDir', 'reverse');
+% figure;
+% contourf(ml_AzimuthGrid, ml_ElevationGrid, ml_pixel_counts_percentage, 'LineColor', 'none');
+% colormap(jet);
+% colorbar;
+% xlabel('Azimuth (degree)');
+% ylabel('Elevation (degree)');
+% title('Percentage of Pixels - Moderate Rain Env');
+% grid on;
+% set(gca, 'YDir', 'reverse');
+% 
+% % 컬러맵 범위를 첫 번째 그래프에 맞춤
+% % caxis(caxis_range);
+% % Colorbar의 범위를 원래 데이터 범위로 설정
+% % c.Limits = [0, max(clear_pixel_counts_percentage(:))];
+% 
+% % heavy rain 픽셀
+% figure;
+% contourf(hl_AzimuthGrid, hl_ElevationGrid, hl_pixel_counts_percentage, 'LineColor', 'none');
+% colormap(jet);
+% colorbar;
+% xlabel('Azimuth (degree)');
+% ylabel('Elevation (degree)');
+% title('Percentage of Pixels - Heavy Rain Env');
+% grid on;
+% set(gca, 'YDir', 'reverse');
+% % caxis(caxis_range);
+% 
+% % fog 픽셀
+% figure;
+% contourf(fog_AzimuthGrid, fog_ElevationGrid, fog_pixel_counts_percentage, 'LineColor', 'none');
+% colormap(jet);
+% colorbar;
+% xlabel('Azimuth (degree)');
+% ylabel('Elevation (degree)');
+% title('Percentage of Pixels - Fog Env');
+% grid on;
+% set(gca, 'YDir', 'reverse');
+% % caxis(caxis_range);
+% 
+% % cloud 픽셀
+% figure;
+% contourf(cloud_AzimuthGrid, cloud_ElevationGrid, cloud_pixel_counts_percentage, 'LineColor', 'none');
+% colormap(jet);
+% colorbar;
+% xlabel('Azimuth (degree)');
+% ylabel('Elevation (degree)');
+% title('Percentage of Pixels - Cloud Env');
+% grid on;
+% set(gca, 'YDir', 'reverse');
+% 
+% % snow 픽셀
+% figure;
+% contourf(snow_AzimuthGrid, snow_ElevationGrid, snow_pixel_counts_percentage, 'LineColor', 'none');
+% colormap(jet);
+% colorbar;
+% xlabel('Azimuth (degree)');
+% ylabel('Elevation (degree)');
+% title('Percentage of Pixels - Snow Env');
+% grid on;
+% set(gca, 'YDir', 'reverse');
+% 
+% % forest 픽셀
+% figure;
+% contourf(forest_AzimuthGrid, forest_ElevationGrid, forest_pixel_counts_percentage, 'LineColor', 'none');
+% colormap(jet);
+% colorbar;
+% xlabel('Azimuth (degree)');
+% ylabel('Elevation (degree)');
+% title('Percentage of Pixels - Forest Env');
+% grid on;
+% set(gca, 'YDir', 'reverse');
 
 % 픽셀 개수에 대해 등고선 Plot
 % figure;
@@ -451,6 +459,126 @@ legend("0 dgree azimuth","135 degree azimuth");
 xticks(x);                  % x축 위치 설정
 xticklabels(x_labels);      % x축 레이블 설정
 grid on;
+
+
+%% 7. 함수 결과 테이블 시각화
+
+close all;
+
+% 고각0, 방위각90일 시
+% clear_data = [2876,1637,1013,685,501,390,316,262,222,189,161,138,119,102,88,76,65,56,48,42,36,31,26,23,20,17,15,13];
+% forest_data = [824,469,290,196,144,112,90,75,63,54,46,40,34,29,25,22,19,16,14,12,10,9,8,7,6,5,4,4];
+% moderate_rain_data = [1175,669,414,280,205,159,129,107,90,77,66,57,49,42,36,31,27,23,20,17,15,13,11,9,8,7,6,5];
+% snow_data = [1061,604,374,253,185,144,116,97,82,70,60,51,44,38,32,28,24,21,18,15,13,11,10,8,7,6,5,5];
+% heavy_rain_data = [375,213,132,89,65,51,41,34,29,25,21,18,16,13,11,10,8,7,6,5,5,4,3,3,3,2,2,2];
+% cloud_data = [279,159,98,66,49,38,31,25,22,18,16,13,12,10,9,7,6,5,5,4,3,3,3,2,2,2,1,1];
+% fog_data = [264,150,93,63,46,36,29,24,20,17,15,13,11,9,8,7,6,5,4,4,3,3,2,2,2,2,1,1];
+
+% clear_data = [1228,699,433,293,214,166,135,112,95,81,69,59,51,44,38,32,28,24,21,18,15,13,11,10,8,7,6,5];
+% forest_data = [363,207,128,86,63,49,40,33,28,24,20,17,15,13,11,10,8,7,6,5,5,4,3,3,2,2,2,2];
+% moderate_rain_data = [330,188,116,79,58,45,36,30,25,22,19,16,14,12,10,9,7,6,6,5,4,4,3,3,2,2,2,1];
+% snow_data = [377,215,133,90,66,51,41,34,29,25,21,18,16,13,12,10,9,7,6,5,5,4,3,3,3,2,2,2];
+% heavy_rain_data = [61,35,22,15,11,8,7,6,5,4,3,3,3,2,2,2,1,1,1,1,1,1,1,0,0,0,0,0];
+% cloud_data = [89,51,31,21,16,12,10,8,7,6,5,4,4,3,3,2,2,2,1,1,1,1,1,1,1,1,0,0];
+% fog_data = [75,43,27,18,13,10,8,7,6,5,4,4,3,3,2,2,2,1,1,1,1,1,1,1,1,0,0,0];
+
+clear_table = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/EO/function result/사선 하방에서 관찰 시/clear.csv';
+moderate_rain_table = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/EO/function result/사선 하방에서 관찰 시/moderate_rain.csv';
+heavy_rain_table = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/EO/function result/사선 하방에서 관찰 시/heavy_rain.csv';
+snow_table = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/EO/function result/사선 하방에서 관찰 시/snow.csv';
+fog_table = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/EO/function result/사선 하방에서 관찰 시/fog.csv';
+cloud_table = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/EO/function result/사선 하방에서 관찰 시/cloud.csv';
+forest_table = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/EO/function result/사선 하방에서 관찰 시/forest.csv';
+
+clear_data = readmatrix(clear_table);
+moderate_rain_data = readmatrix(moderate_rain_table);
+heavy_rain_data = readmatrix(heavy_rain_table);
+snow_data = readmatrix(snow_table);
+fog_data = readmatrix(fog_table);
+cloud_data = readmatrix(cloud_table);
+forest_data = readmatrix(forest_table);
+
+% x = 1:length(clear_data);
+x = 300:100:3000;
+
+figure;
+hold on;
+plot(x, clear_data, '-o', 'DisplayName', 'Clear', 'Color', 'b', 'LineWidth', 1.5);
+plot(x, forest_data, '-o', 'DisplayName', 'Forest', 'Color', [0.65 0.16 0.16], 'LineWidth', 1.5);
+plot(x, moderate_rain_data, '-o', 'DisplayName', 'Moderate Rain', 'Color', [0.5,0.5,0.5], 'LineWidth', 1.5);
+plot(x, snow_data, '-o', 'DisplayName', 'Snow', 'Color', 'c', 'LineWidth', 1.5);
+plot(x, heavy_rain_data, '-o', 'DisplayName', 'Heavy Rain', 'Color', 'm', 'LineWidth', 1.5);
+plot(x, cloud_data, '-o', 'DisplayName', 'Cloud', 'Color', 'k', 'LineWidth', 1.5);
+plot(x, fog_data, '-o', 'DisplayName', 'Fog', 'Color', 'r', 'LineWidth', 1.5);
+
+ylim([0 1000]);
+yline(25, 'r', 'LineWidth', 1.5, 'Label', '25', 'LabelHorizontalAlignment', 'left');
+title('각 배경환경 당 거리에 따른 픽셀 감소 추세');
+xlabel('Distance [m]');
+ylabel('PPM');
+legend show;
+grid on;
+hold off;
+
+
+%% 8. 피탐성 함수의 거리 비율을 테이블에 적용
+
+a = 20276.7791;
+b = -0.0075;
+c = 1114.5824;
+d = -0.0015;
+double_exp_model = @(x) a * exp(b * x) + c * exp(d * x);
+% 거리 이중 지수 함수에 사용될 거리 입력
+dist = 2000;
+refPixel = 204;
+minPixelCnt = 25;
+
+ratio = 1.0;  % clear_table에 대한 ratio 설정
+% ratio = 0.55;  % moderate_rain_table에 대한 ratio 설정
+% ratio = 0.2;  % heavy_rain_table에 대한 ratio 설정
+% ratio = 0.45;  % snow_table에 대한 ratio 설정
+% ratio = 0.15;  % fog_table에 대한 ratio 설정
+% ratio = 0.23;  % cloud_table에 대한 ratio 설정
+% ratio = 0.55;  % forest_table에 대한 ratio 설정
+
+cl = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/EO/보간 후 테이블/moderate_rain.xlsx';
+cl_data = readtable(cl);
+cl_elevation = cl_data{2:end, 1};
+cl_azimuth = cl_data{1,2:end};
+[cl_AzimuthGrid, cl_ElevationGrid] = meshgrid(cl_azimuth, cl_elevation);
+cl_pixel_counts = cl_data{2:end, 2:end};    % 인덱스 제외 데이터만 존재하는 테이블 생성
+
+calculated_pixel = double_exp_model(dist);
+pixelRatio = calculated_pixel / refPixel;
+finalPPM = round((pixelRatio * cl_pixel_counts)*ratio);
+
+% if finalPPM < 25
+%     finalPPM = 1;
+% finalPPM(finalPPM<25) = 0;
+% finalPPM(finalPPM>=25) = 1;
+
+% figure;
+% pcolor(cl_AzimuthGrid, cl_ElevationGrid, finalPPM);
+% shading flat;  % 각 블록의 경계를 없애고 부드럽게 표현
+% colormap([0 0 1; 1 0 0]);  % [0, 0, 1] 파란색, [1, 0, 0] 빨간색
+% caxis([0 1]);
+% colorbar;
+% xlabel('Azimuth (degree)');
+% ylabel('Elevation (degree)');
+% title('Binary Visualization: 1 (Red) for ≥25, 0 (Blue) for <25');
+% grid on;
+% set(gca, 'YDir', 'reverse');
+
+% figure;
+% contourf(cl_AzimuthGrid, cl_ElevationGrid, finalPPM, 'LineColor', 'none');
+% colormap(jet);
+% colorbar;
+% xlabel('Azimuth (degree)');
+% ylabel('Elevation (degree)');
+% title('Detection Test');
+% grid on;
+% set(gca, 'YDir', 'reverse');
+
 
 %% << 거리 기반 지수함수 피팅 >>
 %% 1-1. 새로 뽑은 데이터로, 비선형 회귀 함수
@@ -603,7 +731,7 @@ grid on;
 
 %% << 함수화 >>
 
-%% 기하, 배경 투명도, 거리에 따른 픽셀 수 검출 함수를 작성
+%% 기하, 배경, 거리에 따른 픽셀 수 검출 함수를 작성
 
 % 테이블을 먼저 입력받음
 
@@ -679,7 +807,7 @@ end
 
 disp([num2str(dist), '[m]의 거리가 입력되었습니다.']);
 
-refPixel = 204;
+refPixel = 304;
 minPixelCnt = 25;
 originalPixel = userTable(ele,azi);
 
@@ -696,7 +824,6 @@ pixelRatio = calculated_pixel/refPixel;     % 두 변수를 통해 비율을 계
 finalPPM = pixelRatio * originalPixel;     % 구한 비율을 특정 기상 상황 및 특정 기하에서의 픽셀과 곱함
 
 disp(['계산된 PPM 값: ', num2str(finalPPM)]);
-in 
 if finalPPM > minPixelCnt
     disp("목표가 식별 됨");
 else
@@ -706,6 +833,73 @@ end
 %% 함수 사용
 
 helperPPMCalc
+
+%% 함수화 코드 변형
+
+clear_table = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/EO/보간 후 테이블/clear_sky.xlsx';
+moderate_rain_table = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/EO/보간 후 테이블/moderate_rain.xlsx';
+heavy_rain_table = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/EO/보간 후 테이블/heavy_rain.xlsx';
+snow_table = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/EO/보간 후 테이블/snow.xlsx';
+fog_table = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/EO/보간 후 테이블/fog.xlsx';
+cloud_table = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/EO/보간 후 테이블/cloud.xlsx';
+forest_table = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/EO/보간 후 테이블/forest.xlsx';
+sheet = 1;
+
+% 변수 선언
+% 테이블 선언
+userTable = readmatrix(forest_table, 'Sheet', sheet);
+
+% 기하 선언
+ele_num = 30;
+azi_num = 45;
+if azi_num < 0   % 방위각이 음수일 경우 대칭성을 이용하여 양수의 범위에서 값을 찾음
+    azi_num = abs(azi_num);
+end    
+azi = azi_num + 2;
+ele = ele_num + 92;
+
+a = 20276.7791;
+b = -0.0075;
+c = 1114.5824;
+d = -0.0015;
+double_exp_model = @(x) a * exp(b * x) + c * exp(d * x);
+
+refPixel = 204;
+minPixelCnt = 25;
+originalPixel = userTable(ele, azi);
+
+distances = 300:100:3000;
+finalPPM_results = [];  % finalPPM 값을 저장할 배열
+
+% ratio = 1.0;  % clear_table에 대한 ratio 설정
+% ratio = 0.55;  % moderate_rain_table에 대한 ratio 설정
+% ratio = 0.2;  % heavy_rain_table에 대한 ratio 설정
+% ratio = 0.45;  % snow_table에 대한 ratio 설정
+% ratio = 0.15;  % fog_table에 대한 ratio 설정
+% ratio = 0.23;  % cloud_table에 대한 ratio 설정
+ratio = 0.55;  % forest_table에 대한 ratio 설정
+
+for dist = distances
+    disp([num2str(dist), '[m]의 거리가 입력되었습니다.']);
+    calculated_pixel = double_exp_model(dist);
+    pixelRatio = calculated_pixel / refPixel;
+    % Meteorological Range에 따른 비율 상수를 곱함
+    finalPPM = round((pixelRatio * originalPixel)*ratio);
+    disp(['계산된 PPM 값: ', num2str(finalPPM)]);
+    finalPPM_results = [finalPPM_results, finalPPM];
+    
+    if finalPPM > minPixelCnt
+        disp("목표가 식별 됨");
+    else
+        disp("목표 식별 불가");
+    end
+    disp('-----------------------');
+end
+
+% 결과를 CSV 파일로 저장
+csv_filename = './사선 하방에서 관찰 시/forest.csv';
+writematrix(finalPPM_results, csv_filename);
+disp(['결과가 ', csv_filename, '로 저장되었습니다.']);
 
 %% 테이블 보간 함수
 

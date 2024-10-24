@@ -7,8 +7,7 @@
 %% << Detectability >>
 %% 1. 이미지 파일 하나에 대해 detectability factor를 적용 
 
-clear;
-clc;
+
 
 all = imread("C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/" + ...
     "vtd13/data/IR/images/empty_sky/90/09.png");% 헬기 및 배경을 모두 포함하는 이미지

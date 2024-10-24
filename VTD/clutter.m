@@ -694,6 +694,22 @@ fprintf('CNR을 고려 안하였을 시 요구되는 추가 SNR: %.2f dB\n', req
 
 % 필요한 파라미터(받아야 되는 값들): 클러터 RCS, 
 
+%% 결과 시각화
+
+snr_values_1 = [9, 18.53, 27.53];
+snr_values_2 = [9, 0, 9];
+categories = {'기존 SNR', '목표물 탐지 SNR', '결과 SNR'};
+figure;
+b = bar([snr_values_1; snr_values_2]', 'grouped');
+b(1).FaceColor = [0.65 0.16 0.16];  % 갈색
+b(2).FaceColor = [0.53 0.81 0.98];  % 하늘색
+% bar([snr_values_1; snr_values_2]', 'grouped');
+set(gca, 'XTickLabel', categories);
+ylabel('SNR 값 (dB)');
+title('SNR 비교');
+legend({'지표면 배경', '하늘 배경'}, 'Location', 'northwest');
+grid on;
+
 %% << Simulate Clutter for System with Known Power >> %%
 % constantGammaClutter에 대한 매트랩 예시
 
