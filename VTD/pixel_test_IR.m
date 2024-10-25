@@ -7,13 +7,13 @@
 %% << Detectability >>
 %% 1. 이미지 파일 하나에 대해 detectability factor를 적용 
 
+clear;
 
-
-all = imread("C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/" + ...
-    "vtd13/data/IR/images/empty_sky/90/09.png");% 헬기 및 배경을 모두 포함하는 이미지
+%  헬기 및 배경을 모두 포함하는 이미지
+all = imread("C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/IR/images/spring/90/09.png");
 all_temp = all;    % 픽셀 비교 임시 이미지(헬기 영역만 픽셀 값이 없는 이미지)를 위한 위의 복사본
-land = imread("C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/" + ...
-    "vtd13/data/IR/images/empty_sky/background.png");% 지표에 대한 정보만을 포함하는 이미지
+% 지표에 대한 정보만을 포함하는 이미지
+land = imread("C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/IR/images/spring/background.png");
 
 all_gray = rgb2gray(all);                   % rgb2gray 결과는 0~255의 값을 가짐
 all_temp_gray = rgb2gray(all);
@@ -28,10 +28,6 @@ all_new = (all_gray/255)*100;
 all_norm = 256*all_double;                 % 정규화
 all_temp_norm = 256*all_temp_double;
 land_norm = 256*land_double;
-
-all_sum = sum(all_norm(:));                 % 픽셀값의 총 합 구하기
-land_sum = sum(land_norm(:));
-heli_only_sum = all_sum - land_sum;
 
 [rows,cols] = size(all_gray);
 
@@ -49,9 +45,9 @@ end
 
 % 0으로 만든 이미지와 원래 이미지를 빼면 헬기에 해당하는 영역만이 나옴
 heli_only = all_gray - all_temp_gray;
-% land_only = all_gray - heli_only;
 land_only = all_gray - heli_only;
 
+% 0~1의 double 형태에서 구함
 heli_only_double = im2double(heli_only)*100;
 land_only_double = im2double(land_only)*100;
 
@@ -74,14 +70,16 @@ end
 % 평균을 구한 값을 통하여 detectability 산출
 % 0~1까지의 정규화를 수행한 값이므로 타당
 % 하나의 값을 사용한다 가정하기 위하여 평균값을 이용
-diff = abs(sum(land_only_double(:))/land_cnt - sum(heli_only_double(:))/heli_cnt);
-disp(heli_cnt)
-disp(diff)
+diff_double = abs(sum(land_only_double(:))/land_cnt - sum(heli_only_double(:))/heli_cnt);
+disp('factor 적용된 결과')
+disp((heli_cnt/25)*(diff_double/100))
+disp(diff_double)
 
-% diff = abs(sum(land_only(:))/land_cnt - sum(heli_only(:))/heli_cnt);
-% disp("기존 사용한 코드의 경우")
-% disp(heli_cnt)
-% disp(diff)
+% 원래 코드
+diff = abs(sum(land_only(:))/land_cnt - sum(heli_only(:))/heli_cnt);
+disp('factor 적용된 결과')
+disp((heli_cnt/25)*(diff/100))
+disp(diff)
 
 % 헬기에 해당하는 영역을 1로, 아닌영역을 0으로 이진화 시켜 헬기만 검출된게 맞는지 확인
 % for i = 1:500
@@ -98,11 +96,11 @@ disp(diff)
 %% 2. 폴더 내 이미지 파일들에 대해 알고리즘을 적용
 
 % clc;
-% clear;
+clear;
 
 % 경로 설정
-folder_path = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/IR/images_set/fall/90/%02d.png';
-land_path = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/IR/images_set/fall/background.png';
+folder_path = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/IR/images/empty_sky/90/%02d.png';
+land_path = ['C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/IR/images/empty_sky/background.png'];
 
 num_files = 19;  % 처리할 이미지 수
 results_diff = zeros(num_files, 1);   % diff 값을 저장할 배열
@@ -146,6 +144,7 @@ for i = 1:num_files
     end
     
     % 헬기와 배경만의 이미지 생성
+    % 0부터 255까지의 범위인 데이터(0~1의 명도 값 아님)
     heli_only = all_gray - all_temp_gray;
     land_only = all_gray - heli_only;
     
@@ -192,7 +191,7 @@ end
 
 disp(results_table_1);
 disp(reference_pixels');
-% disp(round(results_final'))
+disp(round(results_final'))
 % disp(mean(diff))
 
 %% << 함수화 >>
@@ -241,6 +240,7 @@ heliTemp = input('수직이착륙기 온도를 입력하세요: ');
 distance = input("카메라와 수직이착륙기 간 거리를 입력하세요: ");
 
 % 미리 구해어진 PPM과 곱해질 detectability factor 정의
+% 여름 봄 가을 구름 겨울 하늘
 detectabilityFactor = [0.128656, 0.277489, 0.43701, 0.457087, 0.477178, 0.8254399];
 
 % 크기 차이 순서를 메기기 위한 배경 온도 상수로 이루어진 배열 생성
@@ -301,7 +301,7 @@ end
 
 % helperIRDetectability(heliTemp, azi, ele, background, distance);
 
-%% 한 폴더에 대해
+%% 
 
 clear;
 clc;
@@ -322,7 +322,7 @@ for col = 1:num_images
     end
 end
 
-%% 반복문으로 모든 경로의 폴더에 대해 수행
+%% 
 
 clear;
 clc;
@@ -344,13 +344,6 @@ for col = 1:num_images
     end
 end
 
-%% 결과 확인
-close all
-for row = 1:num_images
-    figure;
-    imshow(temperature_data{row, 13}, []);      % 원하는 열 입력
-    title(sprintf('Image %02d from the folder', row-1));
-end
 
 %%
 

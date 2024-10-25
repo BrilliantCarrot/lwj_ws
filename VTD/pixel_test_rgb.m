@@ -523,25 +523,31 @@ hold off;
 
 %% 8. 피탐성 함수의 거리 비율을 테이블에 적용
 
+close all;
+
+% 이중 지수 함수 모델은 동일한것을 사용
 a = 20276.7791;
 b = -0.0075;
 c = 1114.5824;
 d = -0.0015;
 double_exp_model = @(x) a * exp(b * x) + c * exp(d * x);
+
 % 거리 이중 지수 함수에 사용될 거리 입력
-dist = 2000;
+dist = 3000;
+
 refPixel = 204;
 minPixelCnt = 25;
 
-ratio = 1.0;  % clear_table에 대한 ratio 설정
+% ratio = 1.0;  % clear_table에 대한 ratio 설정
 % ratio = 0.55;  % moderate_rain_table에 대한 ratio 설정
 % ratio = 0.2;  % heavy_rain_table에 대한 ratio 설정
 % ratio = 0.45;  % snow_table에 대한 ratio 설정
 % ratio = 0.15;  % fog_table에 대한 ratio 설정
 % ratio = 0.23;  % cloud_table에 대한 ratio 설정
-% ratio = 0.55;  % forest_table에 대한 ratio 설정
+ratio = 0.55;  % forest_table에 대한 ratio 설정
 
-cl = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/EO/보간 후 테이블/moderate_rain.xlsx';
+% cl은 읽어 들일 테이블 명
+cl = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/EO/보간 후 테이블/forest.xlsx';
 cl_data = readtable(cl);
 cl_elevation = cl_data{2:end, 1};
 cl_azimuth = cl_data{1,2:end};
@@ -552,22 +558,22 @@ calculated_pixel = double_exp_model(dist);
 pixelRatio = calculated_pixel / refPixel;
 finalPPM = round((pixelRatio * cl_pixel_counts)*ratio);
 
-% if finalPPM < 25
-%     finalPPM = 1;
-% finalPPM(finalPPM<25) = 0;
-% finalPPM(finalPPM>=25) = 1;
+% 피탐성 기준(25ppm)에 따라 탐지 성공, 실패 여부를 시각화
+finalPPM(finalPPM<minPixelCnt) = 0;
+finalPPM(finalPPM>=minPixelCnt) = 1;
 
-% figure;
-% pcolor(cl_AzimuthGrid, cl_ElevationGrid, finalPPM);
-% shading flat;  % 각 블록의 경계를 없애고 부드럽게 표현
-% colormap([0 0 1; 1 0 0]);  % [0, 0, 1] 파란색, [1, 0, 0] 빨간색
-% caxis([0 1]);
-% colorbar;
-% xlabel('Azimuth (degree)');
-% ylabel('Elevation (degree)');
-% title('Binary Visualization: 1 (Red) for ≥25, 0 (Blue) for <25');
-% grid on;
-% set(gca, 'YDir', 'reverse');
+% 시각화
+figure;
+pcolor(cl_AzimuthGrid, cl_ElevationGrid, finalPPM);
+shading flat;  % 각 블록의 경계를 없애고 부드럽게 표현
+colormap([0.3 0.7 0.3; 0.8 0.2 0.2]);  % [0, 1, 0] 녹색, [1, 0, 0] 빨간색
+caxis([0 1]);
+colorbar;
+xlabel('Azimuth (degree)');
+ylabel('Elevation (degree)');
+title('forest 배경 피탐 여부 시각화: 3000m 거리');
+grid on;
+set(gca, 'YDir', 'reverse');
 
 % figure;
 % contourf(cl_AzimuthGrid, cl_ElevationGrid, finalPPM, 'LineColor', 'none');
