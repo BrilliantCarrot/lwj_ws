@@ -17,13 +17,13 @@ close all;
 % img_bwarea = imread("../data/bwarea.png");
 
 % img = imread("./fog/land/temp/01.png");
-img = imread("C:/Users/leeyj/Downloads/VTD Temp/25.png");
+img = imread("C:/Users/leeyj/Downloads/VTD Temp/EO/moderate rain/09.png");
 % figure
 % imshow(img);
 % title("원본 이미지");
 
-upper_bound = [148, 148, 148];
-lower_bound = [69,69,69];
+upper_bound = [50,50,50];
+lower_bound = [0,0,0];
 
 % 경계 값 설정을 통해 특정 색상의 헬기 픽셀 검출
 % lower_bound = [70, 120, 60];
@@ -98,7 +98,7 @@ close all;
 % 경로 설정
 % 파이썬 opencv를 통해 전처리된(마스킹된) 이미지에 대하여 픽셀 검출
 % 파이썬 실행 후 이 매트랩 파일을 실행
-path = 'C:/Users/leeyj/Downloads/VTD Temp/%02d.png';      % vscode를 통해 미리 생성된 마스킹된 결과 이미지가 있는 경로
+path = 'C:/Users/leeyj/Downloads/VTD Temp/EO/moderate rain/%02d.png';      % vscode를 통해 미리 생성된 마스킹된 결과 이미지가 있는 경로
 % num_files = 19;
 num_files = 28;
 
@@ -115,14 +115,14 @@ for i = 1:num_files
     img_name = sprintf(path, i-1);
     img = imread(img_name);
 
-upper_bound = [150, 150, 150];
-lower_bound = [69,69,69];
+upper_bound = [50, 50, 50];
+lower_bound = [0,0,0];
 
     binaryImg = img(:,:,1) >= lower_bound(1) & img(:,:,1) <= upper_bound(1) & ...
                 img(:,:,2) >= lower_bound(2) & img(:,:,2) <= upper_bound(2) & ...
                 img(:,:,3) >= lower_bound(3) & img(:,:,3) <= upper_bound(3);
 
-    binaryImg = bwareaopen(binaryImg, 10);    % 특정 픽셀보다 작은 인식 결과는 제외
+    binaryImg = bwareaopen(binaryImg, 150);    % 특정 픽셀보다 작은 인식 결과는 제외
 
     % 이진화와 불필요 픽셀을 모두 제거한 결과 픽셀들의 sum을 구함
     helicopterPixels = sum(binaryImg(:));
@@ -135,26 +135,38 @@ lower_bound = [69,69,69];
     results_original.HelicopterPixelsNum(i) = helicopterPixels;
     results_devide.UnityPixelsNum(i) = unityPixelsNum;
 
-    ppm = [ppm,unityPixelsNum];
+    ppm = [ppm,round(unityPixelsNum)];
 
     % 결과 시각화
-    % contours = bwperim(binaryImg);
-    % figure
-    % imshow(img);
-    % hold on;
-    % visboundaries(contours, 'Color', 'r');
-    % title(sprintf('픽셀 구분 최종 결과 - 파일 %02d', i-1));
-    % pause(0.05)
-    % hold off;
+    contours = bwperim(binaryImg);
+    figure
+    imshow(img);
+    hold on;
+    visboundaries(contours, 'Color', 'r');
+    title(sprintf('픽셀 구분 최종 결과 - 파일 %02d', i-1));
+    pause(0.05)
+    hold off;
 end
 
-disp(results_devide);
+% disp(results_devide);
+disp(flipud(results_devide));
 % writetable(results_original, 'Results.csv');
 close all;
 
-csv_filename = 'finalPPM_results.csv';
-writematrix(ppm, csv_filename);
+% csv_filename = 'finalPPM_results.csv';
+% writematrix(ppm, csv_filename);
+% disp(['결과가 ', csv_filename, '로 저장되었습니다.']);
+
+% ppm 배열을 역순으로 뒤집음
+ppm_flipped = flip(ppm);
+csv_filename = 'heavy rain.csv';
+writematrix(ppm_flipped, csv_filename);
 disp(['결과가 ', csv_filename, '로 저장되었습니다.']);
+
+% 난수 추가 버전
+% csv_filename = 'cloud.csv';
+% writematrix(data, csv_filename);
+% disp(['결과가 ', csv_filename, '로 저장되었습니다.']);
 
 % sky background upper bound 110 110 110
 
@@ -461,7 +473,7 @@ xticklabels(x_labels);      % x축 레이블 설정
 grid on;
 
 
-%% 7. 함수 결과 테이블 시각화
+%% 7-1. 함수 결과 테이블 시각화
 
 close all;
 
@@ -481,6 +493,9 @@ close all;
 % heavy_rain_data = [61,35,22,15,11,8,7,6,5,4,3,3,3,2,2,2,1,1,1,1,1,1,1,0,0,0,0,0];
 % cloud_data = [89,51,31,21,16,12,10,8,7,6,5,4,4,3,3,2,2,2,1,1,1,1,1,1,1,1,0,0];
 % fog_data = [75,43,27,18,13,10,8,7,6,5,4,4,3,3,2,2,2,1,1,1,1,1,1,1,1,0,0,0];
+
+moderate_rain_data = [1175,669,414,280,205,159,129,107,90,77,66,57,49,42,36,31,27,23,20,17,15,13,11,9,8,7,6,5];
+moderate_rain_data = [1258,653,409,298,210,159,128,97,81,64,60,49,43,38,35,29,28,27,24,21,18,15,13,11,10,9,8,8];
 
 clear_table = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/EO/function result/사선 하방에서 관찰 시/clear.csv';
 moderate_rain_table = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/EO/function result/사선 하방에서 관찰 시/moderate_rain.csv';
@@ -520,6 +535,24 @@ legend show;
 grid on;
 hold off;
 
+%% 7-2.
+
+moderate_rain_data_function = [1175,669,414,280,205,159,129,107,90,77,66,57,49,42,36,31,27,23,20,17,15,13,11,9,8,7,6,5];
+moderate_rain_data_unity = [1258,653,409,298,210,159,128,97,81,64,60,49,43,38,35,29,28,27,24,21,18,15,13,11,10,9,8,8];
+
+x = 300:100:3000;
+figure;
+hold on;
+plot(x, moderate_rain_data_function, '-o', 'DisplayName', 'Clear', 'Color', 'b', 'LineWidth', 1.5);
+plot(x, moderate_rain_data_unity, '-o', 'DisplayName', 'Snow', 'Color', 'c', 'LineWidth', 1.5);
+ylim([0 1300]);
+yline(25, 'r', 'LineWidth', 1.5, 'Label', '25', 'LabelHorizontalAlignment', 'left');
+title('moderate rain 상황에서 거리에 따른 픽셀 감소 추세');
+xlabel('Distance [m]');
+ylabel('PPM');
+legend("함수를 통해 산출된 결과","Unity에서 거리에 따라 캡처한 데이터");
+grid on;
+hold off;
 
 %% 8. 피탐성 함수의 거리 비율을 테이블에 적용
 
@@ -631,7 +664,7 @@ legend('Original Data', 'Fitted Exponential Curve');
 grid on;
 
 
-%% 1-2. 이중 지수 함수를 통해 피팅
+%% 1-2-1. 이중 지수 함수를 통해 피팅
 % 이 지수 함수 모델을 사용
 
 x = (300:100:3000);
@@ -669,6 +702,77 @@ title('Double Exponential Fit to Data');
 legend('Original Data', 'Fitted Double Exponential Curve');
 grid on;
 
+%% 1-2-2. 이중 지수 함수 비교용
+% 유니티 기반에서 데이터 생성용의 비율(참고 논문과 상이)
+
+x = (300:100:3000);
+% claer
+% y = [2847,1595,989,694,500,377,298,240,202,165,142,116,103,94,82,69,65,55,49,45,41,36,35,34,33,29,22,21];
+% moderate rain : 0.6
+% y = [1770,932,594,421,323,239,185,157,127,110,90,74,67,61,50,43,41,38,32,32,26,24,22,21,25,20,16,14];
+% heavy rain : 0.3
+% y = [859,483,299,211,153,114,91,73,62,52,46,36,36,33,28,24,22,22,17,15,16,13,13,13,11,10,12,11];
+% snow : 0.55
+% y = [1579,888,556,394,288,215,170,143,125,105,92,87,70,62,59,50,42,31,29,29,27,24,23,20,19,18,15,12];
+% cloud : 0.87
+% 유니티 상에서 찍은 걸 비교하면 0.87이나 참고 논문의 meteorological range를 보면 0.1배로 나와서 참고 논문의 비율을 적용
+% y = [2479,1389,863,605,436,329,260,212,179,145,127,102,92,84,74,63,58,50,45,41,39,34,31,33,31,26,20,20];
+% forest : 0.664
+% y =
+% [1893,1062,662,465,336,252,203,162,136,115,99,80,72,65,56,48,46,39,38,31,29,25,22,19,19,18,15,14];
+% fog : 0.603
+% y = [1722,967,599,419,304,230,183,147,126,103,88,71,64,55,50,42,39,35,32,28,30,26,24,22,20,19,17,15];
+
+% 이중 지수 함수를 정의 (a * exp(b * x) + c * exp(d * x))
+double_exp_model_2 = @(a, b, c, d, x) a * exp(b * x) + c * exp(d * x);
+
+% 비선형 모델 피팅을 위한 시작 추정값
+% a, b, c, d 초기값 설정
+initial_guess_2 = [y(1), -0.001, y(end), -0.0001];  
+
+% 피팅을 위한 비선형 회귀 함수 (최소 제곱법)
+fit_func_2 = @(params) sum((double_exp_model_2(params(1), params(2), params(3), params(4), x) - y).^2);
+
+% fminsearch로 최적의 a, b, c, d를 찾음
+optimal_params_2 = fminsearch(fit_func_2, initial_guess_2);
+
+a_opt_2 = optimal_params_2(1);
+b_opt_2 = optimal_params_2(2);
+c_opt_2 = optimal_params_2(3);
+d_opt_2 = optimal_params_2(4);
+fprintf('a = %.4f, b = %.4f, c = %.4f, d = %.4f\n', a_opt_2, b_opt_2, c_opt_2, d_opt_2);
+
+y_fit_2 = double_exp_model_2(a_opt_2, b_opt_2, c_opt_2, d_opt_2, x);
+
+figure;
+plot(x, y, 'bo-', 'LineWidth', 2); % 원래 데이터
+hold on;
+plot(x, y_fit_2, 'r--', 'LineWidth', 2); % 피팅된 이중 지수 함수
+xlabel('Distance [m]');
+ylabel('Pixel Number');
+title('Double Exponential Fit to Data');
+legend('Original Data', 'Fitted Double Exponential Curve');
+grid on;
+
+%%
+
+figure;
+plot(x, y_fit, 'bo-', 'LineWidth', 2); % 원래 피팅된 이중 지수 함수
+hold on;
+plot(x, y_fit_2, 'r--', 'LineWidth', 2); % moderate rain에 대해 피팅된 이중 지수 함수
+xlabel('Distance [m]');
+ylabel('Pixel Number');
+title('Double Exponential Function Comparison');
+legend('Clear Sky Fitted Model', 'Moderate Rain Fitted Model');
+grid on;
+
+%% 
+
+% raw_data = [2847,1595,989,694,500,377,298,240,202,165,142,116,103,94,82,69,65,55,49,45,41,36,35,34,33,29,22,21];
+data = round(raw_data * 0.603 + randi([1, 5], size(raw_data)));
+csv_filename = 'fog.csv';
+writematrix(data, csv_filename);
+disp(['결과가 ', csv_filename, '로 저장되었습니다.']);
 
 %% 1-3. 새로 뽑은 데이터로, lsqcurvefit
 
@@ -680,10 +784,10 @@ y = [9858, 2392, 1037, 580, 362, 250, 186, 138, 108, 84, 69, 58, 52, 45, 39]; % 
 exp_fun = @(c, x) c(1)*exp(c(2)*x);
 
 % 초기 추정값 (a와 b 값)
-initial_guess = [10000, -0.001];
+initial_guess_2 = [10000, -0.001];
 
 % 피팅 수행
-c_fit = lsqcurvefit(exp_fun, initial_guess, x, y);
+c_fit = lsqcurvefit(exp_fun, initial_guess_2, x, y);
 
 % 피팅 결과 출력
 disp('Fitted Parameters:');
@@ -691,10 +795,10 @@ disp(c_fit);
 
 % 피팅된 모델 그리기
 x_fit = linspace(min(x), max(x), 100);
-y_fit = exp_fun(c_fit, x_fit);
+y_fit_2 = exp_fun(c_fit, x_fit);
 
 figure;
-plot(x, y, 'o', x_fit, y_fit, '-');
+plot(x, y, 'o', x_fit, y_fit_2, '-');
 title('Exponential Fit using lsqcurvefit');
 xlabel('x');
 ylabel('y');
@@ -708,27 +812,27 @@ y = [4997, 2182, 1208, 773, 528, 365, 284, 216, 173, 146];
 % 지수함수 모델을 정의하는 익명함수 (a * exp(b * x))
 exp_model = @(a, b, x) a * exp(b * x);
 % 비선형 모델 피팅을 위한 시작 추정값
-initial_guess = [y(1), -0.001];  % a의 초기값은 첫 번째 y 값, b는 작은 음수 값으로 설정
+initial_guess_2 = [y(1), -0.001];  % a의 초기값은 첫 번째 y 값, b는 작은 음수 값으로 설정
 
 % 피팅을 위한 비선형 회귀 함수 사용
-fit_func = @(params) sum((exp_model(params(1), params(2), x) - y).^2);  % 최소 제곱법
+fit_func_2 = @(params) sum((exp_model(params(1), params(2), x) - y).^2);  % 최소 제곱법
 
 % fminsearch로 최적의 a와 b 찾기
-optimal_params = fminsearch(fit_func, initial_guess);
+optimal_params_2 = fminsearch(fit_func_2, initial_guess_2);
 
 % 최적의 a, b 값을 출력
-a_opt = optimal_params(1);
-b_opt = optimal_params(2);
-fprintf('a = %.4f, b = %.4f\n', a_opt, b_opt);
+a_opt_2 = optimal_params_2(1);
+b_opt_2 = optimal_params_2(2);
+fprintf('a = %.4f, b = %.4f\n', a_opt_2, b_opt_2);
 
 % 피팅된 지수함수로 y 값 예측
-y_fit = exp_model(a_opt, b_opt, x);
+y_fit_2 = exp_model(a_opt_2, b_opt_2, x);
 
 % 원래 데이터와 피팅된 데이터를 시각화
 figure;
 plot(x, y, 'bo-', 'LineWidth', 2); % 원래 데이터
 hold on;
-plot(x, y_fit, 'r--', 'LineWidth', 2); % 피팅된 지수함수
+plot(x, y_fit_2, 'r--', 'LineWidth', 2); % 피팅된 지수함수
 xlabel('x');
 ylabel('y');
 title('Exponential Fit to Data');
@@ -823,9 +927,9 @@ b = -0.0075;
 c = 1114.5824;
 d = -0.0015;
 
-double_exp_model = @(x) a * exp(b * x) + c * exp(d * x);    % 지수 함수 피팅 모델
+double_exp_model_2 = @(x) a * exp(b * x) + c * exp(d * x);    % 지수 함수 피팅 모델
 
-calculated_pixel = double_exp_model(dist);  % 비율을 구하기 위해 사용자가 입력한 거리에서 구해진 픽셀 수
+calculated_pixel = double_exp_model_2(dist);  % 비율을 구하기 위해 사용자가 입력한 거리에서 구해진 픽셀 수
 pixelRatio = calculated_pixel/refPixel;     % 두 변수를 통해 비율을 계산
 finalPPM = pixelRatio * originalPixel;     % 구한 비율을 특정 기상 상황 및 특정 기하에서의 픽셀과 곱함
 
@@ -868,7 +972,7 @@ a = 20276.7791;
 b = -0.0075;
 c = 1114.5824;
 d = -0.0015;
-double_exp_model = @(x) a * exp(b * x) + c * exp(d * x);
+double_exp_model_2 = @(x) a * exp(b * x) + c * exp(d * x);
 
 refPixel = 204;
 minPixelCnt = 25;
@@ -887,7 +991,7 @@ ratio = 0.55;  % forest_table에 대한 ratio 설정
 
 for dist = distances
     disp([num2str(dist), '[m]의 거리가 입력되었습니다.']);
-    calculated_pixel = double_exp_model(dist);
+    calculated_pixel = double_exp_model_2(dist);
     pixelRatio = calculated_pixel / refPixel;
     % Meteorological Range에 따른 비율 상수를 곱함
     finalPPM = round((pixelRatio * originalPixel)*ratio);
@@ -912,7 +1016,7 @@ disp(['결과가 ', csv_filename, '로 저장되었습니다.']);
 clear;
 
 % 1. 엑셀 파일에서 데이터 불러오기
-filename = 'D:/OneDrive - 인하대학교/school/assignment/vtd13/data/IR/reference_table_before.xlsx';  % 엑셀 파일 이름
+filename = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/IR/보간 전 detectability table/winter.xlsx';  % 엑셀 파일 이름
 sheet = 1;  % 첫 번째 시트
 data = readmatrix(filename, 'Sheet', sheet);
 
@@ -936,7 +1040,7 @@ data_interp = interp2(X, Y, data, Xq, Yq, 'linear');
 data_interp_with_angles = [[NaN, yq];  % 첫 번째 행 (0~180도의 경도)
                            [xq', data_interp]]; % 첫 번째 열 (위도) 추가
 % 4. 보간된 데이터를 엑셀로 저장
-output_filename = 'D:/OneDrive - 인하대학교/school/assignment/vtd13/data/IR/reference_table_after.xlsx';
+output_filename = ['C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/IR/detectability_tables/winter.xlsx'];
 writematrix(data_interp_with_angles, output_filename);
 
 

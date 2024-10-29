@@ -10,10 +10,10 @@
 clear;
 
 %  헬기 및 배경을 모두 포함하는 이미지
-all = imread("C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/IR/images/spring/90/09.png");
+all = imread("C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/IR/images/winter/60/09.png");
 all_temp = all;    % 픽셀 비교 임시 이미지(헬기 영역만 픽셀 값이 없는 이미지)를 위한 위의 복사본
 % 지표에 대한 정보만을 포함하는 이미지
-land = imread("C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/IR/images/spring/background.png");
+land = imread("C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/IR/images/winter/background_before.png");
 
 all_gray = rgb2gray(all);                   % rgb2gray 결과는 0~255의 값을 가짐
 all_temp_gray = rgb2gray(all);
@@ -99,8 +99,8 @@ disp(diff)
 clear;
 
 % 경로 설정
-folder_path = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/IR/images/empty_sky/90/%02d.png';
-land_path = ['C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/IR/images/empty_sky/background.png'];
+folder_path = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/IR/images/winter/180/%02d.png';
+land_path = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/IR/images/winter/background_after.png';
 
 num_files = 19;  % 처리할 이미지 수
 results_diff = zeros(num_files, 1);   % diff 값을 저장할 배열
@@ -118,7 +118,7 @@ land_sum = sum(land_norm(:));
 % 반복문을 통해 각 이미지를 처리
 for i = 1:num_files
     % 이미지 파일 경로 생성 및 읽기
-    img_path = sprintf(folder_path, i-1);  % 00.png, 01.png, ... , 18.png, 19.png
+    img_path = sprintf(folder_path, i-1);
     all = imread(img_path);
     
     % 전처리 과정
@@ -173,10 +173,6 @@ for i = 1:num_files
     results_diff(i) = diff;
     results_heli_cnt(i) = heli_cnt;
     results_land_cnt(i) = land_cnt;
-    
-    % % 진행 상태 출력
-    % fprintf('Processed image %d/%d: diff = %.4f, Helicopter Pixels = %d, Land Pixels = %d\n', ...
-    %     i, num_files, diff, heli_cnt, land_cnt);
 end
 
 results_table_1 = table((-90:10:90)', results_diff, results_heli_cnt, results_land_cnt, ...
@@ -189,9 +185,10 @@ for i = 1:19
     reference_pixels(i) = (results_heli_cnt(i)/25);
 end
 
-disp(results_table_1);
-disp(reference_pixels');
-disp(round(results_final'))
+% disp(results_table_1);
+% disp(reference_pixels');
+% disp(round(results_final'))
+disp(results_diff)
 % disp(mean(diff))
 
 %% << 함수화 >>
@@ -299,7 +296,117 @@ else
     disp("목표 식별 실패");
 end
 
+%%
+
 % helperIRDetectability(heliTemp, azi, ele, background, distance);
+
+%% detectability 테이블도 적용하는 최종 함수
+
+clear;
+close all;
+
+% detectabilityFactor 테이블 경로 설정 (각 환경에 해당하는 테이블)
+detectabilityTablePaths = {
+    'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/IR/detectability tables/empty_sky.xlsx',  % 하늘
+    'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/IR/detectability tables/winter.xlsx',  % 겨울
+    'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/IR/detectability tables/cloud.xlsx',  % 가을
+    'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/IR/detectability tables/autumn.xlsx',  % 구름
+    'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/IR/detectability tables/spring.xlsx',  % 봄
+    'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/IR/detectability tables/summer.xlsx',  % 여름
+};
+
+% detectabilityFactor에 각 환경 테이블을 동적으로 할당하기 위해 빈 셀 배열 생성
+detectabilityFactor = cell(1, length(detectabilityTablePaths));
+
+% detectabilityFactor 배열에 테이블을 동적으로 로드
+% for i = 1:length(detectabilityTablePaths)
+%     detectabilityFactor{i} = readmatrix(detectabilityTablePaths{i});
+% end
+
+emptySky = 240;
+winter = 270;
+cloud = 275;
+fall = 280;
+spring = 290;
+summer = 297;
+
+% reference_table_after는 보간 이미 수행
+refTable = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/IR/reference_table_after.xlsx';
+sheet = 1;
+refTable = readmatrix(refTable, 'Sheet', sheet);
+
+background = input('IR 카메라로 탐지되는 배경을 입력하세요: ','s');
+
+heliTemp = input('수직이착륙기 온도를 입력하세요: ');
+
+distance = input("카메라와 수직이착륙기 간 거리를 입력하세요: ");
+
+% 미리 구해어진 PPM과 곱해질 detectability factor 정의
+% 여름 봄 가을 구름 겨울 하늘
+% detectabilityFactor = [0.128656, 0.277489, 0.43701, 0.457087, 0.477178, 0.8254399];
+
+% 크기 차이 순서를 메기기 위한 배경 온도 상수로 이루어진 배열 생성
+varNames = {'empty sky','winter','cloud','fall','spring','summer'};
+varValues = [emptySky, winter, cloud, fall, spring, summer];
+
+% 사용자 입력 수직이착륙기 온도와의 크기 차이를 구함
+difference = abs(varValues - heliTemp);
+% 수직이착륙기의 표면 온도에 따라 각 환경에서의 detectability factor를 계산
+% 그 후 입력 배경에 맞는 환경 - detectability factor에 따라 PPM에 계산됨
+% 크기 차이대로 순서를 새로 설정
+[~, sortedIndices] = sort(difference);
+sortedVars = varNames(sortedIndices);
+
+% detectabilityFactor에 각 환경 테이블을 동적으로 로드하고, 정렬된 순서대로 배열
+detectabilityFactor = cell(1, length(detectabilityTablePaths));
+for i = 1:length(detectabilityTablePaths)
+    detectabilityFactor{i} = readmatrix(detectabilityTablePaths{sortedIndices(i)});
+end
+
+% 크기 차이별로 순서가 정렬된 배열에서 원하는 배경을 찾음
+inputOrder = find(strcmp(sortedVars, background));
+
+% % 수직이착륙기 기하(고각, 방위각)를 입력받음
+ele = input('Enter elevation: ');
+azi = input('Enter azimuth: ');
+if azi <0   % 방위각이 음수일 경우 대칭성을 이용하여 양수의 범위에서 값을 찾음
+    azi = abs(azi);
+end  
+azi = azi+2;
+ele = ele+92;
+
+% 테이블은 레퍼런스 테이블을 이용
+originalPPM = refTable(ele,azi);
+% PPM과 곱하여 최종적인 픽셀 수 산출
+selectedTable = detectabilityFactor{inputOrder};  % inputOrder에 따른 테이블 선택
+detectabilityFactorValue = selectedTable(ele, azi)/100;  % 선택된 피탐성 테이블에서 고각 및 방위각 위치의 값
+factoredPPM = originalPPM * detectabilityFactorValue;
+disp(['원래 PPM: ', num2str(originalPPM)]);
+disp(['detectability 값: ', num2str(detectabilityFactorValue)])
+disp(['detectability 비율이 곱해진 PPM 값: ', num2str(factoredPPM)]);
+
+refPixel = 238;
+minPixelCnt = 25;
+
+% 사전에 미리 구한 이중 지수 함수의 파라미터를 이용
+a = 20276.7791;
+b = -0.0075;
+c = 1114.5824;
+d = -0.0015;
+
+double_exp_model = @(x) a * exp(b * x) + c * exp(d * x);    % 지수 함수 피팅 모델
+
+calculated_pixel = double_exp_model(distance);  % 비율을 구하기 위해 사용자가 입력한 거리에서 구해진 픽셀 수
+pixelRatio = calculated_pixel/refPixel;     % 두 변수를 통해 비율을 계산
+finalPPM = pixelRatio * factoredPPM;     % 구한 비율을 특정 기상 상황 및 특정 기하에서의 픽셀과 곱함
+disp(['거리에 따른 pixel ratio: ', num2str(pixelRatio)]);
+disp(['계산된 PPM 값: ', num2str(finalPPM)]);
+
+if finalPPM > minPixelCnt
+    disp("목표가 식별 됨");
+else
+    disp("목표 식별 실패");
+end
 
 %% 
 
@@ -421,3 +528,55 @@ imshow(uint8(normalizedImage));
 % max(max(temp_pixel))
 % min(min(temp_pixel))
 
+%% 결과 시각화
+
+clear;
+close all;
+
+% Data and labels
+values = [115.6215, 69.9341, 50.2652, 33.1567];
+seasons = {'하늘', '가을', '봄', '여름'};
+
+% Colors for each season: sky-blue, brown, yellow, blue
+colors = [0.5, 0.8, 1;  % Sky color
+          0.6, 0.3, 0;  % Brown
+          1, 1, 0;      % Yellow
+          0, 0.4, 1];   % Blue
+
+% Create the bar plot with individual colors
+figure;
+b = bar(values);
+
+% Apply specified colors and thicker edges to each bar
+b.FaceColor = 'flat';
+b.LineWidth = 1.5;  % Thicker border for the bars
+for k = 1:length(values)
+    b.CData(k, :) = colors(k, :);  % Assigns color for each bar
+    b.EdgeColor = [0, 0, 0];  % Set border color to black for all bars
+end
+
+% Customize axes and labels
+set(gca, 'XTickLabel', seasons);  % Set x-axis tick labels to seasons
+xlabel('계절', 'FontSize', 12);
+ylabel('PPM', 'FontSize', 12);
+title('기하 0도, 방위각 90도, 거리 1500m, 온도 322k');
+
+% Set y-axis label color to black
+ylabel('PPM', 'Color', 'k');
+
+
+% snr_values_1 = [115.6215, 69.9341, 50.2652, 33.1567];
+% snr_values_2 = [19.7882, 8.5287, 3.795, 0.39721];
+% snr_values_3 = [86.5563, 46.3475, 26.6488, 10.3359];
+% categories = {'기하 0° 고각 90°', '기하 0° 고각 0°', '기하 30° 고각 45°'};
+% figure;
+% b = bar([snr_values_1; snr_values_2]', 'grouped');
+% b(1).FaceColor = [0.65 0.16 0.16];  % 갈색
+% b(2).FaceColor = [0.53 0.81 0.98];  % 하늘색
+% b(3).FaceColor = [0.16 0.65 0.16];  % 녹색
+% % bar([snr_values_1; snr_values_2]', 'grouped');
+% set(gca, 'XTickLabel', categories);
+% ylabel('SNR 값 (dB)');
+% title('SNR 비교');
+% % legend({'지표면 배경', '하늘 배경'}, 'Location', 'northwest');
+% grid on;
