@@ -651,48 +651,148 @@ end
 
 clear;
 
-% 레이더 파라미터
-Pt = 5000;                  % Transmit power (W)
+% CBSC = -15;
+% height = 3;
+% targetHeight = 100;
+
+% Pt = 6e3;                   % Peak power (W), 12kW
+% lambda = freq2wavelen(8e9); % Wavelength (m), 레이더 주파수 입력
+
+% scanter 4000의 경우
+% 신호의 세기 항
+lambda = freq2wavelen(5.6e9); % Wavelength (m), 레이더 주파수 입력
+Pt = 114.6e3;                   % Peak power (W), 12kW
 Gt = 34;                    % Transmit antenna gain (dB)
 Gr = 34;                    % Receive antenna gain (dB)
-lambda = 0.03;              % Wavelength (m)
-R = 20000;                   % Range to target or clutter (m)
-% sigma_target = 7.9432;      % 목표물 RCS (m^2), 9dBsm
-sigma_target = 0.12589254117941673;    % -9 dBsm
-% 지형의 클러터
-% 대기의 경우 0.001 m^2으로, 지표면의 경우 5 m^2으로 설정
-sigma_clutter = 5;        % 지형 클러터의 RCS (m^2)
+rcs = 9;
+rcs = 10^(rcs/10);          % 헬기 RCS, dB값을 m^2으로 표현
+tau = 8.0e-8;               % pulse width, scanter 4000의 경우 80ns
+
+% 노이즈 항
+R = linspace(2e3, 50e3, 100).';  % 거리 (0에서 50km)
+k = 1.38e-23;               % 볼츠만 상수 (J/K)
 Ts = 290;                   % 시스템 잡음 온도 (K)
 B = 1e6;                    % Bandwidth (Hz)
-k = 1.38e-23;               % 볼츠만 상수 (J/K)
+F = 10^(6 / 10);                    % Noise Figure (m^2)
+L = 10^(10 / 10);                   % Radar Loss (m^2)
 
-% Convert gains from dB to linear scale
+h_t = 100;
+
+% sigma_target = 7.9432;      % 목표물 RCS (m^2), 9dB에서 
+sigma_target = 2.5119;      % 목표물 RCS (m^2), 논문의 경우
+
+% 지형의 클러터
+% 교재의 계산식을 이용
+% 대기의 경우 0.001 m^2으로, 지표면의 경우 5 m^2으로 설정
+c = 3e8;                      % 전파 속도 (m/s)
+lambda = freq2wavelen(3e9);   % 파장 (m), 3 GHz
+pulse_width = 8.0e-8;         % 펄스 폭 (s), 80 ns
+sigma_0 = 10^(-20/10);        % 클러터 산란계수 (선형(log) 스케일), -20 dB
+% R = 35e3;                  % 거리
+theta_A = deg2rad(1);       % 방위각 빔폭 (rad)
+theta_E = deg2rad(2);       % 고각 빔폭 (rad)
+SL_rms = 10^(-20/10);         % 사이드로브의 RMS 수준 (선형(log) 스케일), -20 dB
+Rg = R*cos(theta_E);        % slant range의 지표면 투영
+
+h_r = 5;                      % 레이더 높이 (m)
+
+R_s = sqrt(Rg.^2 + (h_t - h_r^2));
+
+R_e = 6.371e6;                % 지구 반지름 (m)
+% Radar Range Resolution
+delta_Rg = c * pulse_width / 2;
+% 안테나 이득 패턴(가우시안 안테나 패턴 가정하였을 시)
+% G_theta = exp(-(2.776 * (theta_E/theta_E)^2));
+G_theta = exp(-2.776 * ((theta_E + theta_A) / theta_E)^2);  % 고각 및 방위각 두개에 대한 이득
+% 메인빔 클러터 면적 및 RCS 계산
+A_MBc = delta_Rg * Rg * theta_A;
+sigma_MBc = sigma_0 * A_MBc * G_theta^2;
+% 사이드로브 클러터 면적 및 RCS 계산
+A_SLc = delta_Rg * pi * Rg;
+sigma_SLc = sigma_0 * A_SLc * SL_rms^2;
+% 레이다 탐지 범위의 성분 중 지평선 축의 거리
+R_h = sqrt((8 * R_e * h_r)/3);
+% 총 클러터 RCS 계산
+sigma_TOTc = (sigma_MBc + sigma_SLc) ./ (1 + (R_s / R_h).^4);
+sigma_clutter = sigma_TOTc;        % 지형 클러터의 RCS (m^2), 논문의 경우 -20 dB
+
+% dB로부터 선형 스케일로 변환(dB에서 m^2단위로 변환)
 Gt_lin = 10^(Gt / 10);
 Gr_lin = 10^(Gr / 10);
 
-
-Pc = (Pt * Gt_lin * Gr_lin * sigma_clutter * lambda^2) / ((4 * pi)^3 * R^4);    % 클러터 파워 (Pc)
-Pn = k * Ts * B;    % 노이즈 파워 (Pn)
-CNR = Pc / Pn;
+% SNR, CNR, SCR 정리
+SNR = (Pt * Gt_lin * Gr_lin * sigma_clutter * lambda^2) ./ ((4 * pi)^3 * R.^4 * k * Ts * B * F * L);
+SNR_dB = 10 * log10(SNR);
+CNR = (Pt * Gt_lin * Gr_lin * sigma_target * lambda^2) ./ ((4 * pi)^3 * R.^4 * k * Ts * B * F * L);
 CNR_dB = 10 * log10(CNR);
-Ptgt = (Pt * Gt_lin * Gr_lin * sigma_target * lambda^2) / ((4 * pi)^3 * R^4);   % 타겟의 파워 (Ptgt)
-SCR = Ptgt / Pc;
+SCR = (Pt * Gt_lin * Gr_lin * sigma_target * lambda^2) ./ (Pt * Gt_lin * Gr_lin * sigma_clutter * lambda^2);
+% SCR = SNR./CNR;
 SCR_dB = 10 * log10(SCR);
+SIR = 1./((1./SNR)+(1./SCR));
+SIR_dB = 10 * log10(SIR);
+
+% Pc = (Pt * Gt_lin * Gr_lin * sigma_clutter * lambda^2) ./ ((4 * pi)^3 * R.^4);    % 클러터 파워 (Pc)
+% Pn = k * Ts * B;    % 노이즈 파워 (Pn)
+% CNR = Pc / Pn;
+% CNR_dB = 10 * log10(CNR);
+% Ptgt = (Pt * Gt_lin * Gr_lin * sigma_target * lambda^2) ./ ((4 * pi)^3 * R.^4);   % 타겟의 파워 (Ptgt)
+% SCR = Ptgt / Pc;
+% SCR_dB = 10 * log10(SCR);
+
+figure;
+hold on;
+plot(R / 1e3, SNR_dB, 'b-','LineWidth', 1.5);
+plot(R / 1e3, CNR_dB, 'k-', 'LineWidth', 1.5);
+plot(R / 1e3, SIR_dB, 'r-', 'LineWidth', 1.5);
+xlabel('Rs (Slant Range) in Km');
+ylabel('dB');
+title('Aircraft case');
+legend("Desired SNR", "CNR","SIR")
+grid on;
 
 % SCR 및 CNR에 따라 레이더에서의 탐지를 위한 추가 SNR을 계산
-required_SNR_cluttered_dB = 10 * log10(1 + CNR / SCR);
-required_SNR_without_CNR = 10 * log10(1 + SCR);
-fprintf('Clutter-to-Noise Ratio: %.2f dB\n', CNR_dB);
-fprintf('Signal-to-Clutter Ratio: %.2f dB\n', SCR_dB);
-fprintf('CNR과 SCR을 전부 고려하였을 시 요구되는 추가 SNR: %.2f dB\n', required_SNR_cluttered_dB);
-fprintf('CNR을 고려 안하였을 시 요구되는 추가 SNR: %.2f dB\n', required_SNR_without_CNR);
+% required_SNR_cluttered_dB = 10 * log10(1 + CNR / SCR);
+% required_SNR_without_CNR = 10 * log10(1 + SCR);
+% fprintf('Clutter-to-Noise Ratio: %.2f dB\n', CNR_dB);
+% fprintf('Signal-to-Clutter Ratio: %.2f dB\n', SCR_dB);
+% fprintf('CNR과 SCR을 전부 고려하였을 시 요구되는 추가 SNR: %.2f dB\n', required_SNR_cluttered_dB);
+% fprintf('CNR을 고려 안하였을 시 요구되는 추가 SNR: %.2f dB\n', required_SNR_without_CNR);
 
-% 함수화를 진행한다면 파라미터
-% 수직이착륙기의 기본 SNR
-% 배경 환경(지표면 or 대기)
-% 그 결과의 증가된 SNR치를 반환
+%% 책 참고하여 산출한 sigma c 값
 
-% 필요한 파라미터(받아야 되는 값들): 클러터 RCS, 
+c = 3e8;                      % 전파 속도 (m/s)
+lambda = freq2wavelen(3e9);   % 파장 (m), 3 GHz
+pulse_width = 8.0e-8;         % 펄스 폭 (s), 80 ns
+sigma_0 = 10^(-20/10);        % 클러터 산란계수 (선형 스케일), -20 dB
+% R = 35e3;                  % 거리
+theta_A = deg2rad(1);       % 방위각 빔폭 (rad)
+theta_E = deg2rad(2);       % 고각 빔폭 (rad)
+SL_rms = 10^(-20/10);         % 사이드로브의 RMS 수준 (선형 스케일), -20 dB
+Rg = R*cos(theta_E);        % slant range의 지표면 투영
+h_r = 5;                      % 레이더 높이 (m)
+R_e = 6.371e6;                % 지구 반지름 (m)
+% Radar Range Resolution
+delta_Rg = c * pulse_width / 2;
+% 안테나 이득 패턴(가우시안 안테나 패턴 가정하였을 시)
+% G_theta = exp(-(2.776 * (theta_E/theta_E)^2));
+G_theta = exp(-2.776 * ((theta_E + theta_A) / theta_E)^2);  % 고각 및 방위각 두개에 대한 이득
+% 메인빔 클러터 면적 및 RCS 계산
+A_MBc = delta_Rg * Rg * theta_A;
+sigma_MBc = sigma_0 * A_MBc * G_theta^2;
+% 사이드로브 클러터 면적 및 RCS 계산
+A_SLc = delta_Rg * pi * Rg;
+sigma_SLc = sigma_0 * A_SLc * SL_rms^2;
+% 레이다 탐지 범위의 성분 중 지평선 축의 거리
+R_h = sqrt((8 * R_e * h_r)/3);
+% 총 클러터 RCS 계산
+sigma_TOTc = (sigma_MBc + sigma_SLc) / (1 + (Rg / R_h)^4);
+
+% 결과 출력
+fprintf('메인빔 클러터 RCS (sigma_MBc): %.4f m^2\n', sigma_MBc);
+fprintf('사이드로브 클러터 RCS (sigma_SLc): %.4f m^2\n', sigma_SLc);
+fprintf('총 클러터 RCS (sigma_TOTc): %.4f m^2\n', sigma_TOTc);
+sigma_TOTc_dB = 10*log10(sigma_TOTc);
+fprintf('총 클러터 RCS의 dB 형태: %.4f dB',sigma_TOTc_dB);
 
 %% 결과 시각화
 

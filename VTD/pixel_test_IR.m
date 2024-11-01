@@ -306,13 +306,14 @@ clear;
 close all;
 
 % detectabilityFactor 테이블 경로 설정 (각 환경에 해당하는 테이블)
+% 미리 구한 detectability가 작은 순서대로 불러와야함
 detectabilityTablePaths = {
-    'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/IR/detectability tables/empty_sky.xlsx',  % 하늘
-    'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/IR/detectability tables/winter.xlsx',  % 겨울
-    'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/IR/detectability tables/cloud.xlsx',  % 가을
-    'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/IR/detectability tables/autumn.xlsx',  % 구름
-    'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/IR/detectability tables/spring.xlsx',  % 봄
-    'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/IR/detectability tables/summer.xlsx',  % 여름
+    'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/IR/detectability tables/summer.xlsx',  ... 여름
+    'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/IR/detectability tables/spring.xlsx',  ... 봄
+    'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/IR/detectability tables/autumn.xlsx',  ... 가을
+    'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/IR/detectability tables/cloud.xlsx',  ... 구름
+    'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/IR/detectability tables/winter.xlsx',  ... 겨울
+    'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/IR/detectability tables/empty_sky.xlsx',  ... 하늘
 };
 
 % detectabilityFactor에 각 환경 테이블을 동적으로 할당하기 위해 빈 셀 배열 생성
@@ -346,8 +347,8 @@ distance = input("카메라와 수직이착륙기 간 거리를 입력하세요:
 % detectabilityFactor = [0.128656, 0.277489, 0.43701, 0.457087, 0.477178, 0.8254399];
 
 % 크기 차이 순서를 메기기 위한 배경 온도 상수로 이루어진 배열 생성
-varNames = {'empty sky','winter','cloud','fall','spring','summer'};
-varValues = [emptySky, winter, cloud, fall, spring, summer];
+varNames = {'summer','spring','fall','cloud','winter','empty sky'};
+varValues = [summer, spring, fall, cloud, winter, emptySky];
 
 % 사용자 입력 수직이착륙기 온도와의 크기 차이를 구함
 difference = abs(varValues - heliTemp);
@@ -358,12 +359,12 @@ difference = abs(varValues - heliTemp);
 sortedVars = varNames(sortedIndices);
 
 % detectabilityFactor에 각 환경 테이블을 동적으로 로드하고, 정렬된 순서대로 배열
-detectabilityFactor = cell(1, length(detectabilityTablePaths));
 for i = 1:length(detectabilityTablePaths)
-    detectabilityFactor{i} = readmatrix(detectabilityTablePaths{sortedIndices(i)});
+    detectabilityFactor{i} = readmatrix(detectabilityTablePaths{i});
 end
 
 % 크기 차이별로 순서가 정렬된 배열에서 원하는 배경을 찾음
+% 크기 차이에 맞는 순서를 찾기위해 inputOder는 필요
 inputOrder = find(strcmp(sortedVars, background));
 
 % % 수직이착륙기 기하(고각, 방위각)를 입력받음
@@ -381,6 +382,7 @@ originalPPM = refTable(ele,azi);
 selectedTable = detectabilityFactor{inputOrder};  % inputOrder에 따른 테이블 선택
 detectabilityFactorValue = selectedTable(ele, azi)/100;  % 선택된 피탐성 테이블에서 고각 및 방위각 위치의 값
 factoredPPM = originalPPM * detectabilityFactorValue;
+disp([num2str(inputOrder),' 번째 테이블 선택됨']);
 disp(['원래 PPM: ', num2str(originalPPM)]);
 disp(['detectability 값: ', num2str(detectabilityFactorValue)])
 disp(['detectability 비율이 곱해진 PPM 값: ', num2str(factoredPPM)]);
@@ -389,6 +391,85 @@ refPixel = 238;
 minPixelCnt = 25;
 
 % 사전에 미리 구한 이중 지수 함수의 파라미터를 이용
+a = 20276.7791;
+b = -0.0075;
+c = 1114.5824;
+d = -0.0015;
+
+double_exp_model = @(x) a * exp(b * x) + c * exp(d * x);    % 지수 함수 피팅 모델
+
+calculated_pixel = double_exp_model(distance);  % 비율을 구하기 위해 사용자가 입력한 거리에서 구해진 픽셀 수
+pixelRatio = calculated_pixel/refPixel;     % 두 변수를 통해 비율을 계산
+finalPPM = pixelRatio * factoredPPM;     % 구한 비율을 특정 기상 상황 및 특정 기하에서의 픽셀과 곱함
+disp(['거리에 따른 pixel ratio: ', num2str(pixelRatio)]);
+disp(['계산된 PPM 값: ', num2str(finalPPM)]);
+
+if finalPPM > minPixelCnt
+    disp("목표가 식별 됨");
+else
+    disp("목표 식별 실패");
+end
+
+%% 테스트용코드
+
+clear;
+close all;
+
+detectabilityTablePaths = {
+    'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/IR/detectability tables/summer.xlsx',  ... 여름
+    'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/IR/detectability tables/spring.xlsx',  ... 봄
+    'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/IR/detectability tables/autumn.xlsx',  ... 가을
+    'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/IR/detectability tables/cloud.xlsx',  ... 구름
+    'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/IR/detectability tables/winter.xlsx',  ... 겨울
+    'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/IR/detectability tables/empty_sky.xlsx',  ... 하늘
+};
+detectabilityFactor = cell(1, length(detectabilityTablePaths));
+for i = 1:length(detectabilityTablePaths)
+    detectabilityFactor{i} = readmatrix(detectabilityTablePaths{i});
+end
+
+emptySky = 240;
+winter = 270;
+cloud = 275;
+fall = 280;
+spring = 290;
+summer = 297;
+refTable = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/IR/reference_table_after.xlsx';
+sheet = 1;
+refTable = readmatrix(refTable, 'Sheet', sheet);
+varNames = {'summer','spring','fall','cloud','winter','empty sky'};
+varValues = [summer, spring, fall, cloud, winter, emptySky];
+
+% 함수에 필요한 입력 파라미터
+background = 'winter';
+heliTemp = 322;
+distance = 3000;
+ele = 0;
+azi = 90;
+
+difference = abs(varValues - heliTemp);
+[~, sortedIndices] = sort(difference);
+sortedVars = varNames(sortedIndices);
+inputOrder = find(strcmp(sortedVars, background));
+
+if azi <0   % 방위각이 음수일 경우 대칭성을 이용하여 양수의 범위에서 값을 찾음
+    azi = abs(azi);
+end  
+azi = azi+2;
+ele = ele+92;
+
+originalPPM = refTable(ele,azi);
+selectedTable = detectabilityFactor{inputOrder};  % inputOrder에 따른 테이블 선택
+detectabilityFactorValue = selectedTable(ele, azi)/100;  % 선택된 피탐성 테이블에서 고각 및 방위각 위치의 값
+factoredPPM = originalPPM * detectabilityFactorValue;
+disp([num2str(inputOrder),' 번째 테이블 선택됨']);
+disp(['원래 PPM: ', num2str(originalPPM)]);
+disp(['detectability 값: ', num2str(detectabilityFactorValue)])
+disp(['detectability 비율이 곱해진 PPM 값: ', num2str(factoredPPM)]);
+
+refPixel = 238;
+minPixelCnt = 25;
+
 a = 20276.7791;
 b = -0.0075;
 c = 1114.5824;
@@ -565,6 +646,8 @@ title('기하 0도, 방위각 90도, 거리 1500m, 온도 322k');
 ylabel('PPM', 'Color', 'k');
 
 
+%% 결과 시각화 #2
+
 % snr_values_1 = [115.6215, 69.9341, 50.2652, 33.1567];
 % snr_values_2 = [19.7882, 8.5287, 3.795, 0.39721];
 % snr_values_3 = [86.5563, 46.3475, 26.6488, 10.3359];
@@ -580,3 +663,40 @@ ylabel('PPM', 'Color', 'k');
 % title('SNR 비교');
 % % legend({'지표면 배경', '하늘 배경'}, 'Location', 'northwest');
 % grid on;
+
+% 케이스 1 데이터
+variables = {'하늘', '겨울', '가을', '봄', '여름'};
+values_case1 = [115.6215, 66.5077, 69.9341, 50.2652, 33.1567];
+
+% 케이스 2 데이터
+values_case2 = [19.7882, 10.1508, 8.5287, 3.7950, 0.39721];
+
+% 케이스 3 데이터
+values_case3 = [86.5563, 50.5515, 46.3475, 26.6488, 10.3359];
+
+% 케이스 1 그래프
+figure;
+bar(values_case1);
+set(gca, 'XTickLabel', variables, 'FontSize', 12);
+xlabel('변수', 'FontSize', 14);
+ylabel('값', 'FontSize', 14);
+title('케이스 1: 기하 고각 0°, 방위각 90°', 'FontSize', 16);
+grid on;
+
+% 케이스 2 그래프
+figure;
+bar(values_case2);
+set(gca, 'XTickLabel', variables, 'FontSize', 12);
+xlabel('변수', 'FontSize', 14);
+ylabel('값', 'FontSize', 14);
+title('케이스 2: 기하 고각 0°, 방위각 0°', 'FontSize', 16);
+grid on;
+
+% 케이스 3 그래프
+figure;
+bar(values_case3);
+set(gca, 'XTickLabel', variables, 'FontSize', 12);
+xlabel('변수', 'FontSize', 14);
+ylabel('값', 'FontSize', 14);
+title('케이스 3: 기하 고각 30°, 방위각 45°', 'FontSize', 16);
+grid on;

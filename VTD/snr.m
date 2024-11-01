@@ -7,18 +7,19 @@ Sth = data.Sth;
 
 %% 수식에 따라 SNR 산출
 
-lambda = freq2wavelen(3e9);         % Wavelength (m)
-Pt = 0.2e6;                         % Peak power (W)
-tau = 1.1e-5;                       % Pulse width (s)
+% scanter 4000의 경우
+lambda = freq2wavelen(8e9);         % Wavelength (m), 레이더 주파수 입력
+Pt = 12e3;                         % Peak power (W), 12kW
+tau = 8.0e-8;                       % Pulse width (s), scanter 4000의 경우 80ns
 G = 34;                             % Transmit and receive antenna gain (dB)
 Ts = systemp(4.1);                  % System temperature (K) 
-rcs = 1;
+rcs = 9;
 % rcs = 2.8274e+03;                            % m^2으로 나타나진 RCS (m^2)
 % rcs = 4.0296;
 % rcs = 3.162277660168380e-05;
 Rm = 100e3;                         % Required maximum range (m)
 L = 0;                              % Combined transmission line and propagation losses (dB)
-R = (1:40:130e3).';                 % Range samples (m)
+R = (1:20:120e3).';                 % Range samples (m)
 
 %% SNR을 결과로 내보냄
 SNR = radareqsnr(lambda,R,Pt,tau,'Gain',G,'Ts',Ts,'RCS',rcs,'Loss',L);
@@ -70,17 +71,16 @@ Lf = detectability(Pd,Pfa,N,'Swerling1') - detectability(Pd,Pfa,N,'Swerling0');
 %% radarbudgetplot
 
 % radarbudgetplot function illustrates the components of the detectability factor
-radarbudgetplot([D0 -Gi Lf], {'Single-pulse steady target','Pulse integration gain','Fluctuation loss'});
+radarbudgetplot([DN -Gi Lf], {'Single-pulse steady target','Pulse integration gain','Fluctuation loss'});
 title('Detectability Factor')
 
 % Substitute the detectability factor into the range form of the radar equation 
 % as the minimum required SNR to evaluate the actual maximum range of the system.
 % radareqrng(lambda,DN,Pt,tau,'Gain',G,'Ts',Ts,'RCS',rcs,'Loss',L,'unitstr','km')
 
-
-
+disp('레이더 시스템의 최대 탐지 거리 RE: ');
 % 레이더 방정식(radar range equation)을 이용하여 시스템의 최대 탐지 거리를 계산
-RE = radareqrng(lambda,DN,Pt,tau,'Gain',G,'Ts',Ts,'RCS',rcs,'Loss',L,'unitstr','km');
+RE = radareqrng(lambda,DN,Pt,tau,'Gain',G,'Ts',Ts,'RCS',rcs,'Loss',L,'unitstr','km')
 
 %% 레이더와 목표물간의 거리와 SNR에 따라 탐지 가능 여부를 확인
 

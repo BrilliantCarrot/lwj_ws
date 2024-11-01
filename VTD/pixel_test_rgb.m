@@ -89,7 +89,7 @@ fprintf('헬기로 인식된 픽셀의 총 갯수: %d\n', unityPixelsNum);
 
 
 
-%% 2. 반복문으로 이미지 파일들에 대해 개별 픽셀 검출 수행
+%% 2. 반복문으로 한 폴더 내 이미지 파일들에 대해 개별 픽셀 검출 수행
 
 clear;
 % clc;
@@ -98,7 +98,8 @@ close all;
 % 경로 설정
 % 파이썬 opencv를 통해 전처리된(마스킹된) 이미지에 대하여 픽셀 검출
 % 파이썬 실행 후 이 매트랩 파일을 실행
-path = 'C:/Users/leeyj/Downloads/VTD Temp/EO/moderate rain/%02d.png';      % vscode를 통해 미리 생성된 마스킹된 결과 이미지가 있는 경로
+path = ['C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/EO/' ...
+    '기하에따른 이중지수함수 일반화 검증/고각0방위각90/%02d.png'];
 % num_files = 19;
 num_files = 28;
 
@@ -122,7 +123,7 @@ lower_bound = [0,0,0];
                 img(:,:,2) >= lower_bound(2) & img(:,:,2) <= upper_bound(2) & ...
                 img(:,:,3) >= lower_bound(3) & img(:,:,3) <= upper_bound(3);
 
-    binaryImg = bwareaopen(binaryImg, 150);    % 특정 픽셀보다 작은 인식 결과는 제외
+    binaryImg = bwareaopen(binaryImg, 25);    % 특정 픽셀보다 작은 인식 결과는 제외
 
     % 이진화와 불필요 픽셀을 모두 제거한 결과 픽셀들의 sum을 구함
     helicopterPixels = sum(binaryImg(:));
@@ -159,8 +160,8 @@ close all;
 
 % ppm 배열을 역순으로 뒤집음
 ppm_flipped = flip(ppm);
-csv_filename = 'heavy rain.csv';
-writematrix(ppm_flipped, csv_filename);
+csv_filename = 'azi90ele0.csv';
+writematrix(ppm, csv_filename);
 disp(['결과가 ', csv_filename, '로 저장되었습니다.']);
 
 % 난수 추가 버전
@@ -668,8 +669,7 @@ grid on;
 % 이 지수 함수 모델을 사용
 
 x = (300:100:3000);
-y = [2847, 1595, 989, 694, 500, 377, 298, 240, 202, 165, 142, 116,...
-    103, 94, 82, 69, 65, 55, 49, 45, 41, 36, 35, 34, 33, 29, 22, 21];
+y = [2847,1595,989,694,500,377,298,240,202,165,142,116,103,94,82,69,65,55,49,45,41,36,35,34,33,29,22,21];
 
 % 이중 지수 함수를 정의 (a * exp(b * x) + c * exp(d * x))
 double_exp_model = @(a, b, c, d, x) a * exp(b * x) + c * exp(d * x);
@@ -686,11 +686,11 @@ optimal_params = fminsearch(fit_func, initial_guess);
 
 a_opt = optimal_params(1);
 b_opt = optimal_params(2);
-c_opt = optimal_params(3);
+c_opt3 = optimal_params(3);
 d_opt = optimal_params(4);
-fprintf('a = %.4f, b = %.4f, c = %.4f, d = %.4f\n', a_opt, b_opt, c_opt, d_opt);
+fprintf('a = %.4f, b = %.4f, c = %.4f, d = %.4f\n', a_opt, b_opt, c_opt3, d_opt);
 
-y_fit = double_exp_model(a_opt, b_opt, c_opt, d_opt, x);
+y_fit = double_exp_model(a_opt, b_opt, c_opt3, d_opt, x);
 
 figure;
 plot(x, y, 'bo-', 'LineWidth', 2); % 원래 데이터
@@ -707,41 +707,30 @@ grid on;
 
 x = (300:100:3000);
 % claer
-% y = [2847,1595,989,694,500,377,298,240,202,165,142,116,103,94,82,69,65,55,49,45,41,36,35,34,33,29,22,21];
+y = [2847,1595,989,694,500,377,298,240,202,165,142,116,103,94,82,69,65,55,49,45,41,36,35,34,33,29,22,21];
 % moderate rain : 0.6
-% y = [1770,932,594,421,323,239,185,157,127,110,90,74,67,61,50,43,41,38,32,32,26,24,22,21,25,20,16,14];
+y = [1770,932,594,421,323,239,185,157,127,110,90,74,67,61,50,43,41,38,32,32,26,24,22,21,25,20,16,14];
 % heavy rain : 0.3
-% y = [859,483,299,211,153,114,91,73,62,52,46,36,36,33,28,24,22,22,17,15,16,13,13,13,11,10,12,11];
+y = [859,483,299,211,153,114,91,73,62,52,46,36,36,33,28,24,22,22,17,15,16,13,13,13,11,10,12,11];
 % snow : 0.55
-% y = [1579,888,556,394,288,215,170,143,125,105,92,87,70,62,59,50,42,31,29,29,27,24,23,20,19,18,15,12];
+y = [1579,888,556,394,288,215,170,143,125,105,92,87,70,62,59,50,42,31,29,29,27,24,23,20,19,18,15,12];
 % cloud : 0.87
 % 유니티 상에서 찍은 걸 비교하면 0.87이나 참고 논문의 meteorological range를 보면 0.1배로 나와서 참고 논문의 비율을 적용
-% y = [2479,1389,863,605,436,329,260,212,179,145,127,102,92,84,74,63,58,50,45,41,39,34,31,33,31,26,20,20];
+y = [2479,1389,863,605,436,329,260,212,179,145,127,102,92,84,74,63,58,50,45,41,39,34,31,33,31,26,20,20];
 % forest : 0.664
-% y =
-% [1893,1062,662,465,336,252,203,162,136,115,99,80,72,65,56,48,46,39,38,31,29,25,22,19,19,18,15,14];
+y = [1893,1062,662,465,336,252,203,162,136,115,99,80,72,65,56,48,46,39,38,31,29,25,22,19,19,18,15,14];
 % fog : 0.603
-% y = [1722,967,599,419,304,230,183,147,126,103,88,71,64,55,50,42,39,35,32,28,30,26,24,22,20,19,17,15];
+y = [1722,967,599,419,304,230,183,147,126,103,88,71,64,55,50,42,39,35,32,28,30,26,24,22,20,19,17,15];
 
-% 이중 지수 함수를 정의 (a * exp(b * x) + c * exp(d * x))
 double_exp_model_2 = @(a, b, c, d, x) a * exp(b * x) + c * exp(d * x);
-
-% 비선형 모델 피팅을 위한 시작 추정값
-% a, b, c, d 초기값 설정
 initial_guess_2 = [y(1), -0.001, y(end), -0.0001];  
-
-% 피팅을 위한 비선형 회귀 함수 (최소 제곱법)
 fit_func_2 = @(params) sum((double_exp_model_2(params(1), params(2), params(3), params(4), x) - y).^2);
-
-% fminsearch로 최적의 a, b, c, d를 찾음
 optimal_params_2 = fminsearch(fit_func_2, initial_guess_2);
-
 a_opt_2 = optimal_params_2(1);
 b_opt_2 = optimal_params_2(2);
 c_opt_2 = optimal_params_2(3);
 d_opt_2 = optimal_params_2(4);
 fprintf('a = %.4f, b = %.4f, c = %.4f, d = %.4f\n', a_opt_2, b_opt_2, c_opt_2, d_opt_2);
-
 y_fit_2 = double_exp_model_2(a_opt_2, b_opt_2, c_opt_2, d_opt_2, x);
 
 figure;
@@ -754,19 +743,151 @@ title('Double Exponential Fit to Data');
 legend('Original Data', 'Fitted Double Exponential Curve');
 grid on;
 
-%%
+%% 1-2-3. 이중 지수 함수 기하에 따른 비교용
+
+x = (300:100:3000);
+% 고각0 방위각 0
+% y = [276,159,94,62,47,38,27,23,20,17,13,9,10,7,6,7,5,5,5,5,3,3,4,3,3,2,2,2];
+% 고각30 방위각 45
+y = [1014,550,345,234,166,129,96,80,63,51,43,36,32,31,25,23,22,18,15,16,14,12,11,9,8,6,7,6];
+% 고각 0방위각 90
+y = [1034,580,359,248,185,135,110,87,69,61,48,38,38,29,29,27,21,20,19,16,13,14,14,12,8,5,7,6];
+
+double_exp_model_2 = @(a, b, c, d, x) a * exp(b * x) + c * exp(d * x);
+initial_guess_2 = [y(1), -0.001, y(end), -0.0001];  
+fit_func_2 = @(params) sum((double_exp_model_2(params(1), params(2), params(3), params(4), x) - y).^2);
+optimal_params_2 = fminsearch(fit_func_2, initial_guess_2);
+a_opt_2 = optimal_params_2(1);
+b_opt_2 = optimal_params_2(2);
+c_opt_2 = optimal_params_2(3);
+d_opt_2 = optimal_params_2(4);
+fprintf('a = %.4f, b = %.4f, c = %.4f, d = %.4f\n', a_opt_2, b_opt_2, c_opt_2, d_opt_2);
+y_fit_2 = double_exp_model_2(a_opt_2, b_opt_2, c_opt_2, d_opt_2, x);
 
 figure;
-plot(x, y_fit, 'bo-', 'LineWidth', 2); % 원래 피팅된 이중 지수 함수
+plot(x, y, 'bo-', 'LineWidth', 2); % 원래 데이터
 hold on;
-plot(x, y_fit_2, 'r--', 'LineWidth', 2); % moderate rain에 대해 피팅된 이중 지수 함수
+plot(x, y_fit_2, 'r--', 'LineWidth', 2); % 피팅된 이중 지수 함수
 xlabel('Distance [m]');
 ylabel('Pixel Number');
-title('Double Exponential Function Comparison');
-legend('Clear Sky Fitted Model', 'Moderate Rain Fitted Model');
+title('Double Exponential Fit to Data');
+legend('Original Data', 'Fitted Double Exponential Curve');
 grid on;
 
-%% 
+%% 데이터 전체의 이중 지수 함수 피팅 모델을 구함
+
+x = (300:100:3000);
+% claer
+y1 = [2847,1595,989,694,500,377,298,240,202,165,142,116,103,94,82,69,65,55,49,45,41,36,35,34,33,29,22,21];
+% moderate rain : 0.6
+y2 = [1770,932,594,421,323,239,185,157,127,110,90,74,67,61,50,43,41,38,32,32,26,24,22,21,25,20,16,14];
+% heavy rain : 0.3
+y3 = [859,483,299,211,153,114,91,73,62,52,46,36,36,33,28,24,22,22,17,15,16,13,13,13,11,10,12,11];
+% snow : 0.55
+y4 = [1579,888,556,394,288,215,170,143,125,105,92,87,70,62,59,50,42,31,29,29,27,24,23,20,19,18,15,12];
+% cloud : 0.87
+% 유니티 상에서 찍은 걸 비교하면 0.87이나 참고 논문의 meteorological range를 보면 0.1배로 나와서 참고 논문의 비율을 적용
+y5 = [2479,1389,863,605,436,329,260,212,179,145,127,102,92,84,74,63,58,50,45,41,39,34,31,33,31,26,20,20];
+% forest : 0.664
+y6 = [1893,1062,662,465,336,252,203,162,136,115,99,80,72,65,56,48,46,39,38,31,29,25,22,19,19,18,15,14];
+% fog : 0.603
+y7 = [1722,967,599,419,304,230,183,147,126,103,88,71,64,55,50,42,39,35,32,28,30,26,24,22,20,19,17,15];
+
+double_exp_model1 = @(a, b, c, d, x) a * exp(b * x) + c * exp(d * x);
+initial_guess1 = [y1(1), -0.001, y1(end), -0.0001];  
+fit_func1 = @(params) sum((double_exp_model1(params(1), params(2), params(3), params(4), x) - y1).^2);
+optimal_params1 = fminsearch(fit_func1, initial_guess1);
+a_opt1 = optimal_params1(1);
+b_opt1 = optimal_params1(2);
+c_opt1 = optimal_params1(3);
+d_opt1 = optimal_params1(4);
+fprintf('a = %.4f, b = %.4f, c = %.4f, d = %.4f\n', a_opt1, b_opt1, c_opt1, d_opt1);
+y_fit1 = double_exp_model1(a_opt1, b_opt1, c_opt1, d_opt1, x);
+
+double_exp_model2 = @(a, b, c, d, x) a * exp(b * x) + c * exp(d * x);
+initial_guess2 = [y2(1), -0.001, y2(end), -0.0001];  
+fit_func2 = @(params) sum((double_exp_model2(params(1), params(2), params(3), params(4), x) - y2).^2);
+optimal_params2 = fminsearch(fit_func2, initial_guess2);
+a_opt2 = optimal_params2(1);
+b_opt2 = optimal_params2(2);
+c_opt2 = optimal_params2(3);
+d_opt2 = optimal_params2(4);
+fprintf('a = %.4f, b = %.4f, c = %.4f, d = %.4f\n', a_opt2, b_opt2, c_opt2, d_opt2);
+y_fit2 = double_exp_model2(a_opt2, b_opt2, c_opt2, d_opt2, x);
+
+double_exp_model3 = @(a, b, c, d, x) a * exp(b * x) + c * exp(d * x);
+initial_guess3 = [y(1), -0.001, y(end), -0.0001];  
+fit_func3 = @(params) sum((double_exp_model3(params(1), params(2), params(3), params(4), x) - y3).^2);
+optimal_params3 = fminsearch(fit_func3, initial_guess3);
+a_opt3 = optimal_params3(1);
+b_opt3 = optimal_params3(2);
+c_opt3 = optimal_params3(3);
+d_opt3 = optimal_params3(4);
+fprintf('a = %.4f, b = %.4f, c = %.4f, d = %.4f\n', a_opt3, b_opt3, c_opt3, d_opt3);
+y_fit3 = double_exp_model3(a_opt3, b_opt3, c_opt3, d_opt3, x);
+
+double_exp_model4 = @(a, b, c, d, x) a * exp(b * x) + c * exp(d * x);
+initial_guess4 = [y4(1), -0.001, y4(end), -0.0001];  
+fit_func4 = @(params) sum((double_exp_model4(params(1), params(2), params(3), params(4), x) - y4).^2);
+optimal_params4 = fminsearch(fit_func4, initial_guess4);
+a_opt4 = optimal_params4(1);
+b_opt4 = optimal_params4(2);
+c_opt4 = optimal_params4(3);
+d_opt4 = optimal_params4(4);
+fprintf('a = %.4f, b = %.4f, c = %.4f, d = %.4f\n', a_opt4, b_opt4, c_opt4, d_opt4);
+y_fit4 = double_exp_model4(a_opt4, b_opt4, c_opt4, d_opt4, x);
+
+double_exp_model5 = @(a, b, c, d, x) a * exp(b * x) + c * exp(d * x);
+initial_guess5 = [y5(1), -0.001, y5(end), -0.0001];  
+fit_func5 = @(params) sum((double_exp_model5(params(1), params(2), params(3), params(4), x) - y5).^2);
+optimal_params5 = fminsearch(fit_func5, initial_guess5);
+a_opt5 = optimal_params5(1);
+b_opt5 = optimal_params5(2);
+c_opt5 = optimal_params5(3);
+d_opt5 = optimal_params5(4);
+fprintf('a = %.4f, b = %.4f, c = %.4f, d = %.4f\n', a_opt5, b_opt5, c_opt5, d_opt5);
+y_fit5 = double_exp_model5(a_opt5, b_opt5, c_opt5, d_opt5, x);
+
+double_exp_model6 = @(a, b, c, d, x) a * exp(b * x) + c * exp(d * x);
+initial_guess6 = [y6(1), -0.001, y6(end), -0.0001];  
+fit_func6 = @(params) sum((double_exp_model6(params(1), params(2), params(3), params(4), x) - y6).^2);
+optimal_params6 = fminsearch(fit_func6, initial_guess6);
+a_opt6 = optimal_params6(1);
+b_opt6 = optimal_params6(2);
+c_opt6 = optimal_params6(3);
+d_opt6 = optimal_params6(4);
+fprintf('a = %.4f, b = %.4f, c = %.4f, d = %.4f\n', a_opt6, b_opt6, c_opt6, d_opt6);
+y_fit6 = double_exp_model6(a_opt6, b_opt6, c_opt6, d_opt6, x);
+
+double_exp_model7 = @(a, b, c, d, x) a * exp(b * x) + c * exp(d * x);
+initial_guess7 = [y7(1), -0.001, y7(end), -0.0001];  
+fit_func7 = @(params) sum((double_exp_model6(params(1), params(2), params(3), params(4), x) - y7).^2);
+optimal_params7 = fminsearch(fit_func7, initial_guess7);
+a_opt7 = optimal_params7(1);
+b_opt7 = optimal_params7(2);
+c_opt7 = optimal_params7(3);
+d_opt7 = optimal_params7(4);
+fprintf('a = %.4f, b = %.4f, c = %.4f, d = %.4f\n', a_opt7, b_opt7, c_opt7, d_opt7);
+y_fit7 = double_exp_model7(a_opt7, b_opt7, c_opt7, d_opt7, x);
+
+%% 이중 지수 함수 결과끼리 비교 시각화
+
+figure;
+hold on;
+plot(x, y_fit1, '-o', 'Color', 'b','LineWidth', 1); % 원래 피팅된 clear sky 이중 지수 함수
+plot(x, y_fit6, '-o', 'Color', [0.65 0.16 0.16], 'LineWidth', 1); % forest에 대해 피팅된 이중 지수 함수
+plot(x, y_fit2, '-o', 'Color', [0.5 0.5 0.5], 'LineWidth', 1); % moderate rain에 대해 피팅된 이중 지수 함수
+plot(x, y_fit4, '-o', 'Color', 'c', 'LineWidth', 1); % snow에 대해 피팅된 이중 지수 함수
+plot(x, y_fit3, '-o', 'Color', 'm', 'LineWidth', 1); % heavy rain에 대해 피팅된 이중 지수 함수
+plot(x, y_fit5, '-o', 'Color', 'k', 'LineWidth', 1); % cloud에 대해 피팅된 이중 지수 함수
+plot(x, y_fit7, '-o', 'Color', 'r', 'LineWidth', 1); % fog에 대해 피팅된 이중 지수 함수
+xlabel('Distance [m]');
+ylabel('PPM');
+title('각 배경 당 거리 감쇠 시각화');
+legend('Clear Sky', 'Moderate Rain','Heavy Rain','Snow','Cloud','Forest','Fog');
+grid on;
+
+%% 데이터 배수 정하고 파일 저장하기위한 임시 코드
 
 % raw_data = [2847,1595,989,694,500,377,298,240,202,165,142,116,103,94,82,69,65,55,49,45,41,36,35,34,33,29,22,21];
 data = round(raw_data * 0.603 + randi([1, 5], size(raw_data)));
@@ -784,10 +905,10 @@ y = [9858, 2392, 1037, 580, 362, 250, 186, 138, 108, 84, 69, 58, 52, 45, 39]; % 
 exp_fun = @(c, x) c(1)*exp(c(2)*x);
 
 % 초기 추정값 (a와 b 값)
-initial_guess_2 = [10000, -0.001];
+initial_guess7 = [10000, -0.001];
 
 % 피팅 수행
-c_fit = lsqcurvefit(exp_fun, initial_guess_2, x, y);
+c_fit = lsqcurvefit(exp_fun, initial_guess7, x, y);
 
 % 피팅 결과 출력
 disp('Fitted Parameters:');
@@ -795,10 +916,10 @@ disp(c_fit);
 
 % 피팅된 모델 그리기
 x_fit = linspace(min(x), max(x), 100);
-y_fit_2 = exp_fun(c_fit, x_fit);
+y_fit3 = exp_fun(c_fit, x_fit);
 
 figure;
-plot(x, y, 'o', x_fit, y_fit_2, '-');
+plot(x, y, 'o', x_fit, y_fit3, '-');
 title('Exponential Fit using lsqcurvefit');
 xlabel('x');
 ylabel('y');
@@ -812,27 +933,27 @@ y = [4997, 2182, 1208, 773, 528, 365, 284, 216, 173, 146];
 % 지수함수 모델을 정의하는 익명함수 (a * exp(b * x))
 exp_model = @(a, b, x) a * exp(b * x);
 % 비선형 모델 피팅을 위한 시작 추정값
-initial_guess_2 = [y(1), -0.001];  % a의 초기값은 첫 번째 y 값, b는 작은 음수 값으로 설정
+initial_guess7 = [y(1), -0.001];  % a의 초기값은 첫 번째 y 값, b는 작은 음수 값으로 설정
 
 % 피팅을 위한 비선형 회귀 함수 사용
-fit_func_2 = @(params) sum((exp_model(params(1), params(2), x) - y).^2);  % 최소 제곱법
+fit_func4 = @(params) sum((exp_model(params(1), params(2), x) - y).^2);  % 최소 제곱법
 
 % fminsearch로 최적의 a와 b 찾기
-optimal_params_2 = fminsearch(fit_func_2, initial_guess_2);
+optimal_params7 = fminsearch(fit_func4, initial_guess7);
 
 % 최적의 a, b 값을 출력
-a_opt_2 = optimal_params_2(1);
-b_opt_2 = optimal_params_2(2);
-fprintf('a = %.4f, b = %.4f\n', a_opt_2, b_opt_2);
+a_opt7 = optimal_params7(1);
+b_opt7 = optimal_params7(2);
+fprintf('a = %.4f, b = %.4f\n', a_opt7, b_opt7);
 
 % 피팅된 지수함수로 y 값 예측
-y_fit_2 = exp_model(a_opt_2, b_opt_2, x);
+y_fit3 = exp_model(a_opt7, b_opt7, x);
 
 % 원래 데이터와 피팅된 데이터를 시각화
 figure;
 plot(x, y, 'bo-', 'LineWidth', 2); % 원래 데이터
 hold on;
-plot(x, y_fit_2, 'r--', 'LineWidth', 2); % 피팅된 지수함수
+plot(x, y_fit3, 'r--', 'LineWidth', 2); % 피팅된 지수함수
 xlabel('x');
 ylabel('y');
 title('Exponential Fit to Data');
@@ -1040,7 +1161,7 @@ data_interp = interp2(X, Y, data, Xq, Yq, 'linear');
 data_interp_with_angles = [[NaN, yq];  % 첫 번째 행 (0~180도의 경도)
                            [xq', data_interp]]; % 첫 번째 열 (위도) 추가
 % 4. 보간된 데이터를 엑셀로 저장
-output_filename = ['C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/IR/detectability_tables/winter.xlsx'];
+output_filename = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/IR/detectability tables/winter.xlsx';
 writematrix(data_interp_with_angles, output_filename);
 
 
