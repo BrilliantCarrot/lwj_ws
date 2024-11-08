@@ -647,7 +647,7 @@ for m = 1:numel(tsnr)
 end
 
 
-%% << SCR 및 CNR을 통한 추가 요구 SNR 코드 >>
+%% << 클러터가 고려된 SIR 산출 >>
 
 clear;
 
@@ -743,7 +743,7 @@ plot(R / 1e3, CNR_dB, 'k-', 'LineWidth', 1.5);
 plot(R / 1e3, SIR_dB, 'r-', 'LineWidth', 1.5);
 xlabel('Rs (Slant Range) in Km');
 ylabel('dB');
-title('10km 상공 항공기의 경우 클러터의 영향이 고려된 SNR 수치');
+title('2km 상공 항공기의 경우 클러터의 영향이 고려된 SNR 수치');
 legend("SNR", "CNR","SIR")
 grid on;
 

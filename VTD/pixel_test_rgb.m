@@ -225,7 +225,7 @@ clear;
 clc;
 close all;
 
-cl = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/EO/보간 후 테이블/clear_sky.xlsx';
+cl = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/IR/results_winter.csv';
 cl_data = readtable(cl);
 cl_elevation = cl_data{2:end, 1};
 cl_azimuth = cl_data{1,2:end};

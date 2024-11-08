@@ -410,6 +410,52 @@ else
     disp("목표 식별 실패");
 end
 
+%% 순수한 수직이착륙기 픽셀값만 존재하는 테이블과 detectabilty table을 곱함
+
+clear;
+
+file1 = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/IR/reference_table_before.xlsx'; % 첫 번째 파일의 이름
+data1 = readmatrix(file1);
+file2 = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/IR/보간 전 detectability table/winter.xlsx'; % 두 번째 파일의 이름
+data2 = readmatrix(file2);
+[size1_row, size1_col] = size(data1);
+[size2_row, size2_col] = size(data2);
+if size1_row ~= size2_row || size1_col ~= size2_col
+    error('두 파일의 크기가 다릅니다. 동일한 크기의 데이터를 가진 파일을 사용하세요.');
+end
+
+data2_percentage = data2 / 100;
+% 첫째 행과 열 제외하고 곱하기
+result = data1; % 결과 저장용 배열 초기화
+result(2:end, 2:end) = data1(2:end, 2:end) .* data2_percentage(2:end, 2:end);
+result = result(2:end, 2:end);
+
+output_file = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/IR/IR PPM Table/winter.csv'; % 저장할 파일 이름
+writematrix(result, output_file);
+
+disp(['결과가 ', output_file, ' 파일로 저장되었습니다.']);
+
+%% 구해진 csv 파일 Heatmap 형태 시각화
+
+data = readmatrix('C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/IR/IR PPM Table/results_autumn.csv','NumHeaderLines', 1);
+data = data(:, 2:end); % 첫 번째 열 제거
+azimuth = 0:180;    % 방위각: 0도부터 180도
+elevation = -90:90; % 고각: -90도부터 90도
+
+[dataRows, dataCols] = size(data);
+if dataRows ~= length(elevation) || dataCols ~= length(azimuth)
+    error('데이터의 크기와 방위각 또는 고각의 범위가 일치하지 않습니다.');
+end
+
+figure;
+imagesc(azimuth, elevation, data);
+set(gca, 'YDir', 'normal'); % Y축 방향을 정상으로 설정
+colormap(jet); % 색상 맵 설정: 파란색에서 빨간색으로
+colorbar; % 컬러바 표시
+xlabel('방위각 (도)');
+ylabel('고각 (도)');
+title('방위각 및 고각에 따른 히트맵');
+
 %% 테스트용코드
 
 clear;
