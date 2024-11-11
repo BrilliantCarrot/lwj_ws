@@ -437,10 +437,15 @@ disp(['결과가 ', output_file, ' 파일로 저장되었습니다.']);
 
 %% 구해진 csv 파일 Heatmap 형태 시각화
 
-data = readmatrix('C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/IR/IR PPM Table/results_autumn.csv','NumHeaderLines', 1);
-data = data(:, 2:end); % 첫 번째 열 제거
+clear;
+close all;
+
+data = readmatrix('C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/IR/IR PPM Table after/results_sky.csv');
+data = data(2:end, 2:end); % 첫 번째 열 제거
 azimuth = 0:180;    % 방위각: 0도부터 180도
 elevation = -90:90; % 고각: -90도부터 90도
+% azimuth = linspace(0, 180, 19);    % 방위각: adjust to 19 points
+% elevation = linspace(-90, 90, 18); % 고각: adjust to 18 points
 
 [dataRows, dataCols] = size(data);
 if dataRows ~= length(elevation) || dataCols ~= length(azimuth)
@@ -449,12 +454,33 @@ end
 
 figure;
 imagesc(azimuth, elevation, data);
-set(gca, 'YDir', 'normal'); % Y축 방향을 정상으로 설정
+set(gca, 'YDir', 'reverse'); % Y축 방향을 정상으로 설정
 colormap(jet); % 색상 맵 설정: 파란색에서 빨간색으로
 colorbar; % 컬러바 표시
-xlabel('방위각 (도)');
-ylabel('고각 (도)');
-title('방위각 및 고각에 따른 히트맵');
+xlabel('Azimuth (degree)');
+ylabel('Elevation (degree)');
+title('PPM - Sky Background Temperature');
+
+%%
+clear;
+
+cl = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/IR/IR PPM Table after/results_autumn.csv';
+cl_data = readtable(cl);
+cl_elevation = cl_data{2:end, 1}; % 첫 번째 열을 고각 데이터로 사용
+cl_azimuth = cl_data{1, 2:end};   % 첫 번째 행을 방위각 데이터로 사용
+cl_pixel_counts = cl_data{2:end, 2:end}; % 픽셀 수 데이터 가져오기
+
+[cl_AzimuthGrid, cl_ElevationGrid] = meshgrid(cl_azimuth, cl_elevation);
+
+figure;
+contourf(cl_AzimuthGrid, cl_ElevationGrid, cl_pixel_counts, 'LineColor', 'none');
+colormap(jet);
+colorbar;
+xlabel('Azimuth (degree)');
+ylabel('Elevation (degree)');
+title('Pixel Counts - Clear Environment, Reference');
+grid on;
+set(gca, 'YDir', 'reverse');
 
 %% 테스트용코드
 

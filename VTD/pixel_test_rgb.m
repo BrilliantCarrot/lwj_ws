@@ -225,7 +225,7 @@ clear;
 clc;
 close all;
 
-cl = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/IR/results_winter.csv';
+cl = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/EO/보간 후 테이블/cloud.xlsx';
 cl_data = readtable(cl);
 cl_elevation = cl_data{2:end, 1};
 cl_azimuth = cl_data{1,2:end};
@@ -816,7 +816,7 @@ fprintf('a = %.4f, b = %.4f, c = %.4f, d = %.4f\n', a_opt2, b_opt2, c_opt2, d_op
 y_fit2 = double_exp_model2(a_opt2, b_opt2, c_opt2, d_opt2, x);
 
 double_exp_model3 = @(a, b, c, d, x) a * exp(b * x) + c * exp(d * x);
-initial_guess3 = [y(1), -0.001, y(end), -0.0001];  
+initial_guess3 = [y3(1), -0.001, y3(end), -0.0001];  
 fit_func3 = @(params) sum((double_exp_model3(params(1), params(2), params(3), params(4), x) - y3).^2);
 optimal_params3 = fminsearch(fit_func3, initial_guess3);
 a_opt3 = optimal_params3(1);
