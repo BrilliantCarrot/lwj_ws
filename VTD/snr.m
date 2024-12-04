@@ -8,18 +8,17 @@ Sth = data.Sth;
 %% 수식에 따라 SNR 산출
 
 % scanter 4000의 경우
-lambda = freq2wavelen(8e9);         % Wavelength (m), 레이더 주파수 입력
+lambda = freq2wavelen(9e9);         % Wavelength (m), 레이더 주파수 입력
 Pt = 12e3;                         % Peak power (W), 12kW
 tau = 8.0e-8;                       % Pulse width (s), scanter 4000의 경우 80ns
 G = 34;                             % Transmit and receive antenna gain (dB)
 Ts = 290;                  % System temperature (K) 
-rcs = 9;
-% rcs = 2.8274e+03;                            % m^2으로 나타나진 RCS (m^2)
-% rcs = 4.0296;
-% rcs = 3.162277660168380e-05;
+% rcs = 9;
+rcs_min = 10^(-30/10);  % 최소 RCS 값 (선형 스케일로 변환)
+rcs_max = 10^(47.05/10); % 최대 RCS 값 (선형 스케일로 변환)
 Rm = 100e3;                         % Required maximum range (m)
 L = 0;                              % Combined transmission line and propagation losses (dB)
-R = (1:20:120e3).';                 % Range samples (m)
+R = (1:1:120e3).';                 % Range samples (m)
 
 %% SNR을 결과로 내보냄
 SNR = radareqsnr(lambda,R,Pt,tau,'Gain',G,'Ts',Ts,'RCS',rcs,'Loss',L);
@@ -99,7 +98,7 @@ legend('Location','best');
 
 Rmin = time2range(tau);
 
-prf = 1350;                         % Pulse repetition frequency
+prf = 9000;                         % Pulse repetition frequency
 Rua = time2range(1/prf);
 
 Du = tau*prf;                       % Duty cycle
@@ -116,6 +115,61 @@ radarmetricplot(R*1e-3,SNR,DN, ...
     'RadarName',{'Surveillance Radar'});
 title([{'Available SNR vs Range'}, {'(With Eclipsing)'}]);
 legend('Location','best');
+
+%% SNR에 따른 Eclipsing 현상 비교
+% 최대 최소 rcs로 거리에 따른 SNR을 도출
+Rmin = time2range(tau);
+prf = 2000;     % 펄스 반복 주파수를 높일수록 이클립싱 현상이 더 자주 발생함
+% 7가지 레이더 PRF를 토대로 2000 Hz를 사용
+% DWSR 2001X: 200-2400 Hz, user selectable
+% MODEL 1623: 3000 Hz nominal 
+% SU70-14E: 2000 Hz
+% The National Centre for Atmospheric Science Atmospheric Measurement Facility's (NCAS AMF) mobile X-band radar: 250-2000 Hz
+% NIED MP-X: 1800 Hz
+% Specifications of Solid-State X-Band Dual Polarization Doppler Weather Radar: 900-3000Hz
+Rua = time2range(1/prf);
+Du = tau*prf;
+Fecl = eclipsingfactor(R,Du,prf);
+SNR_min = radareqsnr(lambda,R,Pt,tau,'Gain',G,'Ts',Ts,'RCS',rcs_min,'CustomFactor',Fecl,'Loss', L);
+SNR_max = radareqsnr(lambda,R,Pt,tau,'Gain',G,'Ts',Ts,'RCS',rcs_max,'CustomFactor',Fecl,'Loss', L);
+
+% 시각화
+close all;
+Target_Range = linspace(0, 120000, 120000)';
+
+figure;
+plot(Target_Range/1000, SNR_max, 'b-', 'LineWidth', 1.5);
+hold on;
+plot(Target_Range/1000, SNR_min, 'b--', 'LineWidth', 1.5);
+hold off;
+
+title('Available SNR vs Range (with Eclipsing)', 'FontSize', 10);
+xlabel('Target Range [km]', 'FontSize', 8);
+ylabel('Available SNR (dB)', 'FontSize', 8);
+legend({'X-Band Max', 'X-Band Min'}, 'FontSize', 8, 'Location', 'Best');
+grid on;
+set(gca, 'FontSize', 12);
+
+%%
+figure;
+hold on;
+
+radarmetricplot(R * 1e-3, SNR_min, DN, ...
+    'MetricName', 'Available SNR', ...
+    'RequirementName', 'Detectability', ...
+    'MaxRangeRequirement', Rm * 1e-3, ...
+    'RangeUnit', 'km', 'MetricUnit', 'dB', ...
+    'ShowStoplight', false, ...
+    'RadarName', {'Surveillance Radar'});
+title([{'Available SNR vs Range (With Eclipsing)'}, {'(Min and Max RCS)'}]);
+
+radarmetricplot(R * 1e-3, SNR_max, DN, ...
+    'MetricName', 'Available SNR', ...
+    'RequirementName', 'Detectability', ...
+    'MaxRangeRequirement', Rm * 1e-3, ...
+    'RangeUnit', 'km', 'MetricUnit', 'dB', ...
+    'ShowStoplight', false, ...
+    'RadarName', {'Surveillance Radar'});
 
 %% STC(Sensitivity Time Control)
 
@@ -182,7 +236,19 @@ radarbudgetplot(D, {'Single-pulse steady target','Pulse integration gain','Fluct
     'MTI loss', 'CFAR loss',});
 title('Detectability Factor')
 
+%% mat파일에서 최대값과 최소값 RCS를
 
+filePath = 'C:/Users/leeyj/lab_ws/data/VTD/Result_8GHz_360.mat';
+data = load(filePath);
+if isfield(data, 'Sth')
+    Sth = data.Sth;
+    maxRCS = max(Sth(:)); % Maximum value in Sth
+    minRCS = min(Sth(:)); % Minimum value in Sth
+    fprintf('Maximum RCS value: %.2f dBsm\n', maxRCS);
+    fprintf('Minimum RCS value: %.2f dBsm\n', minRCS);
+else
+    error('The field "Sth" does not exist in the loaded .mat file.');
+end
 
 
 

@@ -300,8 +300,10 @@ end
 
 % helperIRDetectability(heliTemp, azi, ele, background, distance);
 
-%% detectability 테이블도 적용하는 최종 함수
+%% 최종 버전 함수
 
+% detectability 테이블을 적용
+% 수직이착륙기 온도, 배경 온도, 거리를 입력받음
 clear;
 close all;
 
@@ -320,9 +322,9 @@ detectabilityTablePaths = {
 detectabilityFactor = cell(1, length(detectabilityTablePaths));
 
 % detectabilityFactor 배열에 테이블을 동적으로 로드
-% for i = 1:length(detectabilityTablePaths)
-%     detectabilityFactor{i} = readmatrix(detectabilityTablePaths{i});
-% end
+for i = 1:length(detectabilityTablePaths)
+    detectabilityFactor{i} = readmatrix(detectabilityTablePaths{i});
+end
 
 emptySky = 240;
 winter = 270;
@@ -336,10 +338,11 @@ refTable = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/da
 sheet = 1;
 refTable = readmatrix(refTable, 'Sheet', sheet);
 
+% 배경은 여름의 summer, 봄의 spring, 가을의 fall, 구름의 cloud, 겨울의 winter, 하늘의 empty sky를 입력
 background = input('IR 카메라로 탐지되는 배경을 입력하세요: ','s');
 
 heliTemp = input('수직이착륙기 온도를 입력하세요: ');
-
+% 거리는 300m부터 3000m 까지를 입력
 distance = input("카메라와 수직이착륙기 간 거리를 입력하세요: ");
 
 % 미리 구해어진 PPM과 곱해질 detectability factor 정의
@@ -357,11 +360,6 @@ difference = abs(varValues - heliTemp);
 % 크기 차이대로 순서를 새로 설정
 [~, sortedIndices] = sort(difference);
 sortedVars = varNames(sortedIndices);
-
-% detectabilityFactor에 각 환경 테이블을 동적으로 로드하고, 정렬된 순서대로 배열
-for i = 1:length(detectabilityTablePaths)
-    detectabilityFactor{i} = readmatrix(detectabilityTablePaths{i});
-end
 
 % 크기 차이별로 순서가 정렬된 배열에서 원하는 배경을 찾음
 % 크기 차이에 맞는 순서를 찾기위해 inputOder는 필요
@@ -482,7 +480,7 @@ title('Pixel Counts - Clear Environment, Reference');
 grid on;
 set(gca, 'YDir', 'reverse');
 
-%% 테스트용코드
+%% 입력 안받는 테스트 코드
 
 clear;
 close all;
@@ -681,7 +679,7 @@ imshow(uint8(normalizedImage));
 % max(max(temp_pixel))
 % min(min(temp_pixel))
 
-%% 결과 시각화
+%% 
 
 clear;
 close all;
@@ -718,7 +716,7 @@ title('기하 0도, 방위각 90도, 거리 1500m, 온도 322k');
 ylabel('PPM', 'Color', 'k');
 
 
-%% 결과 시각화 #2
+%% 
 
 % snr_values_1 = [115.6215, 69.9341, 50.2652, 33.1567];
 % snr_values_2 = [19.7882, 8.5287, 3.795, 0.39721];

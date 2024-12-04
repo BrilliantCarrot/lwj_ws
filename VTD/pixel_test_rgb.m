@@ -478,7 +478,7 @@ grid on;
 
 close all;
 
-% 고각0, 방위각90일 시
+% 측면(고각0, 방위각90)
 % clear_data = [2876,1637,1013,685,501,390,316,262,222,189,161,138,119,102,88,76,65,56,48,42,36,31,26,23,20,17,15,13];
 % forest_data = [824,469,290,196,144,112,90,75,63,54,46,40,34,29,25,22,19,16,14,12,10,9,8,7,6,5,4,4];
 % moderate_rain_data = [1175,669,414,280,205,159,129,107,90,77,66,57,49,42,36,31,27,23,20,17,15,13,11,9,8,7,6,5];
@@ -487,6 +487,7 @@ close all;
 % cloud_data = [279,159,98,66,49,38,31,25,22,18,16,13,12,10,9,7,6,5,5,4,3,3,3,2,2,2,1,1];
 % fog_data = [264,150,93,63,46,36,29,24,20,17,15,13,11,9,8,7,6,5,4,4,3,3,2,2,2,2,1,1];
 
+% 정면(고각0, 방위각0)
 % clear_data = [1228,699,433,293,214,166,135,112,95,81,69,59,51,44,38,32,28,24,21,18,15,13,11,10,8,7,6,5];
 % forest_data = [363,207,128,86,63,49,40,33,28,24,20,17,15,13,11,10,8,7,6,5,5,4,3,3,2,2,2,2];
 % moderate_rain_data = [330,188,116,79,58,45,36,30,25,22,19,16,14,12,10,9,7,6,6,5,4,4,3,3,2,2,2,1];
@@ -495,9 +496,7 @@ close all;
 % cloud_data = [89,51,31,21,16,12,10,8,7,6,5,4,4,3,3,2,2,2,1,1,1,1,1,1,1,1,0,0];
 % fog_data = [75,43,27,18,13,10,8,7,6,5,4,4,3,3,2,2,2,1,1,1,1,1,1,1,1,0,0,0];
 
-moderate_rain_data = [1175,669,414,280,205,159,129,107,90,77,66,57,49,42,36,31,27,23,20,17,15,13,11,9,8,7,6,5];
-moderate_rain_data = [1258,653,409,298,210,159,128,97,81,64,60,49,43,38,35,29,28,27,24,21,18,15,13,11,10,9,8,8];
-
+% 사선(고각30, 방위각45)
 clear_table = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/EO/function result/사선 하방에서 관찰 시/clear.csv';
 moderate_rain_table = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/EO/function result/사선 하방에서 관찰 시/moderate_rain.csv';
 heavy_rain_table = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/EO/function result/사선 하방에서 관찰 시/heavy_rain.csv';
@@ -514,7 +513,6 @@ fog_data = readmatrix(fog_table);
 cloud_data = readmatrix(cloud_table);
 forest_data = readmatrix(forest_table);
 
-% x = 1:length(clear_data);
 x = 300:100:3000;
 
 figure;
@@ -962,25 +960,25 @@ grid on;
 
 %% << 함수화 >>
 
-%% 기하, 배경, 거리에 따른 픽셀 수 검출 함수를 작성
+%% 최종 버전 함수
 
-% 테이블을 먼저 입력받음
+% 기하, 배경, 거리에 따른 픽셀 수, 기상 거리 비율을 적용하는 검출
 
-% clear_table = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/EO/tables/clear_sky.xlsx';
-% moderate_rain_table = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/EO/tables/moderate_rain.xlsx';
-% heavy_rain_table = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/EO/tables/heavy_rain.xlsx';
-% snow_table = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/EO/tables/snow.xlsx';
-% fog_table = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/EO/tables/fog.xlsx';
-% cloud_table = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/EO/tables/cloud.xlsx';
-% forest_table = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/EO/tables/forest.xlsx';
+clear_table = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/EO/보간 후 테이블/clear_sky.xlsx';
+moderate_rain_table = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/EO/보간 후 테이블/moderate_rain.xlsx';
+heavy_rain_table = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/EO/보간 후 테이블/heavy_rain.xlsx';
+snow_table = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/EO/보간 후 테이블/snow.xlsx';
+fog_table = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/EO/보간 후 테이블/fog.xlsx';
+cloud_table = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/EO/보간 후 테이블/cloud.xlsx';
+forest_table = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/EO/보간 후 테이블/forest.xlsx';
 
-clear_table = 'D:/OneDrive - 인하대학교/school/assignment/vtd13/data/EO/보간 후 테이블/clear_sky.xlsx';
-moderate_rain_table = 'D:/OneDrive - 인하대학교/school/assignmen/vtd13/data/EO/보간 후 테이블/moderate_raitn.xlsx';
-heavy_rain_table = 'D:/OneDrive - 인하대학교/school/assignment/vtd13/data/EO/보간 후 테이블/heavy_rain.xlsx';
-snow_table = 'D:/OneDrive - 인하대학교/school/assignment/vtd13/data/EO/보간 후 테이블/snow.xlsx';
-fog_table = 'D:/OneDrive - 인하대학교/school/assignment/vtd13/data/EO/보간 후 테이블/fog.xlsx';
-cloud_table = 'D:/OneDrive - 인하대학교/school/assignment/vtd13/data/EO/보간 후 테이블/cloud.xlsx';
-forest_table = 'D:/OneDrive - 인하대학교/school/assignment/vtd13/data/EO/보간 후 테이블/forest.xlsx';
+% clear_table = 'D:/OneDrive - 인하대학교/school/assignment/vtd13/data/EO/보간 후 테이블/clear_sky.xlsx';
+% moderate_rain_table = 'D:/OneDrive - 인하대학교/school/assignmen/vtd13/data/EO/보간 후 테이블/moderate_raitn.xlsx';
+% heavy_rain_table = 'D:/OneDrive - 인하대학교/school/assignment/vtd13/data/EO/보간 후 테이블/heavy_rain.xlsx';
+% snow_table = 'D:/OneDrive - 인하대학교/school/assignment/vtd13/data/EO/보간 후 테이블/snow.xlsx';
+% fog_table = 'D:/OneDrive - 인하대학교/school/assignment/vtd13/data/EO/보간 후 테이블/fog.xlsx';
+% cloud_table = 'D:/OneDrive - 인하대학교/school/assignment/vtd13/data/EO/보간 후 테이블/cloud.xlsx';
+% forest_table = 'D:/OneDrive - 인하대학교/school/assignment/vtd13/data/EO/보간 후 테이블/forest.xlsx';
 
 sheet = 1;  % 첫 번째 시트
 
@@ -991,24 +989,31 @@ condition = input('기상 상황을 입력하세요: ', 's');
 if strcmpi(condition, 'clear')
     disp("맑은 날씨 상황이 선택되었습니다.");
     userTable = readmatrix(clear_table, 'Sheet', sheet);
+    rati0 = 1.0;
 elseif strcmpi(condition, 'moderate rain')
     disp("약간의 비가 오는 날씨 상황이 선택되었습니다.");
     userTable = readmatrix(moderate_rain_table, 'Sheet', sheet);
+    ratio = 0.4;
 elseif strcmpi(condition, 'heavy rain')
     disp("거센 비가 오는 날씨 상황이 선택되었습니다.");
     userTable = readmatrix(heavy_rain_table, 'Sheet', sheet);
+    ratio = 0.2;
 elseif strcmpi(condition, 'snow')
     disp("눈이 오는 날씨 상황이 선택되었습니다.");
-    userTable = readmatrix(forest_table, 'Sheet', sheet);
+    userTable = readmatrix(snow_table, 'Sheet', sheet);
+    ratio = 0.45;
 elseif strcmpi(condition, 'fog')
     disp("안개가 낀 날씨 상황이 선택되었습니다.");
     userTable = readmatrix(fog_table, 'Sheet', sheet);
+    ratio = 0.15;
 elseif strcmpi(condition, 'cloud')
     disp("구름이 낀 날씨 상황이 선택되었습니다.");
     userTable = readmatrix(cloud_table, 'Sheet', sheet);
+    ratio = 0.23;
 elseif strcmpi(condition, 'forest')
     disp("숲 배경의 상황이 선택되었습니다.");
     userTable = readmatrix(forest_table, 'Sheet', sheet);
+    ratio = 0.55;
 else
     disp('입력 값이 잘못되었습니다.');
 end
@@ -1050,9 +1055,13 @@ d = -0.0015;
 
 double_exp_model_2 = @(x) a * exp(b * x) + c * exp(d * x);    % 지수 함수 피팅 모델
 
+
+
 calculated_pixel = double_exp_model_2(dist);  % 비율을 구하기 위해 사용자가 입력한 거리에서 구해진 픽셀 수
 pixelRatio = calculated_pixel/refPixel;     % 두 변수를 통해 비율을 계산
-finalPPM = pixelRatio * originalPixel;     % 구한 비율을 특정 기상 상황 및 특정 기하에서의 픽셀과 곱함
+% finalPPM = pixelRatio * originalPixel;     % 구한 비율을 특정 기상 상황 및 특정 기하에서의 픽셀과 곱함
+finalPPM = round((pixelRatio * originalPixel)*ratio);
+
 
 disp(['계산된 PPM 값: ', num2str(finalPPM)]);
 if finalPPM > minPixelCnt
@@ -1061,11 +1070,11 @@ else
     disp("목표 식별 불가")
 end
 
-%% 함수 사용
+%% 
 
 helperPPMCalc
 
-%% 함수화 코드 변형
+%% 테스트로 사용하는 입력없는 변형 코드
 
 clear_table = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/EO/보간 후 테이블/clear_sky.xlsx';
 moderate_rain_table = 'C:/Users/leeyj/OneDrive - 인하대학교/school/assignment/vtd13/data/EO/보간 후 테이블/moderate_rain.xlsx';
@@ -1132,7 +1141,7 @@ csv_filename = './사선 하방에서 관찰 시/forest.csv';
 writematrix(finalPPM_results, csv_filename);
 disp(['결과가 ', csv_filename, '로 저장되었습니다.']);
 
-%% 테이블 보간 함수
+%% 테이블 보간 함수(IR 테이블에도 적용 가능)
 
 clear;
 
