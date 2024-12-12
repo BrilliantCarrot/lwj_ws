@@ -1,3 +1,7 @@
+% 테스트 코드 모음
+
+%% 클러터 적용 코드 완성본
+
 clear;
 
 % 레이더 파라미터
@@ -110,3 +114,42 @@ grid on;
 % fprintf('Signal-to-Clutter Ratio: %.2f dB\n', SCR_dB);
 % fprintf('CNR과 SCR을 전부 고려하였을 시 요구되는 추가 SNR: %.2f dB\n', required_SNR_cluttered_dB);
 % fprintf('CNR을 고려 안하였을 시 요구되는 추가 SNR: %.2f dB\n', required_SNR_without_CNR);
+
+
+%% 시뮬레이션을 위한 DTED 데이터 생성
+
+% CSV 파일 경로
+file_path = 'C:/Users/leeyj/lab_ws/data/VTD/지형 데이터/target_lotation_DTED_LCC.csv';
+
+% 파일 열기
+fileID = fopen(file_path, 'r');
+
+% 파일에서 데이터 읽기: 따옴표와 쉼표를 처리
+raw_data = textscan(fileID, '%s', 'Delimiter', '\n'); % 각 줄을 문자열로 읽기
+fclose(fileID);
+
+% 문자열 데이터를 쉼표로 분리하고 숫자로 변환
+split_data = cellfun(@(x) str2double(strsplit(x(2:end-1), ',')), raw_data{1}, 'UniformOutput', false);
+numeric_data = cell2mat(split_data);
+
+% 열 분리: X, Y, 고도
+x_coords = numeric_data(:, 1);
+y_coords = numeric_data(:, 2);
+elevation = numeric_data(:, 3);
+
+% 데이터 확인
+disp('X, Y, Elevation data loaded successfully:');
+disp([x_coords(1:5), y_coords(1:5), elevation(1:5)]);
+
+% 3D 지형 시각화 (예제)
+[X, Y] = meshgrid(unique(x_coords), unique(y_coords));
+Z = griddata(x_coords, y_coords, elevation, X, Y, 'linear'); % 고도 데이터 보간
+
+figure;
+surf(X, Y, Z, 'EdgeColor', 'none');
+colormap('terrain');
+colorbar;
+xlabel('X Coordinate (meters)');
+ylabel('Y Coordinate (meters)');
+zlabel('Elevation (meters)');
+title('3D Terrain Visualization');
