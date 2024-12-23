@@ -131,28 +131,27 @@ for i = 1:10:length(traj)
 %             visual_matrix(j,k) = visibility;
             RADAR.RadarPos(1,:) = [grid_x grid_y cal_alt(grid_x,grid_y,X,Y,Z)];
             % sig1 = RADAR_Module_copy(RADAR,[hx,hy,hz],1,is_behind_blocked);
-            % [sig1,sigma_MBc, sigma_SLc, sigma_clutter] = RADAR_Module_copy(RADAR,[hx,hy,hz],1,X,Y,Z);
-            sig1 = RADAR_Module_copy(RADAR,[hx,hy,hz],1,X,Y,Z);
-            sig = 4.5*(sig1-70);
+            % [sig1, sigma_MBc, sigma_SLc, sigma_clutter,SNR,SCR] = RADAR_Module_copy(RADAR,[hx,hy,hz],1,X,Y,Z);
+            sig1 = RADAR_Module_SNR(RADAR,[hx,hy,hz],1,X,Y,Z);
+            % sig = 4.5*(sig1-70);
             sig_save(j,k) = sig1;
 
-            if sig < 90
-                if sig < 0 
-                    sig = 0;
-                end
-                C(j,k,1) = 0;
-                C(j,k,2) = sind(sig);
-                C(j,k,3) = cosd(sig);
-            else
-                if sig  > 180
-                    sig = 180;
-                end
-                C(j,k,1) = sind(sig-90);
-                C(j,k,2) = cosd(sig-90);
-                C(j,k,3) = 0;
-            end
-            if visibility == 1
-
+            % if sig < 90
+            %     if sig < 0 
+            %         sig = 0;
+            %     end
+            %     C(j,k,1) = 0;           % C에 색깔 정보(가시 유무)가 저장됨
+            %     C(j,k,2) = sind(sig);
+            %     C(j,k,3) = cosd(sig);
+            % else
+            %     if sig  > 180
+            %         sig = 180;
+            %     end
+            %     C(j,k,1) = sind(sig-90);
+            %     C(j,k,2) = cosd(sig-90);
+            %     C(j,k,3) = 0;
+            % end
+            if visibility == 1  % 기체가 레이더에 안 보이게 된다면 회색으로 처리
                 C(j,k,1) = 0.5;
                 C(j,k,2) = 0.5;
                 C(j,k,3) = 0.5;
@@ -160,10 +159,10 @@ for i = 1:10:length(traj)
         end
     end
 %     Visual_Struct{i} = visual_matrix;
-    RADAR_sig{i} = sig_save;
+    RADAR_sig{i} = sig_save;    % 가시 여부를 고려 안하고 SIR만 적용된 원래 칼라맵
 
     % RADAR_C_SIR{i} = C;
-    RADAR_C{i} = C;
+    RADAR_C{i} = C;             % 가시 여부가 반영된 신호 칼라맵
 end
 
 %%
@@ -172,7 +171,7 @@ figure(1)
 clf
 pause(1)
 for i = 1:10:length(traj)
-    s = surf(X/1000,Y/1000,Z,RADAR_C{i}); hold on;
+    s = surf(X/1000,Y/1000,Z,RADAR_sig{i}); hold on;
     plot3(traj(1:i,1)/1000,traj(1:i,2)/1000,traj(1:i,3),'-','Color','k','LineWidth',2); hold on; grid on;
     
     xlabel('X[km]');
