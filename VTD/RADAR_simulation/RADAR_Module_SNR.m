@@ -1,4 +1,4 @@
-function [sig, SNR] = RADAR_Module_copy(RADAR,PosN,lambda_num,X,Y,Z)
+function [sig1, SNR] = RADAR_Module_SNR(RADAR,PosN,lambda_num,X,Y,Z)
 
 % 10dBsm = 10m²,  x dBsm =(10^(x/10))m^2
 % SNR : Signal to Noise Ratio is standard measure of a radar's ability to
@@ -75,7 +75,7 @@ function [sig, SNR] = RADAR_Module_copy(RADAR,PosN,lambda_num,X,Y,Z)
 
     % dB 기준 SNR
     SNR = radareqsnr(lambda,Range,Pt,tau,'Gain',G,'Ts',Ts,'RCS',rcs,'CustomFactor',Fecl,'Loss',L);
-    sig = SNR;
+    sig1 = SNR;
     
     % if is_behind_blocked
         % 기체 뒤 배경이 비어있으면 SNR 값을 sig로 쓰도록 계산

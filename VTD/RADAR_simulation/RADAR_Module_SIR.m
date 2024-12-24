@@ -1,4 +1,4 @@
-function [sig,sigma_MBc, sigma_SLc,sigma_clutter,SNR,SCR] = RADAR_Module_copy(RADAR,PosN,lambda_num,X,Y,Z)
+function [sig1,sigma_MBc, sigma_SLc,sigma_clutter,SNR,SCR] = RADAR_Module_SIR(RADAR,PosN,lambda_num,X,Y,Z)
 
 % 10dBsm = 10m²,  x dBsm =(10^(x/10))m^2
 % SNR : Signal to Noise Ratio is standard measure of a radar's ability to
@@ -75,7 +75,7 @@ function [sig,sigma_MBc, sigma_SLc,sigma_clutter,SNR,SCR] = RADAR_Module_copy(RA
 
     % dB 기준 SNR
     SNR = radareqsnr(lambda,Range,Pt,tau,'Gain',G,'Ts',Ts,'RCS',rcs,'CustomFactor',Fecl,'Loss',L);
-    sig = SNR;
+    % sig1 = SNR;
 
 
 
@@ -126,45 +126,47 @@ function [sig,sigma_MBc, sigma_SLc,sigma_clutter,SNR,SCR] = RADAR_Module_copy(RA
         % 기체 뒤 배경이 존재하면 지표면 클러터를 적용한 SIR 값을 sig로 쓰도록 계산
         % 클러터 적용 SIR 계산에 필요한 추가 파라미터
 
-        % c = 3e8;                      % 전파 속도 (m/s)
-        % sigma_0 = 10^(-20/10);        % 클러터 산란(반사)계수 (선형(log) 스케일), -20 dB(Flatland)
-        % theta_A = deg2rad(1);         % 방위각 빔폭 (rad)
-        % theta_E = deg2rad(2);         % 고각 빔폭 (rad)
-        % SL_rms = 10^(-20/10);         % 사이드로브의 RMS 수준 (선형(log) 스케일), -20 dBc = 3e8;
-        % 
-        % h_r = RADAR.RadarPos(1, 3);   % RADAR.RadarPos의 세 번째 요소가 레이더 고도
-        % h_t = PosN(3);                % PosN의 세 번째 요소가 목표물의 고도
-        % 
-        % R_e = 6.371e6;                % 지구 반지름 (m)
-        % theta_r = asin(min(1, max(-1, h_r ./ Range)));          % 지표에서 레이더 높이까지의 각도
-        % theta_e = asin(min(1, max(-1, (h_t - h_r) ./ Range)));  % 레이더 높이에서 기체까지의 각도
-        % Rg = Range .* cos(theta_r);                             % Slant Range의 지표 투영
-        % delta_R = c * tau / 2;                                  % Slant Range의 거리 해상도
-        % delta_Rg = delta_R * cos(theta_r);                      % 지표면 투영 거리 해상도
-        % theta_sum = theta_e + theta_r;                      
-        % G_theta = exp(-2.776 * (theta_sum ./ theta_E).^2);  % 고각 및 방위각 두개에 대한 안테나 이득
-        % % 메인빔 클러터 면적 및 RCS 계산
-        % A_MBc = delta_Rg .* Rg * theta_A;
-        % sigma_MBc = sigma_0 .* A_MBc .* G_theta.^2;
-        % % 사이드로브 클러터 면적 및 RCS 계산
-        % A_SLc = delta_Rg .* pi .* Rg;
-        % sigma_SLc = sigma_0 .* A_SLc .* SL_rms.^2;
-        % % 레이다 탐지 범위의 성분 중 지평선 축의 거리
-        % R_h = sqrt((8 * R_e * h_r)/3);
-        % 
-        % % 클러터 RCS 계산
-        % sigma_TOTc = (sigma_MBc + sigma_SLc) ./ (1 + (Range / R_h).^4);
-        % sigma_clutter = sigma_TOTc;        % 지형 클러터의 RCS (m^2)
-        % 
-        % % SCR 및 SIR 계산
-        % % SCR = (Pt * G^2 * rcs * lambda^2) ./ (Pt * G^2 * sigma_clutter * lambda^2);
-        % SCR = rcs./sigma_clutter;
-        % SIR = 1./((1./SNR)+(1./SCR));       % 클러터의 영향이 고려된 목표물의 SNR 값을 SIR(SCNR)로 정의
-        % SIR_dB = 10 * log10(SIR);           % dB로 표현된 최종 SIR 값을 출력
-        % sig = SIR_dB;
+        c = 3e8;                      % 전파 속도 (m/s)
+        sigma_0 = 10^(-20/10);        % 클러터 산란(반사)계수 (선형(log) 스케일), -20 dB(Flatland)
+        theta_A = deg2rad(1);         % 방위각 빔폭 (rad)
+        theta_E = deg2rad(2);         % 고각 빔폭 (rad)
+        SL_rms = 10^(-20/10);         % 사이드로브의 RMS 수준 (선형(log) 스케일), -20 dBc = 3e8;
+
+        h_r = RADAR.RadarPos(1, 3);   % RADAR.RadarPos의 세 번째 요소가 레이더 고도
+        h_t = PosN(3);                % PosN의 세 번째 요소가 목표물의 고도
+
+        R_e = 6.371e6;                % 지구 반지름 (m)
+        theta_r = asin(min(1, max(-1, h_r ./ Range)));          % 지표에서 레이더 높이까지의 각도
+        theta_e = asin(min(1, max(-1, (h_t - h_r) ./ Range)));  % 레이더 높이에서 기체까지의 각도
+        Rg = Range .* cos(theta_r);                             % Slant Range의 지표 투영
+        delta_R = c * tau / 2;                                  % Slant Range의 거리 해상도
+        delta_Rg = delta_R * cos(theta_r);                      % 지표면 투영 거리 해상도
+        theta_sum = theta_e + theta_r;                      
+        G_theta = exp(-2.776 * (theta_sum ./ theta_E).^2);  % 고각 및 방위각 두개에 대한 안테나 이득
+        % 메인빔 클러터 면적 및 RCS 계산
+        A_MBc = delta_Rg .* Rg * theta_A;
+        sigma_MBc = sigma_0 .* A_MBc .* G_theta.^2;
+        % 사이드로브 클러터 면적 및 RCS 계산
+        A_SLc = delta_Rg .* pi .* Rg;
+        sigma_SLc = sigma_0 .* A_SLc .* SL_rms.^2;
+        % 레이다 탐지 범위의 성분 중 지평선 축의 거리
+        R_h = sqrt((8 * R_e * h_r)/3);
+
+        % 클러터 RCS 계산
+        sigma_TOTc = (sigma_MBc + sigma_SLc) ./ (1 + (Range / R_h).^4);
+        sigma_clutter = sigma_TOTc;        % 지형 클러터의 RCS (m^2)
+
+        % SCR 및 SIR 계산
+        % SCR = (Pt * G^2 * rcs * lambda^2) ./ (Pt * G^2 * sigma_clutter * lambda^2);
+        SCR = rcs./sigma_clutter;
+        SIR = 1./((1./SNR)+(1./SCR));       % 클러터의 영향이 고려된 목표물의 SNR 값을 SIR(SCNR)로 정의
+        SIR_dB = 10 * log10(SIR);           % dB로 표현된 최종 SIR 값을 출력
+        sig1 = SIR_dB;
     
+
         % 기체 뒤 배경이 존재하면 지표면 클러터를 적용한 SIR 값을 sig로 쓰도록 계산
         % 클러터 적용 SIR 계산에 필요한 추가 파라미터
+        % 교재에서 공중의 레이더 수식
         % c = 3e8;                      % 전파 속도 (m/s)
         % sigma_0 = 10^(-20/10);        % 클러터 산란(반사)계수 (선형(log) 스케일), -20 dB(Flatland)
         % theta_A = deg2rad(1);         % 방위각 빔폭 (rad)
