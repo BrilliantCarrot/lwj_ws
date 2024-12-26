@@ -129,17 +129,24 @@ for i = 1:10:length(traj)
                 visibility = 1;
             end
 %             visual_matrix(j,k) = visibility;
+
+
             RADAR.RadarPos(1,:) = [grid_x grid_y cal_alt(grid_x,grid_y,X,Y,Z)];
-            % sig1 = RADAR_Module_copy(RADAR,[hx,hy,hz],1,is_behind_blocked);
-            % [sig1, sigma_MBc, sigma_SLc, sigma_clutter,SNR,SCR] = RADAR_Module_SIR(RADAR,[hx,hy,hz],1,X,Y,Z);
-            [sig1,SNR] = RADAR_Module_SNR(RADAR,[hx,hy,hz],1,X,Y,Z);
-            % sig = 4.5*(sig1-70);
+
+            % sig1에 SIR_dB가 들어감
+            [sig1,sigma_MBc,sigma_SLc,sigma_clutter,SNR,SCR,SIR,Range] = RADAR_Module_SIR(RADAR,[hx,hy,hz],1,X,Y,Z);
+            % [sig1,SNR,Range] = RADAR_Module_SNR(RADAR,[hx,hy,hz],1,X,Y,Z);
+
+            % sig1 = 4.5*(sig1-70);
+
             sig_save(j,k) = sig1;
-            MBc_save(j,k) = sigma_MBc;
-            SLc_save(j,k) = sigma_SLc;
-            sigma_clutter_save(j,k) = sigma_clutter;
+            % MBc_save(j,k) = sigma_MBc;
+            % SLc_save(j,k) = sigma_SLc;
+            % sigma_clutter_save(j,k) = sigma_clutter;
             SNR_save(j,k) = SNR;
             SCR_save(j,k) = SCR;
+            SIR_save(j,k) = SIR;
+            Range_save(j,k) = Range;
 
             % if sig < 90
             %     if sig < 0 
@@ -161,16 +168,24 @@ for i = 1:10:length(traj)
             %     C(j,k,2) = 0.5;
             %     C(j,k,3) = 0.5;
             % end
+
+            % if visibility == 1 | sig1 < 0 % 기체가 레이더에 안 보이게 된다면 회색으로 처리
+            %     sig_save(j,k) = 0;
+            % else
+            %     sig_save(j,k) = sig1;
+            % end
         end
     end
     % Visual_Struct{i} = visual_matrix;
-    RADAR_sig_SNR{i} = sig_save;    % 가시 여부를 고려 안하고 SIR만 적용된 원래 칼라맵
-    % RADAR_sig_SIR{i} = sig_save;
-    MBc_mat{i} = MBc_save;
-    SLc_mat{i} = SLc_save;
-    sigma_clutter_mat{i} = sigma_clutter_save;
+    % RADAR_sig_SNR{i} = sig_save;    % 가시 여부를 고려 안하고 SIR만 적용된 원래 칼라맵
+    RADAR_sig_SIR{i} = sig_save;
+    % MBc_mat{i} = MBc_save;
+    % SLc_mat{i} = SLc_save;
+    % sigma_clutter_mat{i} = sigma_clutter_save;
     SNR_mat{i} = SNR_save;
     SCR_mat{i} = SCR_save;
+    SIR_mat{i} = SIR_save;
+    Range_mat{i} = Range_save;
 
     % RADAR_C_SIR{i} = C;
     % RADAR_C{i} = C;             % 가시 여부가 반영된 신호 칼라맵

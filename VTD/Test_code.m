@@ -2,7 +2,7 @@
 
 %% 클러터 적용 코드 완성본
 
-clear;
+
 
 % 레이더 파라미터
 lambda = freq2wavelen(9e9); % Wavelength (m), Scanter 4000
@@ -40,7 +40,7 @@ SL_rms = 10^(-20/10);         % 사이드로브의 RMS 수준 (선형(log) 스�
 % 높이 및 거리
 % R = 35e3;                             % 단일 거리용 임시 변수
 % Rg = R*cos(theta_E);                    % slant range(R)의 지표면 투영
-h_t = 20000;                             % 목표물 높이 (m)
+h_t = 200;                             % 목표물 높이 (m)
 h_r = 5;                                % 레이더 높이 (m)
 % R_s = sqrt(Rg.^2 + (h_t - h_r)^2);      % 높이가 고려된 레이더와 기체 간 Slant Range
 R_e = 6.371e6;                          % 지구 반지름 (m)
@@ -59,7 +59,7 @@ delta_Rg = delta_R * cos(theta_r);     % 지표면 투영 거리 해상도
 theta_sum = theta_e + theta_r;
 G_theta = exp(-2.776 * (theta_sum ./ theta_E).^2);  % 고각 및 방위각 두개에 대한 이득
 % 메인빔 클러터 면적 및 RCS 계산
-A_MBc = delta_Rg .* Rg * t8heta_A;
+A_MBc = delta_Rg .* Rg * theta_A;
 sigma_MBc = sigma_0 .* A_MBc .* G_theta.^2;
 % 사이드로브 클러터 면적 및 RCS 계산
 A_SLc = delta_Rg .* pi .* Rg;
@@ -78,12 +78,11 @@ Gt_lin = 10^(Gt / 10);
 Gr_lin = 10^(Gr / 10);
 
 % SNR, CNR, SCR 정리
-SNR = (Pt * Gt_lin * Gr_lin * sigma_clutter * lambda^2) ./ ((4 * pi)^3 * R.^4 * k * Ts * B * F * L);
+SNR = (Pt * Gt_lin * Gr_lin * sigma_target * lambda^2) ./ ((4 * pi)^3 * R.^4 * k * Ts * B * F * L);
 SNR_dB = 10 * log10(SNR);
-CNR = (Pt * Gt_lin * Gr_lin * sigma_target * lambda^2) ./ ((4 * pi)^3 * R.^4 * k * Ts * B * F * L);
+CNR = (Pt * Gt_lin * Gr_lin * sigma_clutter * lambda^2) ./ ((4 * pi)^3 * R.^4 * k * Ts * B * F * L);
 CNR_dB = 10 * log10(CNR);
 SCR = (Pt * Gt_lin * Gr_lin * sigma_target * lambda^2) ./ (Pt * Gt_lin * Gr_lin * sigma_clutter * lambda^2);
-% SCR = SNR./CNR;
 SCR_dB = 10 * log10(SCR);
 SIR = 1./((1./SNR)+(1./SCR));       % 클러터의 영향이 고려된 목표물의 SNR 값을 SIR(SCNR)로 정의
 SIR_dB = 10 * log10(SIR);
@@ -92,11 +91,12 @@ figure;
 hold on;
 plot(R / 1e3, SNR_dB, 'b-','LineWidth', 1.5);
 plot(R / 1e3, CNR_dB, 'k-', 'LineWidth', 1.5);
+plot(R / 1e3, SCR_dB, 'g-', 'LineWidth', 1.5);
 plot(R / 1e3, SIR_dB, 'r-', 'LineWidth', 1.5);
 xlabel('Rs (Slant Range) in Km');
 ylabel('dB');
 title('2km 상공 항공기의 경우 클러터의 영향이 고려된 SNR 수치');
-legend("SNR", "CNR","SIR")
+legend("SNR", "CNR", "SCR", "SIR")
 grid on;
 
 % Pc = (Pt * Gt_lin * Gr_lin * sigma_clutter * lambda^2) ./ ((4 * pi)^3 * R.^4);    % 클러터 파워 (Pc)

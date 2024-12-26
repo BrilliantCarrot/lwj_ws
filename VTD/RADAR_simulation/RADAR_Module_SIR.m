@@ -1,4 +1,4 @@
-function [sig1,sigma_MBc, sigma_SLc,sigma_clutter,SNR,SCR] = RADAR_Module_SIR(RADAR,PosN,lambda_num,X,Y,Z)
+function [sig1,sigma_MBc, sigma_SLc,sigma_clutter,SNR,SCR,SIR,Range] = RADAR_Module_SIR(RADAR,PosN,lambda_num,X,Y,Z)
 
 % 10dBsm = 10m²,  x dBsm =(10^(x/10))m^2
 % SNR : Signal to Noise Ratio is standard measure of a radar's ability to
@@ -158,6 +158,7 @@ function [sig1,sigma_MBc, sigma_SLc,sigma_clutter,SNR,SCR] = RADAR_Module_SIR(RA
 
         % SCR 및 SIR 계산
         % SCR = (Pt * G^2 * rcs * lambda^2) ./ (Pt * G^2 * sigma_clutter * lambda^2);
+        % SCR, SNR, SIR 모두 무차원
         SCR = rcs./sigma_clutter;
         SIR = 1./((1./SNR)+(1./SCR));       % 클러터의 영향이 고려된 목표물의 SNR 값을 SIR(SCNR)로 정의
         SIR_dB = 10 * log10(SIR);           % dB로 표현된 최종 SIR 값을 출력
