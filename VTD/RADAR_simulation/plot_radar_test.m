@@ -21,7 +21,7 @@ RADAR.theta = theta;
 RADAR.psi = psi;
 load C:/Users/leeyj/lab_ws/data/VTD/Radar/Results_8GHz.mat
 RADAR.RCS2 = Sth;
-
+% RADAR.RadarPos = zeros(size(131,164, 1), size(131,164, 2), 3);
 
 %% Trajectory
 x0 = 34000; y0 = 37400;
@@ -147,6 +147,7 @@ for i = 1:10:length(traj)
             SCR_save(j,k) = SCR;
             SIR_save(j,k) = SIR;
             Range_save(j,k) = Range;
+            % pos_save(j,k) = RADAR.RadarPos(1,3);
 
             % if sig < 90
             %     if sig < 0 
@@ -186,6 +187,7 @@ for i = 1:10:length(traj)
     SCR_mat{i} = SCR_save;
     SIR_mat{i} = SIR_save;
     Range_mat{i} = Range_save;
+    % pos_mat{i} = pos_save;
 
     % RADAR_C_SIR{i} = C;
     % RADAR_C{i} = C;             % 가시 여부가 반영된 신호 칼라맵
