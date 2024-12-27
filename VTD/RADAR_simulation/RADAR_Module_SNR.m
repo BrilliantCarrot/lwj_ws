@@ -39,11 +39,12 @@ function [sig1, SNR] = RADAR_Module_SNR(RADAR,PosN,lambda_num,X,Y,Z)
     end
     
     % 위치 계산
+    % LOS 벡터
     % for i = 1:RADAR.N_Radar
-    RelPos = - RADAR.RadarPos(lambda_num,:) + PosN;
+    RelPos = - RADAR.RadarPos(lambda_num,:) + PosN;     % LOS 벡터
     Range = norm(RelPos);   % 레이더와 기체 간 거리(Slant Range)
-    los_pitch = atan2(-RelPos(3),norm(RelPos(1:2)));
-    los_yaw = atan2(RelPos(2),RelPos(1));
+    los_pitch = atan2(-RelPos(3),norm(RelPos(1:2)));    % LOS 고각
+    los_yaw = atan2(RelPos(2),RelPos(1));               % LOS 방위각
 
     % 지표면 고도
     % radar_surface_alt = cal_alt(RADAR.RadarPos(lambda_num,1), RADAR.RadarPos(lambda_num,2), X, Y, Z);
