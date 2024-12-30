@@ -58,6 +58,7 @@ for t = 11:dt:190
 end
 
 %% Cal Visibility
+clc;
 interval = 30; visual_range = 100000;
 visibility_results = false(size(traj, 1), 1);               % 가시성 결과 저장
 
@@ -67,7 +68,7 @@ for i = 1:10:length(traj)
     
     % PosN = [hx,hy,hz];      % 현재 목표물 위치
 
-    % is_behind_blocked = check_target_behind(RADAR,PosN,X,Y,Z);
+    
     
     % is_blocked = false;     % 초기 상태: 시선벡터가 지형에 
 
@@ -133,8 +134,10 @@ for i = 1:10:length(traj)
 
             RADAR.RadarPos(1,:) = [grid_x grid_y cal_alt(grid_x,grid_y,X,Y,Z)];
 
+            block_check = check_target_behind(RADAR,[hx,hy,hz],X,Y,Z,interval);
+
             % sig1에 SIR_dB가 들어감
-            [sig1,sigma_MBc,sigma_SLc,sigma_clutter,SNR,SCR,SIR,Range] = RADAR_Module_SIR(RADAR,[hx,hy,hz],1,X,Y,Z);
+            [sig1,sigma_MBc,sigma_SLc,sigma_clutter,SNR,SCR,SIR,Range] = RADAR_Module_SIR(block_check,RADAR,[hx,hy,hz],1,X,Y,Z);
             % [sig1,SNR,Range] = RADAR_Module_SNR(RADAR,[hx,hy,hz],1,X,Y,Z);
 
             % sig1 = 4.5*(sig1-70);
@@ -199,7 +202,7 @@ figure(1)
 clf
 pause(1)
 for i = 1:10:length(traj)
-    s = surf(X/1000,Y/1000,Z,RADAR_sig_SNR{i}); hold on;
+    s = surf(X/1000,Y/1000,Z,RADAR_sig_SIR{i}); hold on;
     plot3(traj(1:i,1)/1000,traj(1:i,2)/1000,traj(1:i,3),'-','Color','k','LineWidth',2); hold on; grid on;
     
     xlabel('X[km]');
