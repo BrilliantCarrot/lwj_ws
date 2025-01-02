@@ -9,7 +9,7 @@ function is_blocked = check_target_behind(RADAR, PosN, X, Y, Z, interval)
     LOS_direction = RelPos / norm(RelPos);      % 단위 벡터로 정규화
 
     % 목표 비행체의 뒤쪽으로 LOS 벡터를 확장
-    LOS_length = 100000;    % 최대 탐색 거리
+    LOS_length = 50000;    % 최대 탐색 거리 -> 100000;
     num_points = ceil(LOS_length / interval);   % 샘플링 포인트 수
     % fprintf("num_points: %d  ", num_points);
 

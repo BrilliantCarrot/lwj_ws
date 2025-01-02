@@ -8,35 +8,18 @@ function [sig1,sigma_MBc, sigma_SLc,sigma_clutter,SNR,SCR,SIR,Range] = RADAR_Mod
 % Reference Radar : S-band(RL-2000/GCI), X-band(Scanter 4000)
 
     
-    
-    % for lambda num = 1, 2GHz
-    if lambda_num == 1
-        rcs_table = RADAR.RCS1;
-        pitch_array = RADAR.theta(1,:) * pi/180;
-        yaw_array = RADAR.psi(:,1) * pi/180;
-        % sig = 0;
-        lambda = freq2wavelen(2*10^9);          % [m] wavelength
-        Pt = 14000;                             % [W] peak power
-        tau = 0.00009;                          % [s] pulse width
-        G = 34;                                 % [dBi] antenna gain
-        Ts = 290;                               % [K] System temp 
-        L = 8.17;                                  % [dB] Loss
-        prf = 1000;                             % [Hz] Pulse repetition frequency 
-    % for lambda num = 2, 8GHz
-        elseif lambda_num == 2
-        rcs_table = RADAR.RCS2;
-        pitch_array = RADAR.theta(1,:) * pi/180;
-        yaw_array = RADAR.psi(:,1) * pi/180;
-        % sig = 0;
-        lambda = freq2wavelen(8*10^9);          % [m] wavelength
-        Pt = 6000;                              % [W] peak power
-        tau = 0.0001;                           % [s] pulse width
-        G = 39;                                 % [dBi] antenna gain
-        Ts = 290;                               % [K] System temp 
-        L = 0;                                  % [dB] Loss
-        prf = 2200;                             % [Hz] Pulse repetition frequency 
-    
-    end
+    % 레이더 파라미터 부분
+    rcs_table = RADAR.RCS1;
+    pitch_array = RADAR.theta(1,:) * pi/180;
+    yaw_array = RADAR.psi(:,1) * pi/180;
+    % sig = 0;
+    lambda = freq2wavelen(2*10^9);          % [m] wavelength
+    Pt = 14000;                             % [W] peak power
+    tau = 0.00009;                          % [s] pulse width
+    G = 34;                                 % [dBi] antenna gain
+    Ts = 290;                               % [K] System temp 
+    L = 8.17;                                  % [dB] Loss
+    prf = 1000;                             % [Hz] Pulse repetition frequency 
     
     % 위치 계산
     % for i = 1:RADAR.N_Radar
@@ -164,11 +147,13 @@ function [sig1,sigma_MBc, sigma_SLc,sigma_clutter,SNR,SCR,SIR,Range] = RADAR_Mod
     SIR_dB = 10 * log10(SIR);           % dB로 표현된 최종 SIR 값을 출력
     % sig1 = SIR_dB;
 
-
+    % disp(block_check);
     if block_check == true
-        sig1 = SNR;
+        sig1 = SIR;
+        % fprintf("배경이 막힘");
     else
-        sig1 = SIR_dB;
+        sig1 = SNR;
+        % fprintf("배경이 막히지 않음");
     end
 
         % 기체 뒤 배경이 존재하면 지표면 클러터를 적용한 SIR 값을 sig로 쓰도록 계산

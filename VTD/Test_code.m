@@ -52,8 +52,8 @@ R_e = 6.371e6;                          % 지구 반지름 (m)
 theta_r = asin(min(1, max(-1, h_r ./ R)));          % asin 입력값 제한
 theta_e = asin(min(1, max(-1, (h_t - h_r) ./ R)));  % asin 입력값 제한
 Rg = R .* cos(theta_r);
-delta_R = c * pulse_width / 2;          % Slant Range의 거리 해상도
-delta_Rg = delta_R * cos(theta_r);     % 지표면 투영 거리 해상도
+delta_R = c * pulse_width / 2;                      % Slant Range의 거리 해상도
+delta_Rg = delta_R * cos(theta_r);                  % 지표면 투영 거리 해상도
 
 % 안테나 이득 패턴(가우시안 안테나 패턴 가정하였을 시)
 theta_sum = theta_e + theta_r;

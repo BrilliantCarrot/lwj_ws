@@ -2,8 +2,8 @@
 clear; clc; close all;
 load C:/Users/leeyj/lab_ws/data/VTD/Radar/MAP_STRUCT;
 
-
-dm = 10; g_size = size(MAP.X,1);
+% dm = 샘플링 간격
+dm = 30; g_size = size(MAP.X,1);
 mesh_x = floor(g_size/2)-250:dm:g_size-750;
 mesh_y = floor(g_size/2)-370:dm:g_size-540;
 
@@ -23,12 +23,42 @@ load C:/Users/leeyj/lab_ws/data/VTD/Radar/Results_8GHz.mat
 RADAR.RCS2 = Sth;
 % RADAR.RadarPos = zeros(size(131,164, 1), size(131,164, 2), 3);
 
+% 레이더 파라미터 설정
+% for lambda num = 1, 2GHz
+% if lambda_num == 1
+    % rcs_table = RADAR.RCS1;
+    % pitch_array = RADAR.theta(1,:) * pi/180;
+    % yaw_array = RADAR.psi(:,1) * pi/180;
+    % % sig = 0;
+    % lambda = freq2wavelen(2*10^9);          % [m] wavelength
+    % Pt = 14000;                             % [W] peak power
+    % tau = 0.00009;                          % [s] pulse width
+    % G = 34;                                 % [dBi] antenna gain
+    % Ts = 290;                               % [K] System temp 
+    % L = 8.17;                                  % [dB] Loss
+    % prf = 1000;                             % [Hz] Pulse repetition frequency 
+% for lambda num = 2, 8GHz
+    % elseif lambda_num == 2  
+    % rcs_table = RADAR.RCS2;
+    % pitch_array = RADAR.theta(1,:) * pi/180;
+    % yaw_array = RADAR.psi(:,1) * pi/180;
+    % % sig = 0;
+    % lambda = freq2wavelen(8*10^9);          % [m] wavelength
+    % Pt = 6000;                              % [W] peak power
+    % tau = 0.0001;                           % [s] pulse width
+    % G = 39;                                 % [dBi] antenna gain
+    % Ts = 290;                               % [K] System temp 
+    % L = 0;                                  % [dB] Loss
+    % prf = 2200;                             % [Hz] Pulse repetition frequency 
+
+% end
+
 %% Trajectory
 x0 = 34000; y0 = 37400;
 [ix, iy] = pos2grid(x0,y0,X,Y);
 % ix = 80; iy = 40;
 x = X(ix,iy); y = Y(ix,iy); z =  Z(ix,iy);
-dt = 0.1;
+dt = 0.5;   % 궤적 샘플링 주기, 0.1
 vx = 0; vy = 0; vz = 0;
 traj = [x y z vx vy vz];
 k = 2;
@@ -59,7 +89,8 @@ end
 
 %% Cal Visibility
 clc;
-interval = 30; visual_range = 100000;
+% 30; 100000;
+interval = 50; visual_range = 75000;
 visibility_results = false(size(traj, 1), 1);               % 가시성 결과 저장
 
 for i = 1:10:length(traj)
@@ -202,15 +233,19 @@ figure(1)
 clf
 pause(1)
 for i = 1:10:length(traj)
+    % sig_min = min(RADAR_sig_SIR{i}(:));
+    % sig_max = max(RADAR_sig_SIR{i}(:));
     s = surf(X/1000,Y/1000,Z,RADAR_sig_SIR{i}); hold on;
     plot3(traj(1:i,1)/1000,traj(1:i,2)/1000,traj(1:i,3),'-','Color','k','LineWidth',2); hold on; grid on;
-    
     xlabel('X[km]');
     ylabel('Y[km]');
     zlabel('ALT[m]');
     alpha(s,0.5);
-    % view(0,90)
-    view(-20,80)
+    view(-20,80);
+    clim([min(RADAR_sig_SIR{i}(:)), max(RADAR_sig_SIR{i}(:))]);     % 최소/최대값 설정
+    c = colorbar;
+    c.Label.String = 'RADAR Signal (SIR in dB)';
+    % legend(sprintf('Min: %.2f, Max: %.2f', sig_min, sig_max), 'Location', 'northeast');
     pause(1);
     if i < length(traj)    
             delete(s)
