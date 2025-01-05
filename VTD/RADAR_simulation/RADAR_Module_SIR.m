@@ -1,4 +1,4 @@
-function [sig1,sigma_MBc, sigma_SLc,sigma_clutter,SNR,SCR,SIR,Range] = RADAR_Module_SIR(block_check, RADAR,PosN,lambda_num,X,Y,Z)
+function [sig1,sigma_MBc, sigma_SLc,sigma_clutter,SNR,SCR,SIR_dB,Range] = RADAR_Module_SIR(block_check, RADAR,PosN,lambda_num,X,Y,Z)
 
 % 10dBsm = 10m²,  x dBsm =(10^(x/10))m^2
 % SNR : Signal to Noise Ratio is standard measure of a radar's ability to
@@ -149,7 +149,7 @@ function [sig1,sigma_MBc, sigma_SLc,sigma_clutter,SNR,SCR,SIR,Range] = RADAR_Mod
 
     % disp(block_check);
     if block_check == true
-        sig1 = SIR;
+        sig1 = SIR_dB;
         % fprintf("배경이 막힘");
     else
         sig1 = SNR;

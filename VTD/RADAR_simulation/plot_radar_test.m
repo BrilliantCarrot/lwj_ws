@@ -58,7 +58,7 @@ x0 = 34000; y0 = 37400;
 [ix, iy] = pos2grid(x0,y0,X,Y);
 % ix = 80; iy = 40;
 x = X(ix,iy); y = Y(ix,iy); z =  Z(ix,iy);
-dt = 0.5;   % 궤적 샘플링 주기, 0.1
+dt = 1;   % 궤적 샘플링 주기, 0.1
 vx = 0; vy = 0; vz = 0;
 traj = [x y z vx vy vz];
 k = 2;
@@ -90,7 +90,8 @@ end
 %% Cal Visibility
 clc;
 % 30; 100000;
-interval = 50; visual_range = 75000;
+interval = 60; visual_range = 80000;
+LOS_length = 50000;
 visibility_results = false(size(traj, 1), 1);               % 가시성 결과 저장
 
 for i = 1:10:length(traj)
@@ -165,10 +166,10 @@ for i = 1:10:length(traj)
 
             RADAR.RadarPos(1,:) = [grid_x grid_y cal_alt(grid_x,grid_y,X,Y,Z)];
 
-            block_check = check_target_behind(RADAR,[hx,hy,hz],X,Y,Z,interval);
+            block_check = check_target_behind([hx,hy,hz],X,Y,Z,interval,LOS_length);
 
             % sig1에 SIR_dB가 들어감
-            [sig1,sigma_MBc,sigma_SLc,sigma_clutter,SNR,SCR,SIR,Range] = RADAR_Module_SIR(block_check,RADAR,[hx,hy,hz],1,X,Y,Z);
+            [sig1,sigma_MBc,sigma_SLc,sigma_clutter,SNR,SCR,SIR_dB,Range] = RADAR_Module_SIR(block_check,RADAR,[hx,hy,hz],1,X,Y,Z);
             % [sig1,SNR,Range] = RADAR_Module_SNR(RADAR,[hx,hy,hz],1,X,Y,Z);
 
             % sig1 = 4.5*(sig1-70);
@@ -179,7 +180,7 @@ for i = 1:10:length(traj)
             % sigma_clutter_save(j,k) = sigma_clutter;
             SNR_save(j,k) = SNR;
             SCR_save(j,k) = SCR;
-            SIR_save(j,k) = SIR;
+            SIR_save(j,k) = SIR_dB;
             Range_save(j,k) = Range;
             % pos_save(j,k) = RADAR.RadarPos(1,3);
 
@@ -227,28 +228,49 @@ for i = 1:10:length(traj)
     % RADAR_C{i} = C;             % 가시 여부가 반영된 신호 칼라맵
 end
 
-%%
+%% 시각화
 
 figure(1)
+set(gcf, 'Position', [500, 200, 1600, 1000]); % [left, bottom, width, height]
 clf
 pause(1)
-for i = 1:10:length(traj)
-    % sig_min = min(RADAR_sig_SIR{i}(:));
-    % sig_max = max(RADAR_sig_SIR{i}(:));
-    s = surf(X/1000,Y/1000,Z,RADAR_sig_SIR{i}); hold on;
-    plot3(traj(1:i,1)/1000,traj(1:i,2)/1000,traj(1:i,3),'-','Color','k','LineWidth',2); hold on; grid on;
-    xlabel('X[km]');
-    ylabel('Y[km]');
-    zlabel('ALT[m]');
-    alpha(s,0.5);
-    view(-20,80);
-    clim([min(RADAR_sig_SIR{i}(:)), max(RADAR_sig_SIR{i}(:))]);     % 최소/최대값 설정
+for i = 1:10:length(traj)                                                           
+    s = surf(X/1000, Y/1000, Z, RADAR_sig_SIR{i}); hold on;
+    plot3(traj(1:i,1)/1000, traj(1:i,2)/1000, traj(1:i,3), '-', 'Color', 'k', 'LineWidth', 2); hold on; grid on;
+
+    % 현재 목표물 위치 계산
+    target_pos = traj(i, 1:3) / 1000; % 현재 목표물 위치 (km 단위)
+    % 모든 지형 셀에서 목표물로의 LOS 벡터 계산 및 시각화
+    LOS_length = 30; % LOS 벡터 길이 (단위: km)
+    num_points = 20; % 샘플링 점 수
+
+    % 루프를 통해 각 지형 셀에서 LOS 벡터 생성
+    for row = 1:size(X, 1)
+        for col = 1:size(X, 2)
+            % 현재 셀의 레이더 위치
+            radar_pos = [X(row, col), Y(row, col), Z(row, col)] / 1000; % (km 단위)
+
+            % LOS 벡터 계산
+            LOS_direction = (target_pos - radar_pos) / norm(target_pos - radar_pos); % 단위 벡터
+            LOS_points = zeros(num_points, 3);
+            for j = 1:num_points
+                LOS_points(j, :) = radar_pos + (j * (LOS_length / num_points)) * LOS_direction;
+            end
+
+            % LOS 벡터 시각화
+            plot3(LOS_points(:,1), LOS_points(:,2), LOS_points(:,3), '-', 'Color', 'r', 'LineWidth', 0.5);
+        end
+    end
+    xlabel('X [km]');
+    ylabel('Y [km]');
+    zlabel('Altitude [m]');
+    alpha(s, 0.5);
+    view(-20, 80);
+    clim([min(RADAR_sig_SIR{i}(:)), max(RADAR_sig_SIR{i}(:))]);
     c = colorbar;
     c.Label.String = 'RADAR Signal (SIR in dB)';
-    % legend(sprintf('Min: %.2f, Max: %.2f', sig_min, sig_max), 'Location', 'northeast');
     pause(1);
-    if i < length(traj)    
-            delete(s)
+    if i < length(traj)
+        delete(s);
     end
-
 end
