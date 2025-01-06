@@ -2,8 +2,8 @@
 clear; clc; close all;
 load C:/Users/leeyj/lab_ws/data/VTD/Radar/MAP_STRUCT;
 
-% dm = 샘플링 간격
-dm = 30; g_size = size(MAP.X,1);
+% dm = 샘플링 간격, 10
+dm = 10; g_size = size(MAP.X,1);
 mesh_x = floor(g_size/2)-250:dm:g_size-750;
 mesh_y = floor(g_size/2)-370:dm:g_size-540;
 
@@ -22,6 +22,8 @@ RADAR.psi = psi;
 load C:/Users/leeyj/lab_ws/data/VTD/Radar/Results_8GHz.mat
 RADAR.RCS2 = Sth;
 % RADAR.RadarPos = zeros(size(131,164, 1), size(131,164, 2), 3);
+
+radar_pos = [15000, 15000, 100];    % 레이더 위치
 
 % 레이더 파라미터 설정
 % for lambda num = 1, 2GHz
@@ -58,7 +60,7 @@ x0 = 34000; y0 = 37400;
 [ix, iy] = pos2grid(x0,y0,X,Y);
 % ix = 80; iy = 40;
 x = X(ix,iy); y = Y(ix,iy); z =  Z(ix,iy);
-dt = 1;   % 궤적 샘플링 주기, 0.1
+dt = 0.1;   % 궤적 샘플링 주기, 초기값 0.1
 vx = 0; vy = 0; vz = 0;
 traj = [x y z vx vy vz];
 k = 2;
@@ -89,8 +91,8 @@ end
 
 %% Cal Visibility
 clc;
-% 30; 100000;
-interval = 60; visual_range = 80000;
+% 처음 interval, visual_range는 30; 100000;
+interval = 30; visual_range = 75000;
 LOS_length = 50000;
 visibility_results = false(size(traj, 1), 1);               % 가시성 결과 저장
 block_check = false;
@@ -99,9 +101,6 @@ for i = 1:10:length(traj)
     visual_matrix = zeros(length(mesh_x),length(mesh_y));
     
     % PosN = [hx,hy,hz];      % 현재 목표물 위치
-
-    
-    
     % is_blocked = false;     % 초기 상태: 시선벡터가 지형에 
 
     for j = 1:length(mesh_x)
@@ -140,7 +139,7 @@ for i = 1:10:length(traj)
             end
 
             threshold_z = max(cal_alt(hx,hy,X,Y,Z),cal_alt(grid_x,grid_y,X,Y,Z));
-            
+        
             check_point = 0;
             for check_idx = 1:interval+1
                 
@@ -168,13 +167,14 @@ for i = 1:10:length(traj)
             % RPos_save(j,k,:) = RADAR.RadarPos(1,:);
             block_check = check_target_behind(RADAR,[hx,hy,hz],X,Y,Z,interval,LOS_length);
             % disp(RADAR.RadarPos(1,:));
-            % sig1에 SIR_dB가 들어감
+            % sig1에 SIR_값이 들어감
             [sig1,sigma_MBc,sigma_SLc,sigma_clutter,SNR,SCR,SIR_dB,Range] = RADAR_Module_SIR(block_check,RADAR,[hx,hy,hz],1,X,Y,Z);
             % [sig1,SNR,Range] = RADAR_Module_SNR(RADAR,[hx,hy,hz],1,X,Y,Z);
 
             % sig1 = 4.5*(sig1-70);
 
-            sig_save(j,k) = sig1;
+            % sig_save(j,k) = sig1;
+
             % MBc_save(j,k) = sigma_MBc;
             % SLc_save(j,k) = sigma_SLc;
             % sigma_clutter_save(j,k) = sigma_clutter;
@@ -205,11 +205,11 @@ for i = 1:10:length(traj)
             %     C(j,k,3) = 0.5;
             % end
 
-            % if visibility == 1 | sig1 < 0 % 기체가 레이더에 안 보이게 된다면 회색으로 처리
-            %     sig_save(j,k) = 0;
-            % else
-            %     sig_save(j,k) = sig1;
-            % end
+            if visibility == 1 % 기체가 레이더에 안 보이게 된다면 회색으로 처리
+                sig_save(j,k) = 0;  % 0이 아닌 다른 설정 필요
+            else
+                sig_save(j,k) = sig1;
+            end
         end
     end
     % Visual_Struct{i} = visual_matrix;
@@ -239,6 +239,35 @@ for i = 1:10:length(traj)
     s = surf(X/1000, Y/1000, Z, RADAR_sig_SIR{i}); hold on;
     plot3(traj(1:i,1)/1000, traj(1:i,2)/1000, traj(1:i,3), '-', 'Color', 'k', 'LineWidth', 2); hold on; grid on;
 
+    %
+
+    xlabel('X [km]');
+    ylabel('Y [km]');
+    zlabel('Altitude [m]');
+    alpha(s, 0.5);
+    view(-20, 80);
+    clim([min(RADAR_sig_SIR{i}(:)), max(RADAR_sig_SIR{i}(:))]);
+    c = colorbar;
+    c.Label.String = 'RADAR Signal (SIR in dB)';
+    pause(1);
+    if i < length(traj)
+        delete(s);
+    end
+end
+
+%% 레이더를 특정 위치에 고정시킨 후 전체 지형에 대해 SIR을 구하는 코드
+clc;
+fixed_radar_sim_matrix = RADAR_loc_sim(radar_pos, X, Y, Z, RADAR);
+
+
+
+
+
+
+
+
+
+
     % 현재 목표물 위치 계산
     % target_pos = traj(i, 1:3) / 1000; % 현재 목표물 위치 (km 단위)
     % % 모든 지형 셀에서 목표물로의 LOS 벡터 계산 및 시각화
@@ -262,17 +291,3 @@ for i = 1:10:length(traj)
     %         plot3(LOS_points(:,1), LOS_points(:,2), LOS_points(:,3), '-', 'Color', 'r', 'LineWidth', 0.5);
     %     end
     % end
-
-    xlabel('X [km]');
-    ylabel('Y [km]');
-    zlabel('Altitude [m]');
-    alpha(s, 0.5);
-    view(-20, 80);
-    clim([min(RADAR_sig_SIR{i}(:)), max(RADAR_sig_SIR{i}(:))]);
-    c = colorbar;
-    c.Label.String = 'RADAR Signal (SIR in dB)';
-    pause(1);
-    if i < length(traj)
-        delete(s);
-    end
-end

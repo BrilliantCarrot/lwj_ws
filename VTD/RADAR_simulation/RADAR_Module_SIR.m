@@ -104,10 +104,6 @@ function [sig1,sigma_MBc, sigma_SLc,sigma_clutter2,SNR,SCR2,SIR_dB_air,Range] = 
         % fprintf("배경이 막히지 않음");
     end
 
-    
-
-    % end    
-
 end
 
 % 지표면 고도
