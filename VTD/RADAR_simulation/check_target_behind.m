@@ -32,10 +32,10 @@ function is_blocked = check_target_behind(RADAR, PosN, X,Y,Z,interval,LOS_length
             % 지형 고도가 LOS 벡터의 고도보다 높으면 가려짐으로 판단
             if terrain_alt > z
                 is_blocked = true; % 가려짐으로 설정
-                fprintf("지형에 의해 가려짐 \n")
+                % fprintf("지형에 의해 가려짐 \n")
                 break; % 더 이상 확인하지 않음
             end
-            fprintf("지형에 의해 가려지지 않음 \n")
+            % fprintf("지형에 의해 가려지지 않음 \n")
         end
     end
 end

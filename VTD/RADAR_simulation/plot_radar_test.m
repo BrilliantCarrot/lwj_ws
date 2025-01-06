@@ -242,7 +242,7 @@ for i = 1:10:length(traj)
     % 현재 목표물 위치 계산
     % target_pos = traj(i, 1:3) / 1000; % 현재 목표물 위치 (km 단위)
     % % 모든 지형 셀에서 목표물로의 LOS 벡터 계산 및 시각화
-    % LOS_length = 30; % LOS 벡터 길이 (단위: km)
+    % LOS_length = 30; % LOS 벡터 길0이 (단위: km)
     % num_points = 20; % 샘플링 점 수
 
     % 루프를 통해 각 지형 셀에서 LOS 벡터 생성
