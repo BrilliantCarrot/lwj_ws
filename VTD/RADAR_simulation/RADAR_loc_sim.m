@@ -4,7 +4,7 @@ function sig_matrix = RADAR_loc_sim(radar_pos, X, Y, Z, RADAR)
     % RADAR: 레이더 파라미터 구조체
     % sig_matrix: 각 지형 셀에 대한 SIR 값을 저장하는 행렬
 
-    % 레이더 파라미터 가져오기
+    % 레이더 파라미터 설정
     lambda = freq2wavelen(2 * 10^9); % 기본 2GHz 파라미터
     Pt = 14000;  % [W] Peak Power
     tau = 0.00009;  % [s] Pulse Width
@@ -18,7 +18,7 @@ function sig_matrix = RADAR_loc_sim(radar_pos, X, Y, Z, RADAR)
     R_e = 6.371e6;  % Earth Radius (m)
     c = 3e8;  % Speed of Light (m/s)
     prf = 1000; % [Hz] Pulse repetition frequency
-
+    Du = tau * prf;
     rcs_table = RADAR.RCS1;
     
     % 결과 저장 행렬 초기화
@@ -28,16 +28,13 @@ function sig_matrix = RADAR_loc_sim(radar_pos, X, Y, Z, RADAR)
     % 각 지형 셀에 대해 거리 및 SIR 계산
     for i = 1:rows
         for j = 1:cols
-            % 목표물 위치
             target_pos = [X(i, j), Y(i, j), Z(i, j)];
             
-            % 거리 및 LOS 계산
+            % 거리 및 LOS, RCS, SNR 계산
             RelPos = target_pos - radar_pos;  % 레이더와 목표물 간 상대 위치
             Range = norm(RelPos);  % 거리 (Slant Range)
             los_pitch = atan2(-RelPos(3), norm(RelPos(1:2)));
             los_yaw = atan2(RelPos(2), RelPos(1));
-            
-            % RCS 계산
             pitch = Angle_trim(los_pitch);
             yaw = Angle_trim(los_yaw);
             pitch_array = RADAR.theta(1, :) * pi/180;
@@ -51,15 +48,12 @@ function sig_matrix = RADAR_loc_sim(radar_pos, X, Y, Z, RADAR)
             y_upper = p_rcs(y_idx + 1, :);
             rcs = y_lower + (yaw - yaw_array(y_idx)) * (y_upper - y_lower) / (yaw_array(y_idx + 1) - yaw_array(y_idx));
             rcs = 10^(rcs / 10);  % dB to linear scale
-
-            % SNR 계산
-            Du = tau * prf;
             Fecl = eclipsingfactor(Range, Du, prf);
             SNR = radareqsnr(lambda, Range, Pt, tau, 'Gain', G, 'Ts', Ts, 'RCS', rcs, 'CustomFactor', Fecl, 'Loss', L);
 
             % 클러터 RCS 계산
             h_r = radar_pos(3);  % 레이더 고도
-            h_t = Z(i, j);  % 목표물 고도
+            h_t = Z(i, j) + 100;  % 목표물 고도, 원하는 값을 더하고 빼도됨(비행체 고도 조절)
             theta_r = asin(min(1, max(-1, h_r / Range)));
             theta_e = asin(min(1, max(-1, (h_t - h_r) / Range)));
             Rg = Range * cos(theta_r);  % Ground Range
@@ -79,7 +73,6 @@ function sig_matrix = RADAR_loc_sim(radar_pos, X, Y, Z, RADAR)
             SIR = 1 / ((1 / SNR) + (1 / SCR));
             SIR_dB = 10 * log10(SIR);
             
-            % 결과 저장
             sig_matrix(i, j) = SIR_dB;
         end
     end

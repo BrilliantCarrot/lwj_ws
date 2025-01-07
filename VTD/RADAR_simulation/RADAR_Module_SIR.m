@@ -1,13 +1,4 @@
-function [sig1,sigma_MBc, sigma_SLc,sigma_clutter2,SNR,SCR2,SIR_dB_air,Range] = RADAR_Module_SIR(block_check, RADAR,PosN,lambda_num,X,Y,Z)
-
-% 10dBsm = 10m²,  x dBsm =(10^(x/10))m^2
-% SNR : Signal to Noise Ratio is standard measure of a radar's ability to
-% detect a given target at range from radar
-% SNR = (P_t[W] * G^2 * lambda^2[m^2] * RCS[m^2]) / (4pi^2 * R^4[m^4] * N(=k * T_s * B_n)[W] * L)
-% Using Matlab radar toolbox
-% Reference Radar : S-band(RL-2000/GCI), X-band(Scanter 4000)
-
-    
+function [sig1,sigma_MBc, sigma_SLc,sigma_clutter2,SNR,SCR2,SIR_dB_air,Range] = RADAR_Module_SIR(block_check, RADAR,PosN,lambda_num,X,Y,Z)    
     % 레이더 파라미터 부분
     rcs_table = RADAR.RCS1;
     pitch_array = RADAR.theta(1,:) * pi/180;
@@ -85,26 +76,20 @@ function [sig1,sigma_MBc, sigma_SLc,sigma_clutter2,SNR,SCR2,SIR_dB_air,Range] = 
     SCR1 = rcs./sigma_clutter1;
     SIR1 = 1./((1./SNR)+(1./SCR1));           % 클러터의 영향이 고려된 목표물의 SNR 값을 SIR(SCNR)로 정의
     SIR_dB_land = 10 * log10(SIR1);           % dB로 표현된 최종 SIR 값을 출력
-
     % 기체 뒤 배경이 존재하면 Airbone Radar의 클러터 rcs를 계산        
     propag_atten = (1 + (Range / R_h).^4);              % 지구 곡률로 인한 전파 감쇠
     sigma_clutter2 = (sigma_0 .* Rg .* delta_Rg) .* (pi * SL_rms * SL_rms + theta_A .* G_theta.^2) ./ propag_atten;
     SCR2 = rcs./sigma_clutter2;
     SIR2 = 1./((1./SNR)+(1./SCR2));
     SIR_dB_air = 10 * log10(SIR2);
-
-    % disp(block_check);
     % 만약 뒤가 막혀있다면 Airbone Radar 경우
     if block_check == true
         sig1 = SIR_dB_air;
-        % fprintf("배경이 막힘");
     % 그렇지 않고 배경이 뚫려있다면 Ground Based Radar의 경우
     else
         sig1 = SIR_dB_land;
-        % fprintf("배경이 막히지 않음");
     end
-
-end
+    end21
 
 % 지표면 고도
 % radar_surface_alt = cal_alt(RADAR.RadarPos(lambda_num,1), RADAR.RadarPos(lambda_num,2), X, Y, Z);

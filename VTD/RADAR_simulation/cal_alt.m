@@ -1,6 +1,5 @@
 function z = cal_alt(x,y,X,Y,Z)
     
-    
     [idx1, idx2] = find(X(1,:)-x < 0);
     [idx3, idx4] = find(Y(:,1)-y < 0);
     ix = idx3(end);
@@ -23,10 +22,6 @@ function z = cal_alt(x,y,X,Y,Z)
         iy12 = iy+1;
         iy22 = iy+1;
     end
-
-
-
-    
     
     x11 = X(ix11,iy11); y11 = Y(ix11,iy11);
     x12 = X(ix12,iy12); y12 = Y(ix12,iy12);
@@ -45,6 +40,4 @@ function z = cal_alt(x,y,X,Y,Z)
 
     z = (r11*z11 + r12*z12 + r21*z21 + r22*z22 )/(r11+r12+r21+r22);  
    
-    
-
 end
