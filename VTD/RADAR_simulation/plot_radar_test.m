@@ -257,15 +257,29 @@ end
 
 %% 레이더를 특정 위치에 고정시킨 후 전체 지형에 대해 SIR을 구하는 코드
 clc;
-fixed_radar_sim_matrix = RADAR_loc_sim(radar_pos, X, Y, Z, RADAR);
+SIR_matrix = RADAR_loc_sim(radar_pos, X, Y, Z, RADAR);
 
+%% 시각화
 
-
-
-
-
-
-
+figure(1);
+set(gcf, 'Position', [200, 100, 1000, 750]); % [left, bottom, width, height]
+clf;
+s = surf(X / 1000, Y / 1000, Z, SIR_matrix, 'EdgeColor', 'k', 'LineWidth',1);
+hold on;
+plot3(radar_pos(1) / 1000, radar_pos(2) / 1000, radar_pos(3), ...
+      'ko', 'MarkerSize', 15, 'MarkerFaceColor', 'k', 'LineWidth', 2);
+xlabel('X [km]');
+ylabel('Y [km]');
+zlabel('Altitude [m]');
+title('SIR Distribution Over Terrain');
+colorbar;
+colormap(jet);
+clim([min(SIR_matrix(:)), max(SIR_matrix(:))]);
+c = colorbar;
+c.Label.String = 'RADAR Signal (SIR in dB)';
+view(-20, 80);
+grid on;
+alpha(s, 0.8);
 
 
     % 현재 목표물 위치 계산
