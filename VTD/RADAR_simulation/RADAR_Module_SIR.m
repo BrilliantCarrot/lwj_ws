@@ -37,8 +37,13 @@ function [sig1,sigma_MBc, sigma_SLc,sigma_clutter2,SNR,SCR2,SIR_dB_air,Range] = 
     Du = tau * prf;
     Fecl = eclipsingfactor(Range, Du, prf);
 
+    % STC Factor
+    Rstc = 50e3;    % STC Cutoff Range (m)
+    Xstc = 4;       % STC Exponent
+    Fstc = stcfactor(Range, Rstc, Xstc);
+
     % dB 기준 SNR
-    SNR = radareqsnr(lambda,Range,Pt,tau,'Gain',G,'Ts',Ts,'RCS',rcs,'CustomFactor',Fecl,'Loss',L);
+    SNR = radareqsnr(lambda,Range,Pt,tau,'Gain',G,'Ts',Ts,'RCS',rcs,'CustomFactor',Fecl+Fstc,'Loss',L);
 
     c = 3e8;                      % 전파 속도 (m/s)
     sigma_0 = 10^(-20/10);        % 클러터 산란(반사)계수 (선형(log) 스케일), -20 dB(Flatland)
@@ -89,7 +94,7 @@ function [sig1,sigma_MBc, sigma_SLc,sigma_clutter2,SNR,SCR2,SIR_dB_air,Range] = 
     else
         sig1 = SIR_dB_land;
     end
-    end21
+end
 
 % 지표면 고도
 % radar_surface_alt = cal_alt(RADAR.RadarPos(lambda_num,1), RADAR.RadarPos(lambda_num,2), X, Y, Z);

@@ -176,6 +176,8 @@ for i = 1:10:length(traj)
             %     C(j,k,3) = 0.5;
             % end
 
+            % MTI Loss와 CFAR Loss도 구하면 15.14dB보다 높은 값이 나와야됨
+            
             if visibility == 1 % 기체가 레이더에 안 보이게 된다면 회색으로 처리
                 sig_save(j,k) = 0;  % 0이 아닌 다른 설정 필요
             else
