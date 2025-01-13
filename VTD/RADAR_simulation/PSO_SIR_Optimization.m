@@ -1,7 +1,7 @@
-function optimal_path = PSO_SIR_Optimization(radar_pos, X, Y, Z, RADAR)
+function optimal_point = PSO_SIR_Optimization(radar_pos, X, Y, Z, RADAR)
     % PSO 파라미터 정의
     num_particles = 1000;    
-    max_iter = 100;        
+    max_iter = 30;        
     w = 0.7;               
     c1 = 1.5;              
     c2 = 1.5;              
@@ -76,7 +76,7 @@ function optimal_path = PSO_SIR_Optimization(radar_pos, X, Y, Z, RADAR)
         fprintf('Iteration %d/%d, Best SIR: %.2f dB\n', iter, max_iter, gbest_score);
     end
     % 최적 경로 결과
-    optimal_path = gbest;
+    optimal_point = gbest;
 end
 
 % x,y 좌표에서 맞는 고도 z값을 산출

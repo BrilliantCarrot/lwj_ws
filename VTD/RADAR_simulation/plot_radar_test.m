@@ -11,7 +11,6 @@ X1 = MAP.X(mesh_x,mesh_y);
 Y1 = MAP.Y(mesh_x,mesh_y);
 X = X1 - min(min(X1));
 Y = Y1 - Y1(1,1);
-
 Z = MAP.alt(mesh_x,mesh_y);
 
 %% RADAR Initialize
@@ -254,7 +253,7 @@ grid on;
 alpha(s, 0.8);
 
 %% 생성된 시뮬레이션 맵에서 PSO 알고리즘 이용
-optimal_path = PSO_SIR_Optimization(radar_pos, X, Y, Z, RADAR);
+optimal_point = PSO_SIR_Optimization(radar_pos, X, Y, Z, RADAR);
 
 %% PSO 결과 시각화
 
@@ -262,7 +261,7 @@ figure;
 set(gcf, 'Position', [200, 100, 1000, 750]);
 s = surf(X / 1000, Y / 1000, Z, 'EdgeColor', 'none');
 hold on;
-plot3(optimal_path(:, 1) / 1000, optimal_path(:, 2) / 1000, optimal_path(:, 3), 'r-', 'LineWidth', 2);
+plot3(optimal_point(:, 1) / 1000, optimal_point(:, 2) / 1000, optimal_point(:, 3), 'r-', 'LineWidth', 2);
 plot3(radar_pos(1) / 1000, radar_pos(2) / 1000, radar_pos(3), 'ko', 'MarkerSize', 10, 'MarkerFaceColor', 'k');
 xlabel('X [km]');
 ylabel('Y [km]');
