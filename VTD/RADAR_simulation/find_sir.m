@@ -1,4 +1,7 @@
-function sig = find_sir(radar_pos, target_pos, X, Y, Z, RADAR)
+function sig = find_sir(radar_pos, target_pos, RADAR)
+    % radar_pos: 레이더 위치 좌표
+    % target_pos: 목표물(각각의 지형)좌표
+    % RADAR: 레이더 구조체
     % 레이더 파라미터 설정
     lambda = freq2wavelen(2 * 10^9); % 기본 2GHz 파라미터
     Pt = 14000;  % [W] Peak Power

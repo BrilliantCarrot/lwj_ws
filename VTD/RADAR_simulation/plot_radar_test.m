@@ -3,7 +3,7 @@ clear; clc; close all;
 load C:/Users/leeyj/lab_ws/data/VTD/Radar/MAP_STRUCT;
 
 % dm = 샘플링 간격, 10
-dm = 10; g_size = size(MAP.X,1);
+dm = 20; g_size = size(MAP.X,1);
 mesh_x = floor(g_size/2)-250:dm:g_size-750;
 mesh_y = floor(g_size/2)-370:dm:g_size-540;
 
@@ -62,7 +62,7 @@ end
 %% Cal Visibility
 clc;
 % 처음 interval, visual_range는 30; 100000;
-interval = 30; visual_range = 100000;
+interval = 50; visual_range = 100000;
 LOS_length = 50000;     % LOS벡터의 뒤로 연장하여 지형지물 가림을 비교할 거리
 visibility_results = false(size(traj, 1), 1);               % 가시성 결과 저장
 block_check = false;
@@ -227,6 +227,7 @@ for i = 1:10:length(traj)
 end
 
 %% 레이더를 특정 위치에 고정시킨 후 전체 지형에 대해 SIR을 구하는 코드
+
 clc;
 SIR_matrix = RADAR_loc_sim(radar_pos, X, Y, Z, RADAR);
 
@@ -252,6 +253,27 @@ view(-20, 80);
 grid on;
 alpha(s, 0.8);
 
+%% 생성된 시뮬레이션 맵에서 PSO 알고리즘 이용
+optimal_path = PSO_SIR_Optimization(radar_pos, X, Y, Z, RADAR);
+
+%% PSO 결과 시각화
+
+figure;
+set(gcf, 'Position', [200, 100, 1000, 750]);
+s = surf(X / 1000, Y / 1000, Z, 'EdgeColor', 'none');
+hold on;
+plot3(optimal_path(:, 1) / 1000, optimal_path(:, 2) / 1000, optimal_path(:, 3), 'r-', 'LineWidth', 2);
+plot3(radar_pos(1) / 1000, radar_pos(2) / 1000, radar_pos(3), 'ko', 'MarkerSize', 10, 'MarkerFaceColor', 'k');
+xlabel('X [km]');
+ylabel('Y [km]');
+zlabel('Altitude [m]');
+title('Optimized Path Visualization');
+colorbar;
+colormap(jet);
+view(-20, 80);
+grid on;
+alpha(s, 0.8);
+legend('Terrain', 'Optimized Path', 'Radar Position', 'Location', 'Best');
 
 % 레이더 파라미터 설정
 % for lambda num = 1, 2GHz
