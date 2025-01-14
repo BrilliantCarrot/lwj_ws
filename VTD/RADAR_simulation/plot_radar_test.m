@@ -253,6 +253,8 @@ grid on;
 alpha(s, 0.8);
 
 %% 생성된 시뮬레이션 맵에서 PSO 알고리즘 이용
+start_pos = 
+end_pos = 
 optimal_point = PSO_SIR_Optimization(radar_pos, X, Y, Z, RADAR);
 
 %% PSO 결과 시각화
