@@ -1,86 +1,62 @@
 function optimal_path = PSO_SIR_Optimization(radar_pos, start_pos, end_pos, X, Y, Z, RADAR)
     % PSO 파라미터 정의
-    num_particles = 1000;    
-    max_iter = 30;        
-    w = 0.7;               
-    c1 = 1.5;              
-    c2 = 1.5;              
+    num_particles = 500;   % 입자 수 줄임 (더 작은 탐색 영역)
+    max_iter = 50;         % 반복 수
+    w = 0.7;               % 관성 계수
+    c1 = 1.5;              % 개인 가속 계수
+    c2 = 1.5;              % 전역 가속 계수
 
-    % 탐색 공간 정의
-    x_min = min(X(:)); x_max = max(X(:));
-    y_min = min(Y(:)); y_max = max(Y(:));
-    % z_min = min(Z(:)); z_max = max(Z(:));
+    % 탐색 반경 설정
+    search_radius = 500;   % 초기 탐색 반경 (m)
+    min_distance = 30;     % 목표점에 도달했다고 간주하는 거리
 
+    % 결과 경로 초기화
     optimal_path = start_pos;
     current_point = start_pos;
 
-    while norm(current_point - end_point) > 10
+    while norm(current_point - end_pos) > min_distance
         % 입자의 위치와 속도 초기화
-        % 입자 위치의 경우 DTED 상에서 랜덤 위치이며 고도의 경우 DTED z축 고도 + 100
-        particles = [rand(num_particles, 1) * (x_max - x_min) + x_min, ...
-                     rand(num_particles, 1) * (y_max - y_min) + y_min, ...
-                     zeros(num_particles, 1)];
-        for i = 1:num_particles
-            % x,y 지점에서 고도+100의 z값을 구함
-            %%%%%%%%%% 아마 그냥 x,y,지점의 고도 z값 + 100만 하면 될지도 %%%%%%%%%%
-            x = particles(i, 1);
-            y = particles(i, 2);
-            z = calculate_Z(x, y, X, Y, Z) + 100;
-            particles(i, 3) = z; 
-        end
-        velocities = zeros(size(particles));    % 속도는 0으로 초기화
-    
+        particles = initialize_particles(current_point, end_pos, num_particles, search_radius, X, Y, Z);
+        velocities = zeros(size(particles));
+
+        % 초기 개인 최적값 및 전역 최적값 설정
         pbest = particles;
-        % particles(i, :): i번째 입자의 초기 위치이며 입자의 3D 좌표 [x, y, z]를 포함
-        % 레이더의 위치는 고정(추후 여러개 레이더라면 바꿔야 될 수도있음)
-        % 타겟의 위치는 지형 셀 전체
-        % pbest_scores = arrayfun(@(i) find_sir(radar_pos, particles(i,:), RADAR), 1:num_particles)';
-                pbest_scores = arrayfun(@(i) calculate_fitness(radar_pos, particles(i, :), ...
-                    current_point, end_point, RADAR), 1:num_particles)';
-        % pbest_scores는 각 입자의 초기 SIR 값을 저장한 열 벡터로 크기는 [num_particles, 1]
-        % pbest_scores에서 최소값(gbest_score)과 해당 최소값이 위치한 인덱스(gbest_idx)를 반환
-        % gbest가 초기 SIR 값 중 가장 작은 값으로 현재까지의 최적 SIR 값
+        pbest_scores = arrayfun(@(i) calculate_fitness(radar_pos, particles(i, :), end_pos, RADAR), 1:num_particles)';
         [gbest_score, gbest_idx] = min(pbest_scores);
-        % pbest 배열에서 gbest_idx 위치에 있는 입자의 좌표를 가져옴
         gbest = pbest(gbest_idx, :);
-    
-        % PSO 메인 반복문
-        % 반복문에서 SIR을 계산하며 pbest 및 gbest 업데이트
+
+        % PSO 반복문
         for iter = 1:max_iter
             for i = 1:num_particles
-                % Calculate SIR for current particle
-                current_score = find_sir(radar_pos, particles(i,:), RADAR);
-                % 현재 입자 SIR이 개인 최적 위치 SIR보다 낮은 경우 업데이트
+                % 현재 입자의 SIR 계산
+                current_score = calculate_fitness(radar_pos, particles(i, :), end_pos, RADAR);
+
+                % 개인 최적값 업데이트
                 if current_score < pbest_scores(i)
                     pbest_scores(i) = current_score;
                     pbest(i, :) = particles(i, :);
                 end
-                % 현재 입자 SIR이 전역 최적 위치 SIR보다 낮은 경우 gbest로 설정
+
+                % 전역 최적값 업데이트
                 if current_score < gbest_score
                     gbest_score = current_score;
                     gbest = particles(i, :);
                 end
             end
+
             % 속도 및 위치 업데이트
             for i = 1:num_particles
                 r1 = rand();
                 r2 = rand();
-                % pbest(i, :) - particles(i, :): 입자 현재 위치와 개인 최적 위치 사이의 벡터
-                % 개인 최적 위치로 이동하려는 방향을 제공
-                % gbest - particles(i, :): 입자 현재 위치와 전역 최적 위치 사이으 벡터
-                % 전역 최적 위치로 이동하려는 방향을 제공
-                % 속도 업데이트
                 velocities(i, :) = w * velocities(i, :) + ...
                                    c1 * r1 * (pbest(i, :) - particles(i, :)) + ...
                                    c2 * r2 * (gbest - particles(i, :));
-                % 위치 업데이트
                 particles(i, :) = particles(i, :) + velocities(i, :);
-                particles(i, 1) = max(min(particles(i, 1), x_max), x_min);
-                particles(i, 2) = max(min(particles(i, 2), y_max), y_min);
-                particles(i, 3) = calculate_Z(particles(i, 1), particles(i, 2), X, Y, Z) + 100;
+                % 업데이트된 입자의 위치를 탐색 반경 내로 제한하여 생성되도록 함
+                particles(i, :) = constrain_to_radius(current_point, particles(i, :), search_radius, X, Y, Z);
             end
-            fprintf('Iteration %d/%d, Best SIR: %.2f dB\n', iter, max_iter, gbest_score);
         end
+
         % 다음 경로 점 업데이트
         current_point = gbest;
         optimal_path = [optimal_path; current_point];
@@ -90,6 +66,29 @@ function optimal_path = PSO_SIR_Optimization(radar_pos, start_pos, end_pos, X, Y
     end
 end
 
+% 입자 초기화 함수
+function particles = initialize_particles(current_point, end_point, num_particles, radius, X, Y, Z)
+    % 직선 경로 근처에서 입자 초기화
+    particles = zeros(num_particles, 3);
+    for i = 1:num_particles
+        direction = (end_point - current_point) / norm(end_point - current_point);
+        offset = randn(1, 3) * radius;  % 랜덤한 오프셋 추가하여 탐색 반경 내에서 입자 위치 선정
+        particles(i, :) = current_point + offset;
+        % 입자 생성 고도는 항상 지형고도 + 100이 되도록
+        particles(i, 3) = calculate_Z(particles(i, 1), particles(i, 2), X, Y, Z) + 100;
+    end
+end
+
+% 탐색 반경 내로 위치 제한
+% 입자가 탐색 반경을 벗어나는 경우 반경 내 가장자리로 제한
+function position = constrain_to_radius(center, position, radius, X, Y, Z)
+    if norm(position - center) > radius
+        direction = (position - center) / norm(position - center);
+        position = center + direction * radius;
+    end
+    position(3) = calculate_Z(position(1), position(2), X, Y, Z) + 100; % 고도 보정
+end
+
 % x,y 좌표에서 맞는 고도 z값을 산출
 function z = calculate_Z(x, y, X, Y, Z)
     [~, ix] = min(abs(X(1, :) - x));
@@ -97,15 +96,14 @@ function z = calculate_Z(x, y, X, Y, Z)
     z = Z(iy, ix);
 end
 
-% 피트니스 함수 계산
-function fitness = calculate_fitness(radar_pos, particle_pos, current_point, end_point, RADAR)
+% 적합도 계산 함수
+function fitness = calculate_fitness(radar_pos, particle_pos, end_pos, RADAR)
+    % SIR과 거리의 가중합을 통해 적합도 산출
     % SIR 값 계산
     sir_value = find_sir(radar_pos, particle_pos, RADAR);
-
-    % 거리 값 계산
-    distance_to_goal = norm(particle_pos - end_point);
-    distance_from_current = norm(particle_pos - current_point);
-
-    % 피트니스 함수 (SIR과 거리의 가중합)
-    fitness = sir_value + 0.1 * distance_to_goal + 0.1 * distance_from_current;
+    % 목표점까지의 거리 계산
+    distance_to_goal = norm(particle_pos - end_pos);
+    % SIR 가중치를 곱해 SIR이 낮더라도 목표점까지 가까워지도록 유도
+    % 최적 경로가 SIR뿐만 아니라 목표점까지의 이동 효율성도 고려하여 탐색
+    fitness = sir_value + 0.1 * distance_to_goal;
 end

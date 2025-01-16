@@ -1,6 +1,7 @@
 %% MAP Initialize
 clear; clc; close all;
 load C:/Users/leeyj/lab_ws/data/VTD/Radar/MAP_STRUCT;
+% load C:/Users/leeyj/lab_ws/data/VTD/Radar/output_map_struct.mat;
 
 % dm = 샘플링 간격, 10
 dm = 20; g_size = size(MAP.X,1);
@@ -22,7 +23,7 @@ load C:/Users/leeyj/lab_ws/data/VTD/Radar/Results_8GHz.mat
 RADAR.RCS2 = Sth;
 % RADAR.RadarPos = zeros(size(131,164, 1), size(131,164, 2), 3);
 
-radar_pos = [34000, 37400, 500];    % 레이더 위치
+
 
 %% Trajectory
 x0 = 34000; y0 = 37400;
@@ -227,17 +228,20 @@ end
 
 %% 레이더를 특정 위치에 고정시킨 후 전체 지형에 대해 SIR을 구하는 코드
 
+radar_1 = [20000, 20000, 300];  % 레이더1 위치
+% radar_2 = [14000, 14000, 300];  % 레이더2 위치
+
 clc;
-SIR_matrix = RADAR_loc_sim(radar_pos, X, Y, Z, RADAR);
+SIR_matrix = RADAR_loc_sim(radar_1, X, Y, Z, RADAR);
 
 %% 시각화
 
-figure(1);
+figure;
 set(gcf, 'Position', [200, 100, 1000, 750]); % [left, bottom, width, height]
 clf;
 s = surf(X / 1000, Y / 1000, Z, SIR_matrix, 'EdgeColor', 'k', 'LineWidth',1);
 hold on;
-plot3(radar_pos(1) / 1000, radar_pos(2) / 1000, radar_pos(3), ...
+plot3(radar_1(1) / 1000, radar_1(2) / 1000, radar_1(3), ...
       'ko', 'MarkerSize', 15, 'MarkerFaceColor', 'k', 'LineWidth', 2);
 xlabel('X [km]');
 ylabel('Y [km]');
@@ -253,9 +257,11 @@ grid on;
 alpha(s, 0.8);
 
 %% 생성된 시뮬레이션 맵에서 PSO 알고리즘 이용
-start_pos = 
-end_pos = 
-optimal_point = PSO_SIR_Optimization(radar_pos, X, Y, Z, RADAR);
+
+radar_1 = [20000, 20000, 700];
+start_pos = [34000, 37400, 770];
+end_pos = [1780, 5180, 450];
+path = PSO_SIR_Optimization(radar_1, start_pos, end_pos, X, Y, Z, RADAR);
 
 %% PSO 결과 시각화
 
@@ -263,8 +269,8 @@ figure;
 set(gcf, 'Position', [200, 100, 1000, 750]);
 s = surf(X / 1000, Y / 1000, Z, 'EdgeColor', 'none');
 hold on;
-plot3(optimal_point(:, 1) / 1000, optimal_point(:, 2) / 1000, optimal_point(:, 3), 'r-', 'LineWidth', 2);
-plot3(radar_pos(1) / 1000, radar_pos(2) / 1000, radar_pos(3), 'ko', 'MarkerSize', 10, 'MarkerFaceColor', 'k');
+plot3(path(:, 1) / 1000, path(:, 2) / 1000, path(:, 3), 'r-', 'LineWidth', 2);
+plot3(radar_1(1) / 1000, radar_1(2) / 1000, radar_1(3), 'ko', 'MarkerSize', 10, 'MarkerFaceColor', 'k');
 xlabel('X [km]');
 ylabel('Y [km]');
 zlabel('Altitude [m]');
