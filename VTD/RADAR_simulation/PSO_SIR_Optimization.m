@@ -68,16 +68,17 @@ end
 
 % 입자 초기화 함수
 function particles = initialize_particles(current_point, end_point, num_particles, radius, X, Y, Z)
-    % 직선 경로 근처에서 입자 초기화
     particles = zeros(num_particles, 3);
+    direction = (end_point - current_point) / norm(end_point - current_point); % 방향 벡터 계산
+
     for i = 1:num_particles
-        direction = (end_point - current_point) / norm(end_point - current_point);
-        offset = randn(1, 3) * radius;  % 랜덤한 오프셋 추가하여 탐색 반경 내에서 입자 위치 선정
-        particles(i, :) = current_point + offset;
-        % 입자 생성 고도는 항상 지형고도 + 100이 되도록
-        particles(i, 3) = calculate_Z(particles(i, 1), particles(i, 2), X, Y, Z) + 100;
+        offset = randn(1, 3) * radius; % 랜덤 오프셋 생성
+        offset(3) = 0; % 수평 방향으로만 랜덤 오프셋을 추가
+        particles(i, :) = current_point + offset + direction * radius * rand(); % 방향성을 추가한 초기화
+        particles(i, 3) = calculate_Z(particles(i, 1), particles(i, 2), X, Y, Z) + 100; % 고도 보정
     end
 end
+
 
 % 탐색 반경 내로 위치 제한
 % 입자가 탐색 반경을 벗어나는 경우 반경 내 가장자리로 제한
@@ -96,7 +97,8 @@ function z = calculate_Z(x, y, X, Y, Z)
     z = Z(iy, ix);
 end
 
-% 적합도 계산 함수
+% 적합도(fitness) 계산 함수
+% SIR이 최소화하는 것과 동시에 목표점까지 직선 거리를 최대한 유지하도록 설계
 function fitness = calculate_fitness(radar_pos, particle_pos, end_pos, RADAR)
     % SIR과 거리의 가중합을 통해 적합도 산출
     % SIR 값 계산

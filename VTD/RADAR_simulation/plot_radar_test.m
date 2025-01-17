@@ -258,7 +258,7 @@ alpha(s, 0.8);
 
 %% 생성된 시뮬레이션 맵에서 PSO 알고리즘 이용
 
-radar_1 = [20000, 20000, 700];
+radar_1 = [20000, 20000, 900];
 start_pos = [34000, 37400, 770];
 end_pos = [1780, 5180, 450];
 path = PSO_SIR_Optimization(radar_1, start_pos, end_pos, X, Y, Z, RADAR);
