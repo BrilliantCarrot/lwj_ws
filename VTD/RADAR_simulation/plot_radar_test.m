@@ -261,77 +261,82 @@ alpha(s, 0.8);
 radar_1 = [20000, 20000, 900];
 start_pos = [34000, 37400, 770];
 end_pos = [1780, 5180, 450];
-path = PSO_SIR_Optimization(radar_1, start_pos, end_pos, X, Y, Z, RADAR);
+% path = PSO_SIR_Optimization(radar_1, start_pos, end_pos, X, Y, Z, RADAR);
+[path, sir_data] = PSO_SIR_Optimization(radar_1, start_pos, end_pos, X, Y, Z, RADAR);
 
 %% PSO 결과 시각화
 
-figure;
-set(gcf, 'Position', [200, 100, 1000, 750]);
-s = surf(X / 1000, Y / 1000, Z, 'EdgeColor', 'none');
-hold on;
-plot3(path(:, 1) / 1000, path(:, 2) / 1000, path(:, 3), 'r-', 'LineWidth', 2);
-plot3(radar_1(1) / 1000, radar_1(2) / 1000, radar_1(3), 'ko', 'MarkerSize', 10, 'MarkerFaceColor', 'k');
-xlabel('X [km]');
-ylabel('Y [km]');
-zlabel('Altitude [m]');
-title('Optimized Path Visualization');
-colorbar;
-colormap(jet);
-view(-20, 80);
-grid on;
-alpha(s, 0.8);
-legend('Terrain', 'Optimized Path', 'Radar Position', 'Location', 'Best');
+visualize_PSO_SIR(path, sir_data, radar_1, X, Y, Z);
+
+% figure;
+% set(gcf, 'Position', [200, 100, 1000, 750]);
+% s = surf(X / 1000, Y / 1000, Z, 'EdgeColor', 'none');
+% hold on;
+% plot3(path(:, 1) / 1000, path(:, 2) / 1000, path(:, 3), 'r-', 'LineWidth', 2);
+% plot3(radar_1(1) / 1000, radar_1(2) / 1000, radar_1(3), 'ko', 'MarkerSize', 10, 'MarkerFaceColor', 'k');
+% xlabel('X [km]');
+% ylabel('Y [km]');
+% zlabel('Altitude [m]');
+% title('Optimized Path Visualization');
+% colorbar;
+% colormap(jet);
+% view(-20, 80);
+% grid on;
+% alpha(s, 0.8);
+% legend('Terrain', 'Optimized Path', 'Radar Position', 'Location', 'Best');
+
+%%
 
 % 레이더 파라미터 설정
 % for lambda num = 1, 2GHz
-% if lambda_num == 1
-    % rcs_table = RADAR.RCS1;
-    % pitch_array = RADAR.theta(1,:) * pi/180;
-    % yaw_array = RADAR.psi(:,1) * pi/180;
-    % % sig = 0;
-    % lambda = freq2wavelen(2*10^9);          % [m] wavelength
-    % Pt = 14000;                             % [W] peak power
-    % tau = 0.00009;                          % [s] pulse width
-    % G = 34;                                 % [dBi] antenna gain
-    % Ts = 290;                               % [K] System temp 
-    % L = 8.17;                                  % [dB] Loss
-    % prf = 1000;                             % [Hz] Pulse repetition frequency 
+if lambda_num == 1
+    rcs_table = RADAR.RCS1;
+    pitch_array = RADAR.theta(1,:) * pi/180;
+    yaw_array = RADAR.psi(:,1) * pi/180;
+    % sig = 0;
+    lambda = freq2wavelen(2*10^9);          % [m] wavelength
+    Pt = 14000;                             % [W] peak power
+    tau = 0.00009;                          % [s] pulse width
+    G = 34;                                 % [dBi] antenna gain
+    Ts = 290;                               % [K] System temp 
+    L = 8.17;                                  % [dB] Loss
+    prf = 1000;                             % [Hz] Pulse repetition frequency 
 % for lambda num = 2, 8GHz
-    % elseif lambda_num == 2  
-    % rcs_table = RADAR.RCS2;
-    % pitch_array = RADAR.theta(1,:) * pi/180;
-    % yaw_array = RADAR.psi(:,1) * pi/180;
-    % % sig = 0;
-    % lambda = freq2wavelen(8*10^9);          % [m] wavelength
-    % Pt = 6000;                              % [W] peak power
-    % tau = 0.0001;                           % [s] pulse width
-    % G = 39;                                 % [dBi] antenna gain
-    % Ts = 290;                               % [K] System temp 
-    % L = 0;                                  % [dB] Loss
-    % prf = 2200;                             % [Hz] Pulse repetition frequency 
-% end
+    elseif lambda_num == 2  
+    rcs_table = RADAR.RCS2;
+    pitch_array = RADAR.theta(1,:) * pi/180;
+    yaw_array = RADAR.psi(:,1) * pi/180;
+    % sig = 0;
+    lambda = freq2wavelen(8*10^9);          % [m] wavelength
+    Pt = 6000;                              % [W] peak power
+    tau = 0.0001;                           % [s] pulse width
+    G = 39;                                 % [dBi] antenna gain
+    Ts = 290;                               % [K] System temp 
+    L = 0;                                  % [dB] Loss
+    prf = 2200;                             % [Hz] Pulse repetition frequency 
+end
 
 
 % 현재 목표물 위치 계산
-% target_pos = traj(i, 1:3) / 1000; % 현재 목표물 위치 (km 단위)
-% % 모든 지형 셀에서 목표물로의 LOS 벡터 계산 및 시각화
-% LOS_length = 30; % LOS 벡터 길0이 (단위: km)
-% num_points = 20; % 샘플링 점 수
+target_pos = traj(i, 1:3) / 1000; % 현재 목표물 위치 (km 단위)
+% 모든 지형 셀에서 목표물로의 LOS 벡터 계산 및 시각화
+LOS_length = 30; % LOS 벡터 길0이 (단위: km)
+num_points = 20; % 샘플링 점 수
 
 % 루프를 통해 각 지형 셀에서 LOS 벡터 생성
-% for row = 1:size(X, 1)
-%     for col = 1:size(X, 2)
-%         % 현재 셀의 레이더 위치
-%         radar_pos = [X(row, col), Y(row, col), Z(row, col)] / 1000; % (km 단위)
-% 
-%         % LOS 벡터 계산
-%         LOS_direction = (target_pos - radar_pos) / norm(target_pos - radar_pos); % 단위 벡터
-%         LOS_points = zeros(num_points, 3);
-%         for j = 1:num_points
-%             LOS_points(j, :) = radar_pos + (j * (LOS_length / num_points)) * LOS_direction;
-%         end
-% 
-%         % LOS 벡터 시각화
-%         plot3(LOS_points(:,1), LOS_points(:,2), LOS_points(:,3), '-', 'Color', 'r', 'LineWidth', 0.5);
-%     end
-% end
+for row = 1:size(X, 1)
+    for col = 1:size(X, 2)
+        % 현재 셀의 레이더 위치
+        radar_pos = [X(row, col), Y(row, col), Z(row, col)] / 1000; % (km 단위)
+
+        % LOS 벡터 계산
+        LOS_direction = (target_pos - radar_pos) / norm(target_pos - radar_pos); % 단위 벡터
+        LOS_points = zeros(num_points, 3);
+        for j = 1:num_points
+            LOS_points(j, :) = radar_pos + (j * (LOS_length / num_points)) * LOS_direction;
+        end
+
+        % LOS 벡터 시각화
+        plot3(LOS_points(:,1), LOS_points(:,2), LOS_points(:,3), '-', 'Color', 'r', 'LineWidth', 0.5);
+    end
+end

@@ -1,4 +1,4 @@
-function optimal_path = PSO_SIR_Optimization(radar_pos, start_pos, end_pos, X, Y, Z, RADAR)
+function [optimal_path, sir_data] = PSO_SIR_Optimization(radar_pos, start_pos, end_pos, X, Y, Z, RADAR)
     % PSO 파라미터 정의
     num_particles = 500;   % 입자 수 줄임 (더 작은 탐색 영역)
     max_iter = 50;         % 반복 수
@@ -13,6 +13,7 @@ function optimal_path = PSO_SIR_Optimization(radar_pos, start_pos, end_pos, X, Y
     % 결과 경로 초기화
     optimal_path = start_pos;
     current_point = start_pos;
+    sir_data = {};
 
     while norm(current_point - end_pos) > min_distance
         % 입자의 위치와 속도 초기화
@@ -61,7 +62,17 @@ function optimal_path = PSO_SIR_Optimization(radar_pos, start_pos, end_pos, X, Y
         current_point = gbest;
         optimal_path = [optimal_path; current_point];
 
-        fprintf('Current Point: (%.2f, %.2f, %.2f), Best Fitness: %.2f\n', ...
+        % 현재 지형에서의 SIR 데이터 저장
+        sir_matrix = zeros(size(Z));
+        for i = 1:size(Z, 1)
+            for j = 1:size(Z, 2)
+                target_pos = [X(i, j), Y(i, j), Z(i, j)];
+                sir_matrix(i, j) = find_sir(radar_pos, target_pos, RADAR);
+            end
+        end
+        sir_data{end + 1} = sir_matrix;
+
+        fprintf('Current Point: (X: %.2f, Y: %.2f, Z: %.2f), Best Fitness: %.2f\n', ...
                 current_point(1), current_point(2), current_point(3), gbest_score);
     end
 end
@@ -107,5 +118,5 @@ function fitness = calculate_fitness(radar_pos, particle_pos, end_pos, RADAR)
     distance_to_goal = norm(particle_pos - end_pos);
     % SIR 가중치를 곱해 SIR이 낮더라도 목표점까지 가까워지도록 유도
     % 최적 경로가 SIR뿐만 아니라 목표점까지의 이동 효율성도 고려하여 탐색
-    fitness = sir_value + 0.1 * distance_to_goal;
+    fitness = sir_value + 0.01 * distance_to_goal;
 end
