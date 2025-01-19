@@ -1,11 +1,8 @@
-function visualize_PSO_SIR_enhanced(optimal_path, sir_data, radar_pos, X, Y, Z)
+function visualize_PSO_SIR(optimal_path, sir_data, radar_pos, X, Y, Z)
     % optimal_path: PSO 알고리즘 결과로 생성된 최적 경로
     % sir_data: PSO 알고리즘에서 각 단계별로 계산된 SIR 분포 데이터
     % radar_pos: 레이더 위치
     % X, Y, Z: 지형 데이터
-
-    % SIR 로그 스케일 변환
-    sir_data_log = cellfun(@(x) log10(max(x, 1e-3)), sir_data, 'UniformOutput', false); % 최소값 제한
 
     % 기본 시각화 설정
     figure;
@@ -13,14 +10,14 @@ function visualize_PSO_SIR_enhanced(optimal_path, sir_data, radar_pos, X, Y, Z)
     hold on;
 
     % 지형 시각화
-    s = surf(X / 1000, Y / 1000, Z, sir_data_log{1}, 'EdgeColor', 'none', 'FaceAlpha', 0.5);
+    s = surf(X / 1000, Y / 1000, Z, 'EdgeColor', 'none', 'FaceAlpha', 0.5);
     colormap(jet);
     colorbar;
-    caxis([log10(1e-3), log10(20)]); % 강조 범위 설정
+    caxis([min(cellfun(@(x) min(x(:)), sir_data)), max(cellfun(@(x) max(x(:)), sir_data))]);
     xlabel('X [km]');
     ylabel('Y [km]');
     zlabel('Altitude [m]');
-    title('Optimized Path and Enhanced SIR Distribution');
+    title('Optimized Path and SIR Distribution');
     view(-20, 80);
     grid on;
 
@@ -33,8 +30,8 @@ function visualize_PSO_SIR_enhanced(optimal_path, sir_data, radar_pos, X, Y, Z)
                       'r-', 'LineWidth', 2);
     radius_plot = plot3([], [], [], 'c--', 'LineWidth', 1);
 
-    % 업데이트 주기 설정
-    pause_time = 1; % 1초 간격으로 업데이트
+    % 업데이트 주기
+    pause_time = 0.5;
 
     % 시각화 업데이트
     for t = 1:length(optimal_path)
@@ -43,13 +40,13 @@ function visualize_PSO_SIR_enhanced(optimal_path, sir_data, radar_pos, X, Y, Z)
                        'YData', optimal_path(1:t, 2) / 1000, ...
                        'ZData', optimal_path(1:t, 3));
 
-        % 현재 SIR 분포 업데이트 (로그 스케일 적용)
-        sir_matrix_log = sir_data_log{t};
-        set(s, 'CData', sir_matrix_log);
+        % 현재 SIR 분포 업데이트
+        sir_matrix = sir_data{t};
+        set(s, 'CData', sir_matrix);
 
         % 현재 위치에서의 SIR 반경 표시
         current_pos = optimal_path(t, :);
-        search_radius = 500; % 탐색 반경 (반경이 동적으로 변할 경우 업데이트 가능)
+        search_radius = 10000; % 탐색 반경 (반경이 동적으로 변할 경우 업데이트 가능)
         [circle_x, circle_y] = generate_circle(current_pos(1), current_pos(2), search_radius, X, Y);
         set(radius_plot, 'XData', circle_x / 1000, 'YData', circle_y / 1000, 'ZData', ones(size(circle_x)) * current_pos(3));
 

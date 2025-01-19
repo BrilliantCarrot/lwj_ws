@@ -258,14 +258,19 @@ alpha(s, 0.8);
 
 %% 생성된 시뮬레이션 맵에서 PSO 알고리즘 이용
 
-radar_1 = [20000, 20000, 900];
+clc;
+radar_1 = [20000, 20000, 900];  % 단일 레이더의 경우
+radars = [20000, 20000, 900; 10000, 10000, 500];    % 복수의 레이더 경우
 start_pos = [34000, 37400, 770];
-end_pos = [1780, 5180, 450];
+% end_pos = [1780, 5180, 450];
+end_pos = [1710,5170,420];
 % path = PSO_SIR_Optimization(radar_1, start_pos, end_pos, X, Y, Z, RADAR);
-[path, sir_data] = PSO_SIR_Optimization(radar_1, start_pos, end_pos, X, Y, Z, RADAR);
+[path, sir_data] = PSO_SIR_Optimization(radars, start_pos, end_pos, X, Y, Z, RADAR);
 
 %% PSO 결과 시각화
 
+clc;
+close all;
 visualize_PSO_SIR(path, sir_data, radar_1, X, Y, Z);
 
 % figure;
