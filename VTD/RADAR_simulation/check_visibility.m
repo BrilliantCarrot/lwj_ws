@@ -9,6 +9,7 @@ function is_visible = check_visibility(radar_pos, target_pos, X, Y, Z, interval)
     is_visible = true; % 기본적으로 보이는 것으로 설정
     LOS_direction = (target_pos - radar_pos) / norm(target_pos - radar_pos); % 단위 벡터
     num_points = ceil(norm(target_pos - radar_pos) / interval); % 샘플링 점 수
+    % fprintf("%d\n", num_points);
 
     for i = 1:num_points
         current_point = radar_pos + i * interval * LOS_direction; % LOS 상의 현재 점

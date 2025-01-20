@@ -6,17 +6,16 @@ function sir = find_sir_multi(radars, target_pos, RADAR, X, Y, Z, interval)
 
     num_radars = size(radars, 1);
     sir_values = -inf(num_radars, 1); % 기본값 -infinity로 초기화
-
     for i = 1:num_radars
         radar_pos = radars(i, :);
-
         % 가시성 검사
         if check_visibility(radar_pos, target_pos, X, Y, Z, interval)
             % 가시성이 확보된 경우에만 SIR 계산
             sir_values(i) = find_sir(radar_pos, target_pos, RADAR);
+        else
+            sir_values(i) = -100; % 지형에 의해 안보이게 되면 낮은 SIR 값 설정
         end
     end
-
     % 최대 SIR 값 반환
     sir = max(sir_values);
 end

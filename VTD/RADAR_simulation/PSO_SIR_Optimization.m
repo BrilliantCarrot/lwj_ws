@@ -14,15 +14,15 @@ function [optimal_path, sir_data] = PSO_SIR_Optimization(radars, start_pos, end_
     c1 = 1.5;              % 개인 가속 계수
     c2 = 1.5;              % 전역 가속 계수
 
-    % 탐색 반경 설정
-    search_radius = 500;   % 초기 탐색 반경 (m)
-    min_distance = 30;     % 목표점에 도달했다고 간주하는 거리
-    max_stagnation = 10;   % 변화 없는 반복 허용 횟수 (새로 추가)
-
     % 결과 경로 초기화
     optimal_path = start_pos;
     current_point = start_pos;
     sir_data = {};
+
+    % 탐색 반경 설정
+    search_radius = max(500, norm(current_point - end_pos) / 10);
+    min_distance = 30;     % 목표점에 도달했다고 간주하는 거리
+    max_stagnation = 4;   % 변화 없는 반복 허용 횟수 (새로 추가)
 
     % 변화 없는 반복을 추적하기 위한 변수
     stagnation_count = 0;
@@ -68,6 +68,18 @@ function [optimal_path, sir_data] = PSO_SIR_Optimization(radars, start_pos, end_
                 particles(i, :) = particles(i, :) + velocities(i, :);
                 % 업데이트된 입자의 위치를 탐색 반경 내로 제한하여 생성되도록 함
                 particles(i, :) = constrain_to_radius(current_point, particles(i, :), search_radius, X, Y, Z);
+            end
+
+            % 정체 상황 처리
+            if stagnation_count >= max_stagnation
+                % 입자를 흩뿌림
+                for i = 1:num_particles
+                    random_offset = (rand(1, 3) - 0.5) * search_radius; % 랜덤 오프셋
+                    particles(i, :) = gbest + random_offset; % 전역 최적점 주변으로 흩뿌림
+                    particles(i, 3) = calculate_Z(particles(i, 1), particles(i, 2), X, Y, Z) + 100; % 고도 보정
+                end
+                stagnation_count = 0; % 정체 카운트 초기화
+                fprintf('Particles scattered due to stagnation.\n');
             end
         end
 
@@ -147,7 +159,17 @@ function fitness = calculate_fitness(radars, particle_pos, end_pos, RADAR, X, Y,
     sir_value = find_sir_multi(radars, particle_pos, RADAR, X, Y, Z, interval);
     % 목표점까지의 거리 계산
     distance_to_goal = norm(particle_pos - end_pos);
+
+    % 목표점 도달 보상 (거리와 비례)
+    goal_reward = max(0, 1000 / distance_to_goal); % 가까워질수록 보상 증가
+
+    % 가시성이 없을 때 추가 페널티를 부여
+    visibility_penalty = 0;
+    if sir_value < -50 % SIR이 매우 낮은 경우(지형에 의해 가려진 경우)
+        visibility_penalty = -100; % 적절한 페널티 값 설정???
+    end
+
     % SIR 가중치를 곱해 SIR이 낮더라도 목표점까지 가까워지도록 유도
     % 최적 경로가 SIR뿐만 아니라 목표점까지의 이동 효율성도 고려하여 탐색
-    fitness = sir_value + 0.1 * distance_to_goal;
+    fitness = sir_value + 0.1 * distance_to_goal + visibility_penalty - goal_reward;
 end

@@ -1,6 +1,6 @@
 %% MAP Initialize
 clear; clc; close all;
-load C:/Users/leeyj/lab_ws/data/VTD/Radar/MAP_STRUCT;
+load C:/Users/ThinkYun/lab_ws/data/VTD/Radar/MAP_STRUCT;
 % load C:/Users/leeyj/lab_ws/data/VTD/Radar/output_map_struct.mat;
 
 % dm = 샘플링 간격, 10
@@ -15,11 +15,11 @@ Y = Y1 - Y1(1,1);
 Z = MAP.alt(mesh_x,mesh_y);
 
 %% RADAR Initialize
-load C:/Users/leeyj/lab_ws/data/VTD/Radar/Results_2GHz.mat
+load C:/Users/ThinkYun/lab_ws/data/VTD/Radar/Results_2GHz.mat
 RADAR.RCS1 = Sth;
 RADAR.theta = theta;
 RADAR.psi = psi;
-load C:/Users/leeyj/lab_ws/data/VTD/Radar/Results_8GHz.mat
+load C:/Users/ThinkYun/lab_ws/data/VTD/Radar/Results_8GHz.mat
 RADAR.RCS2 = Sth;
 % RADAR.RadarPos = zeros(size(131,164, 1), size(131,164, 2), 3);
 
@@ -260,7 +260,7 @@ alpha(s, 0.8);
 
 clc;
 radar_1 = [20000, 20000, 900];  % 단일 레이더의 경우
-radars = [20000, 20000, 900; 10000, 10000, 500];    % 복수의 레이더 경우
+radars = [20000, 20000, 900];    % 복수의 레이더 경우
 start_pos = [34000, 37400, 770];
 % end_pos = [1780, 5180, 450];
 end_pos = [1710,5170,420];
