@@ -264,8 +264,9 @@ radars = [20000, 20000, 900; 10000, 10000, 500];    % 복수의 레이더 경우
 start_pos = [34000, 37400, 770];
 % end_pos = [1780, 5180, 450];
 end_pos = [1710,5170,420];
+interval = 30;
 % path = PSO_SIR_Optimization(radar_1, start_pos, end_pos, X, Y, Z, RADAR);
-[path, sir_data] = PSO_SIR_Optimization(radars, start_pos, end_pos, X, Y, Z, RADAR);
+[path, sir_data] = PSO_SIR_Optimization(radars, start_pos, end_pos, X, Y, Z, RADAR, interval);
 
 %% PSO 결과 시각화
 

@@ -1,7 +1,12 @@
-function [optimal_path, sir_data] = PSO_SIR_Optimization(radars, start_pos, end_pos, X, Y, Z, RADAR)
-    % PSO 파라미터 정의
-    % 단일 레이더 좌표 radar_pos 혹은
-    % 복수의 레이더(radars) 좌표를 입력 변수로 설정 후 피탐성 측정
+function [optimal_path, sir_data] = PSO_SIR_Optimization(radars, start_pos, end_pos, X, Y, Z, RADAR, interval)
+    % PSO 알고리즘을 정의한 함수
+    % 레이더 피탐성이 최소가 되는 영역을 찾도록 함
+    % 첫 번째 매개변수: 단일 레이더 좌표 radar_pos 혹은
+    % 복수의 레이더(radars) 좌표
+    % start_pos: 시작점 위치 [x, y, z]
+    % end_pos: 목표점 위치 [x, y, z]
+    % X, Y, Z: 지형 데이터
+    % RADAR: 레이더 구조체
 
     num_particles = 500;   % 입자 수 줄임 (더 작은 탐색 영역)
     max_iter = 50;         % 반복 수
@@ -30,7 +35,7 @@ function [optimal_path, sir_data] = PSO_SIR_Optimization(radars, start_pos, end_
 
         % 초기 개인 최적값 및 전역 최적값 설정
         pbest = particles;
-        pbest_scores = arrayfun(@(i) calculate_fitness(radars, particles(i, :), end_pos, RADAR), 1:num_particles)';
+        pbest_scores = arrayfun(@(i) calculate_fitness(radars, particles(i, :), end_pos, RADAR, X, Y, Z, interval), 1:num_particles)';
         [gbest_score, gbest_idx] = min(pbest_scores);
         gbest = pbest(gbest_idx, :);
 
@@ -38,7 +43,7 @@ function [optimal_path, sir_data] = PSO_SIR_Optimization(radars, start_pos, end_
         for iter = 1:max_iter
             for i = 1:num_particles
                 % 현재 입자의 SIR 계산
-                current_score = calculate_fitness(radars, particles(i, :), end_pos, RADAR);
+                current_score = calculate_fitness(radars, particles(i, :), end_pos, RADAR, X, Y, Z, interval);
 
                 % 개인 최적값 업데이트
                 if current_score < pbest_scores(i)
@@ -76,7 +81,7 @@ function [optimal_path, sir_data] = PSO_SIR_Optimization(radars, start_pos, end_
             for j = 1:size(Z, 2)
                 target_pos = [X(i, j), Y(i, j), Z(i, j)];
                 % 복수의 레이더의 경우 find_sir_multi 함수를 호출하여 모든 레이더 마다의 SIR을 계산
-                sir_matrix(i, j) = find_sir_multi(radars, target_pos, RADAR);
+                sir_matrix(i, j) = find_sir_multi(radars, target_pos, RADAR, X, Y, Z, interval);
             end
         end
         sir_data{end + 1} = sir_matrix;
@@ -136,13 +141,13 @@ end
 % 적합도(fitness) 계산 함수
 % SIR이 최소화하는 것과 동시에 목표점까지 직선 거리를 최대한 유지하도록 설계
 % 복수의 레이더 경우 find_sir_multi 적용
-function fitness = calculate_fitness(radars, particle_pos, end_pos, RADAR)
+function fitness = calculate_fitness(radars, particle_pos, end_pos, RADAR, X, Y, Z, interval)
     % SIR과 거리의 가중합을 통해 적합도 산출
     % SIR 값 계산
-    sir_value = find_sir_multi(radars, particle_pos, RADAR);
+    sir_value = find_sir_multi(radars, particle_pos, RADAR, X, Y, Z, interval);
     % 목표점까지의 거리 계산
     distance_to_goal = norm(particle_pos - end_pos);
     % SIR 가중치를 곱해 SIR이 낮더라도 목표점까지 가까워지도록 유도
     % 최적 경로가 SIR뿐만 아니라 목표점까지의 이동 효율성도 고려하여 탐색
-    fitness = sir_value + 0.01 * distance_to_goal;
+    fitness = sir_value + 0.1 * distance_to_goal;
 end
