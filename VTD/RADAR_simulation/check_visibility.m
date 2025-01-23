@@ -1,59 +1,74 @@
-function is_visible = check_visibility(radar_pos, target_pos, X, Y, Z, interval)
-    % radar_pos: 레이더 위치 [x, y, z]
-    % target_pos: 목표 위치 [x, y, z]
+function visibility_map = check_visibility(radars, X, Y, Z, interval, visual_range)
+    % radars: Nx3 행렬, 각 행이 레이더 위치
     % X, Y, Z: 지형 데이터
-    % interval: 샘플링 간격
+    % interval: LOS 계산 간격
+    % visual_range: 시야 제한 거리
+    
+    [num_radars, ~] = size(radars);
+    [grid_rows, grid_cols] = size(Z);
+    visibility_map = zeros(grid_rows, grid_cols); % 0: 보임, 1: 안 보임
+    
+    for i = 1:num_radars
+        radar_pos = radars(i, :);
+        
+        for gx = 1:grid_rows
+            for gy = 1:grid_cols
+                % 목표 지점
+                target_pos = [X(gx, gy), Y(gx, gy), Z(gx, gy) + 100];
+                
+                % 레이더와 목표지점 사이 거리 계산
+                range = norm(radar_pos - target_pos);
+                if range > visual_range
+                    continue; % 가시 범위를 넘어가면 계산하지 않음
+                end
 
-
-    % 초기값
-    is_visible = true; % 기본적으로 보이는 것으로 설정
-    LOS_direction = (target_pos - radar_pos) / norm(target_pos - radar_pos); % 단위 벡터
-    num_points = ceil(norm(target_pos - radar_pos) / interval); % 샘플링 점 수
-    % fprintf("%d\n", num_points);
-
-    for i = 1:num_points
-        current_point = radar_pos + i * interval * LOS_direction; % LOS 상의 현재 점
-        x = current_point(1);
-        y = current_point(2);
-        z = current_point(3);
-
-        % 현재 점에 가장 가까운 지형 고도 가져오기
-        [~, ix] = min(abs(X(1, :) - x));
-        [~, iy] = min(abs(Y(:, 1) - y));
-        terrain_alt = Z(iy, ix);
-
-        % 지형 고도가 LOS 벡터의 고도보다 높으면 막힘
-        if terrain_alt > z
-            is_visible = false;
-            return; % 가려짐을 확인한 즉시 반환
+                % LOS 계산 및 가시성 판단
+                is_blocked = los_block_simple(radar_pos, target_pos, X, Y, Z, interval);
+                if ~is_blocked
+                    visibility_map(gx, gy) = 0; % 보임
+                else
+                    visibility_map(gx, gy) = 1; % 안 보임
+                end
+            end
         end
     end
 end
+
+function is_blocked = los_block_simple(radar_pos, target_pos, X, Y, Z, interval)
+    % radar_pos: 레이더 위치 [x, y, z]
+    % target_pos: 목표 위치 [x, y, z]
+    % X, Y, Z: 지형 데이터
+    % interval: LOS 계산 간격
     
-%     is_visible = true; % 기본적으로 보이는 것으로 설정
-%     LOS_direction = (target_pos - radar_pos) / norm(target_pos - radar_pos); % 단위 벡터
-%     num_points = ceil(norm(target_pos - radar_pos) / interval); % 샘플링 점 수
-% 
-%     % 시작점과 끝점의 고도
-%     start_alt = radar_pos(3);
-%     end_alt = target_pos(3);
-% 
-%     for check_idx = 1:num_points
-%         % LOS 벡터 상의 현재 점 계산
-%         current_point = radar_pos + check_idx * interval * LOS_direction;
-%         x = current_point(1);
-%         y = current_point(2);
-% 
-%         % `threshold_z` 계산 (시작 고도와 끝 고도 사이의 선형 보간)
-%         threshold_z = start_alt + (end_alt - start_alt) * check_idx / num_points;
-% 
-%         % `check_alt` 계산 (지형 데이터에서 현재 점의 고도 추출)
-%         check_alt = cal_alt(x, y, X, Y, Z);
-% 
-%         % 가시성 판단 (지형 고도가 `threshold_z`를 초과하면 막힘)
-%         if check_alt > threshold_z
-%             is_visible = false;
-%             return; % 가려진 경우 즉시 반환
-%         end
-%     end
+    is_blocked = false;
+    [grid_rows, grid_cols] = size(Z);
+    
+    % LOS 벡터 계산
+    delta = (target_pos - radar_pos) / interval;
+    for step = 1:interval
+        % 현재 LOS 지점
+        current_pos = radar_pos + step * delta;
+
+        % 2D 배열에서 근접한 셀의 인덱스 계산
+        [gx, gy] = find_nearest_grid(current_pos(1), current_pos(2), X, Y, grid_rows, grid_cols);
+
+        % 고도 비교: 현재 지점의 고도와 LOS의 z 좌표 비교
+        if Z(gx, gy) > current_pos(3)
+            is_blocked = true; % 시야가 차단됨
+            return;
+        end
+    end
+end
+
+function [gx, gy] = find_nearest_grid(x, y, X, Y, grid_rows, grid_cols)
+    % x, y 좌표에 해당하는 가장 가까운 그리드 인덱스를 계산
+    gx = max(1, min(grid_rows, find(abs(X(1, :) - x) == min(abs(X(1, :) - x), [], 'all'), 1)));
+    gy = max(1, min(grid_cols, find(abs(Y(:, 1) - y) == min(abs(Y(:, 1) - y), [], 'all'), 1)));
+end
+
+% function z = calculate_Z(x, y, X, Y, Z)
+%     % x, y 좌표에 해당하는 Z 값을 계산
+%     [~, ix] = min(abs(X(1, :) - x));
+%     [~, iy] = min(abs(Y(:, 1) - y));
+%     z = Z(iy, ix);
 % end

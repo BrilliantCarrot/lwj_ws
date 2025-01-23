@@ -1,7 +1,7 @@
 %% MAP Initialize
 clear; clc; close all;
-% load C:/Users/ThinkYun/lab_ws/data/VTD/Radar/MAP_STRUCT;
-load C:/Users/leeyj/lab_ws/data/VTD/Radar/MAP_STRUCT.mat;
+load C:/Users/ThinkYun/lab_ws/data/VTD/Radar/MAP_STRUCT;
+% load C:/Users/leeyj/lab_ws/data/VTD/Radar/MAP_STRUCT.mat;
 
 % dm = 샘플링 간격, 10
 dm = 20; g_size = size(MAP.X,1);
@@ -15,11 +15,11 @@ Y = Y1 - Y1(1,1);
 Z = MAP.alt(mesh_x,mesh_y);
 
 %% RADAR Initialize
-load C:/Users/leeyj/lab_ws/data/VTD/Radar/Results_2GHz.mat
+load C:/Users/ThinkYun/lab_ws/data/VTD/Radar/Results_2GHz.mat
 RADAR.RCS1 = Sth;
 RADAR.theta = theta;
 RADAR.psi = psi;
-load C:/Users/leeyj/lab_ws/data/VTD/Radar/Results_8GHz.mat
+load C:/Users/ThinkYun/lab_ws/data/VTD/Radar/Results_8GHz.mat
 RADAR.RCS2 = Sth;
 % RADAR.RadarPos = zeros(size(131,164, 1), size(131,164, 2), 3);
 
@@ -205,7 +205,7 @@ end
 %% 시각화
 
 figure(1)
-set(gcf, 'Position', [200, 100, 1000, 750]); % [left, bottom, width, height]
+set(gcf, 'Position', [150, 75, 1200, 750]); % [left, bottom, width, height]
 clf
 pause(1)
 for i = 1:10:length(traj)                                                           
@@ -216,7 +216,7 @@ for i = 1:10:length(traj)
     ylabel('Y [km]');
     zlabel('Altitude [m]');
     alpha(s, 0.5);
-    view(-20, 80);
+    view(-20, 85);
     clim([min(RADAR_sig_SIR{i}(:)), max(RADAR_sig_SIR{i}(:))]);
     c = colorbar;
     c.Label.String = 'RADAR Signal (SIR in dB)';
@@ -237,7 +237,7 @@ SIR_matrix = RADAR_loc_sim(radar_1, X, Y, Z, RADAR);
 %% 시각화
 
 figure;
-set(gcf, 'Position', [200, 100, 1000, 750]); % [left, bottom, width, height]
+set(gcf, 'Position', [150, 75, 1200, 750]); % [left, bottom, width, height]
 clf;
 s = surf(X / 1000, Y / 1000, Z, SIR_matrix, 'EdgeColor', 'k', 'LineWidth',1);
 hold on;
@@ -252,7 +252,7 @@ colormap(jet);
 clim([min(SIR_matrix(:)), max(SIR_matrix(:))]);
 c = colorbar;
 c.Label.String = 'RADAR Signal (SIR in dB)';
-view(-20, 80);
+view(-20, 85);
 grid on;
 alpha(s, 0.8);
 
@@ -264,9 +264,9 @@ radars = [20000, 20000, 900];    % 복수의 레이더 경우
 start_pos = [34000, 37400, 770];
 % end_pos = [1780, 5180, 450];
 end_pos = [1710,5170,420];
-interval = 30;
+interval = 50;
 % path = PSO_SIR_Optimization(radar_1, start_pos, end_pos, X, Y, Z, RADAR);
-[path, sir_data] = PSO_SIR_Optimization(radars, start_pos, end_pos, X, Y, Z, RADAR);
+[path, sir_data] = PSO_SIR_Optimization(radars, start_pos, end_pos, X, Y, Z, RADAR, interval);
 
 %% PSO 결과 시각화
 
@@ -292,6 +292,9 @@ visualize_PSO_SIR(path, sir_data, radar_1, X, Y, Z);
 % legend('Terrain', 'Optimized Path', 'Radar Position', 'Location', 'Best');
 
 %%
+visualize_los(radar_1,X,Y,Z,50,100000);
+
+%% 
 
 % 레이더 파라미터 설정
 % for lambda num = 1, 2GHz

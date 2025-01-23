@@ -3,32 +3,31 @@ function sig_matrix = RADAR_loc_sim(radar_pos, X, Y, Z, RADAR)
     % X, Y, Z: 지형 데이터 (격자 행렬)
     % RADAR: 레이더 파라미터 구조체
     % sig_matrix: 각 지형 셀에 대한 SIR 값을 저장하는 행렬
-
-    % 레이더 파라미터 설정
-    lambda = freq2wavelen(2 * 10^9); % 기본 2GHz 파라미터
-    Pt = 14000;  % [W] Peak Power
-    tau = 0.00009;  % [s] Pulse Width
-    G = 34;  % [dBi] Antenna Gain
-    Ts = 290;  % [K] System Temperature
-    L = 8.17;  % [dB] Loss
-    sigma_0 = 10^(-20/10);  % Clutter Scattering Coefficient
-    theta_A = deg2rad(1);  % Azimuth Beamwidth
-    theta_E = deg2rad(2);  % Elevation Beamwidth
-    SL_rms = 10^(-20.10);  % RMS Sidelobe Level
-    R_e = 6.371e6;  % Earth Radius (m)
-    c = 3e8;  % Speed of Light (m/s)
-    prf = 1000; % [Hz] Pulse repetition frequency
-    Du = tau * prf;
+    lambda = RADAR.lambda;
+    Pt = RADAR.Pt;
+    tau = RADAR.tau;
+    G = RADAR.G;
+    Ts = RADAR.Ts;
+    L = RADAR.L;
+    sigma_0 = RADAR.sigma_0;
+    theta_A = RADAR.theta_A;
+    theta_E = RADAR.theta_E;
+    SL_rms = RADAR.SL_rms;
+    R_e = RADAR.R_e;
+    c = RADAR.c;
+    prf = RADAR.prf;
+    Du = RADAR.Du;
     rcs_table = RADAR.RCS1;
     
     % 결과 저장 행렬 초기화
     [rows, cols] = size(Z);
     sig_matrix = zeros(rows, cols);
     
+    
     % 각 지형 셀에 대해 거리 및 SIR 계산
     for i = 1:rows
         for j = 1:cols
-            target_pos = [X(i, j), Y(i, j), Z(i, j)];
+            target_pos = double([X(i, j), Y(i, j), Z(i, j)]);
             
             % 거리 및 LOS, RCS, SNR 계산
             RelPos = target_pos - radar_pos;  % 레이더와 목표물 간 상대 위치
@@ -47,13 +46,14 @@ function sig_matrix = RADAR_loc_sim(radar_pos, X, Y, Z, RADAR)
             y_lower = p_rcs(y_idx, :);
             y_upper = p_rcs(y_idx + 1, :);
             rcs = y_lower + (yaw - yaw_array(y_idx)) * (y_upper - y_lower) / (yaw_array(y_idx + 1) - yaw_array(y_idx));
-            rcs = 10^(rcs / 10);  % dB to linear scale
+            rcs = 10^(rcs / 10);  % dB를 선형 스케일로 변환
             Fecl = eclipsingfactor(Range, Du, prf);
             SNR = radareqsnr(lambda, Range, Pt, tau, 'Gain', G, 'Ts', Ts, 'RCS', rcs, 'CustomFactor', Fecl, 'Loss', L);
 
             % 클러터 RCS 계산
-            h_r = radar_pos(3);  % 레이더 고도
-            h_t = Z(i, j) + 100;  % 목표물 고도, 원하는 값을 더하고 빼도됨(비행체 고도 조절)
+            h_r = double(radar_pos(3));  % 레이더 고도
+            h_t = double(Z(i, j) + 100);  % 목표물 고도, 원하는 값을 더하고 빼도됨(비행체 고도 조절)
+            Range = double(Range);  % Range도 double로 변환
             theta_r = asin(min(1, max(-1, h_r / Range)));
             theta_e = asin(min(1, max(-1, (h_t - h_r) / Range)));
             Rg = Range * cos(theta_r);  % Ground Range
