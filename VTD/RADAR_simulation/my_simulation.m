@@ -46,7 +46,7 @@ RADAR.prf = 1000; % [Hz] Pulse repetition frequency
 RADAR.Du = RADAR.tau * RADAR.prf;
 
 rcs_table = RADAR.RCS1;
-radar_1 = [10000, 10000, 220];  % 레이더1 위치
+radar_1 = double([10000, 10000, 220]);  % 레이더1 위치
 
 %% 시각화
 
@@ -97,7 +97,7 @@ title('SIR Distribution Over Terrain');
 
 %%
 
-
+LOS_test(radar_1,X,Y,Z);
 
 
 % % 2D 색상으로 자른 데이터 시각화
