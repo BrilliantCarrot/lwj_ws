@@ -1,4 +1,4 @@
-function [optimal_path, sir_data] = PSO_SIR_Optimization(radars, start_pos, end_pos, X, Y, Z, RADAR, interval)
+function [optimal_path, sir_data] = PSO_SIR_Optimization(radars, start_pos, end_pos, X, Y, Z, RADAR,interval)
     % PSO 알고리즘을 정의한 함수
     % 레이더 피탐성이 최소가 되는 영역을 찾도록 함
     % 첫 번째 매개변수: 단일 레이더 좌표 radar_pos 혹은
@@ -7,6 +7,7 @@ function [optimal_path, sir_data] = PSO_SIR_Optimization(radars, start_pos, end_
     % end_pos: 목표점 위치 [x, y, z]
     % X, Y, Z: 지형 데이터
     % RADAR: 레이더 구조체
+    visibility_map = 0;
 
     num_particles = 500;   % 입자 수 줄임 (더 작은 탐색 영역)
     max_iter = 50;         % 반복 수
@@ -20,7 +21,8 @@ function [optimal_path, sir_data] = PSO_SIR_Optimization(radars, start_pos, end_
     sir_data = {};
 
     % 탐색 반경 설정
-    search_radius = max(500, norm(current_point - end_pos) / 10);
+    % search_radius = max(500, norm(current_point - end_pos) / 10);
+    search_radius = 500;
     min_distance = 30;     % 목표점에 도달했다고 간주하는 거리
     max_stagnation = 4;   % 변화 없는 반복 허용 횟수 (새로 추가)
 
@@ -28,8 +30,8 @@ function [optimal_path, sir_data] = PSO_SIR_Optimization(radars, start_pos, end_
     stagnation_count = 0;
     previous_gbest_score = inf;
 
-    % **가시성 맵 계산**
-    visibility_map = check_visibility(radars, X, Y, Z, interval, 100000);
+    % 가시성 맵 계산 추가
+
 
     while norm(current_point - end_pos) > min_distance && stagnation_count < max_stagnation
         % 입자의 위치와 속도 초기화
@@ -79,7 +81,7 @@ function [optimal_path, sir_data] = PSO_SIR_Optimization(radars, start_pos, end_
                 for i = 1:num_particles
                     random_offset = (rand(1, 3) - 0.5) * search_radius; % 랜덤 오프셋
                     particles(i, :) = gbest + random_offset; % 전역 최적점 주변으로 흩뿌림
-                    particles(i, 3) = calculate_Z(particles(i, 1), particles(i, 2), X, Y, Z) + 100; % 고도 보정
+                    particles(i, 3) = calculate_Z(particles(i, 1), particles(i, 2), X, Y, Z) + 30; % 고도 보정
                 end
                 stagnation_count = 0; % 정체 카운트 초기화
                 fprintf('Particles scattered due to stagnation.\n');
@@ -99,14 +101,10 @@ function [optimal_path, sir_data] = PSO_SIR_Optimization(radars, start_pos, end_
                 sir_matrix(i, j) = find_sir_multi(radars, target_pos, RADAR, X, Y, Z);
             end
         end
-
         % sir_matrix = calculate_sir_matrix_with_los(radars, X, Y, Z, RADAR);
-
         sir_data{end + 1} = sir_matrix;
-
         % fprintf('Current Point: (X: %.2f, Y: %.2f, Z: %.2f), Best Fitness: %.2f\n', ...
         %         current_point(1), current_point(2), current_point(3), gbest_score);
-
         % 변화 없는 반복 횟수 추적
         if abs(previous_gbest_score - gbest_score) < 1e-3
             stagnation_count = stagnation_count + 1;
@@ -135,7 +133,7 @@ function particles = initialize_particles(current_point, end_point, num_particle
         offset = randn(1, 3) * radius; % 랜덤 오프셋 생성
         offset(3) = 0; % 수평 방향으로만 랜덤 오프셋을 추가
         particles(i, :) = current_point + offset + direction * radius * rand(); % 방향성을 추가한 초기화
-        particles(i, 3) = calculate_Z(particles(i, 1), particles(i, 2), X, Y, Z) + 100; % 고도 보정
+        particles(i, 3) = calculate_Z(particles(i, 1), particles(i, 2), X, Y, Z) + 30; % 고도 보정
     end
 end
 
@@ -146,7 +144,7 @@ function position = constrain_to_radius(center, position, radius, X, Y, Z)
         direction = (position - center) / norm(position - center);
         position = center + direction * radius;
     end
-    position(3) = calculate_Z(position(1), position(2), X, Y, Z) + 100; % 고도 보정
+    position(3) = calculate_Z(position(1), position(2), X, Y, Z) + 30; % 고도 보정
 end
 
 % x,y 좌표에서 맞는 고도 z값을 산출
@@ -163,19 +161,20 @@ function fitness = calculate_fitness(radars, particle_pos, end_pos, visibility_m
     % SIR과 거리의 가중합을 통해 적합도 산출
     % SIR 값 계산
 
-    [gx, gy] = find_nearest_grid(particle_pos(1), particle_pos(2), X, Y, size(X, 1), size(X, 2));
-
-    % [gx, gy] = pos2grid(particle_pos(1), particle_pos(2), X, Y);
-    if visibility_map(gx, gy) == 1 % (1이면 안 보임)
-        sir_value = -100; % 가려진 경우 SIR을 -100으로 설정
-    else
-        sir_value = find_sir_multi(radars, particle_pos, RADAR, X, Y, Z);
-    end
+    % [gx, gy] = find_nearest_grid(particle_pos(1), particle_pos(2), X, Y, size(X, 1), size(X, 2));
+    
+    % 가시성 부분 필요할 경우 추후 수정
+    % if 안보이는 좌표일 경우
+    %     sir_value = 알맞게 수정
+    % else    % sir값을 적용
+    %     sir_value = find_sir_multi(radars, particle_pos, RADAR, X, Y, Z);
+    % end
+    sir_value = find_sir_multi(radars, particle_pos, RADAR, X, Y, Z);
     % 목표점까지의 거리 계산
     distance_to_goal = norm(particle_pos - end_pos);
 
     % 목표점 도달 보상 (거리와 비례)
-    goal_reward = max(0, 1000 / distance_to_goal); % 가까워질수록 보상 증가
+    % goal_reward = max(0, 1000 / distance_to_goal); % 가까워질수록 보상 증가
 
     % 가시성이 없을 때 추가 페널티를 부여
     % visibility_penalty = 0;
@@ -185,14 +184,14 @@ function fitness = calculate_fitness(radars, particle_pos, end_pos, visibility_m
 
     % SIR 가중치를 곱해 SIR이 낮더라도 목표점까지 가까워지도록 유도
     % 최적 경로가 SIR뿐만 아니라 목표점까지의 이동 효율성도 고려하여 탐색
-    fitness = sir_value + 0.1 * distance_to_goal - goal_reward;
+    fitness = sir_value + 0.01 * distance_to_goal;
 end
 
-function [gx, gy] = find_nearest_grid(x, y, X, Y, grid_rows, grid_cols)
-    % x, y 좌표에 해당하는 가장 가까운 그리드 인덱스를 계산
-    gx = max(1, min(grid_rows, find(abs(X(1, :) - x) == min(abs(X(1, :) - x), [], 'all'), 1)));
-    gy = max(1, min(grid_cols, find(abs(Y(:, 1) - y) == min(abs(Y(:, 1) - y), [], 'all'), 1)));
-end
+% function [gx, gy] = find_nearest_grid(x, y, X, Y, grid_rows, grid_cols)
+%     % x, y 좌표에 해당하는 가장 가까운 그리드 인덱스를 계산
+%     gx = max(1, min(grid_rows, find(abs(X(1, :) - x) == min(abs(X(1, :) - x), [], 'all'), 1)));
+%     gy = max(1, min(grid_cols, find(abs(Y(:, 1) - y) == min(abs(Y(:, 1) - y), [], 'all'), 1)));
+% end
 
 % function visible = is_visible_from_any_radar(radars, target_pos, X, Y, Z)
 %     % 복수의 레이더에서 목표지점이 가시성 있는지 확인
