@@ -88,15 +88,15 @@ zlabel('Altitude [m]');
 title('SIR Distribution Over Terrain');
 %% 가시성 테스트
 % 전체 지형에 대한 가시성 결과 시각화
-visibility_matrix = LOS_test_old(radar_1, X, Y, Z);
-%%
-visibility_matrix_new = LOS_test_new(radar_1, X, Y, Z);
+% visibility_matrix = LOS_test_old(radar_1, X, Y, Z);
+
+visibility_matrix = LOS_test_new(radar_1, X, Y, Z);
 %% 
 figure;
 clf;
 set(gcf, 'Position', [150, 75, 1200, 750]);
 hold on;
-surf(X, Y, Z, visibility_matrix_new, 'EdgeColor', 'k', 'LineWidth', 1, 'FaceAlpha', 0.5);
+surf(X, Y, Z, visibility_matrix, 'EdgeColor', 'k', 'LineWidth', 1, 'FaceAlpha', 0.5);
 colormap([1 0 0;0 1 0]);
 colorbar;
 view(-20, 85);
@@ -145,3 +145,12 @@ end_pos = [25000,34000,80];
 [path, sir_data] = PSO_SIR_Optimization(radars, start_pos, end_pos, X, Y, Z, RADAR);
 %%
 visualize_PSO_SIR(path, sir_data, radar_1, X, Y, Z);
+%% 가시성까지 고려된 환경에서 PSO 테스트
+clc;
+radar_1 = [10000, 10000, 230]; % 단일 레이더의 경우
+radars = [10000, 10000, 230]; % 복수의 레이더 경우
+start_pos = [0, 0, 200];
+% end_pos = [1780, 5180, 450];
+end_pos = [25000,34000,80];
+% path = PSO_SIR_Optimization(radar_1, start_pos, end_pos, X, Y, Z, RADAR);
+[path, sir_data] = PSO_visibility(radars, start_pos, end_pos, X, Y, Z, RADAR,visibility_matrix);
