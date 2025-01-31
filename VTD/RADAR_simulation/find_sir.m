@@ -18,7 +18,6 @@ function sig = find_sir(radar_pos, target_pos, RADAR)
     prf = 1000; % [Hz] Pulse repetition frequency
     Du = tau * prf;
     rcs_table = RADAR.RCS1;
-
     % 거리 및 LOS, RCS, SNR 계산
     RelPos = target_pos - radar_pos;  % 레이더와 목표물 간 상대 위치
     Range = norm(RelPos);  % 거리 (Slant Range)
@@ -39,7 +38,6 @@ function sig = find_sir(radar_pos, target_pos, RADAR)
     rcs = 10^(rcs / 10);  % dB to linear scale
     Fecl = eclipsingfactor(Range, Du, prf);
     SNR = radareqsnr(lambda, Range, Pt, tau, 'Gain', G, 'Ts', Ts, 'RCS', rcs, 'CustomFactor', Fecl, 'Loss', L);
-
     % 클러터 RCS 계산
     h_r = radar_pos(3);  % 레이더 고도
     h_t = target_pos(3); % 목표물 고도
@@ -56,7 +54,6 @@ function sig = find_sir(radar_pos, target_pos, RADAR)
     sigma_SLc = sigma_0 * A_SLc * SL_rms^2;
     R_h = sqrt((8 * R_e * h_r) / 3);
     sigma_clutter = (sigma_MBc + sigma_SLc) / (1 + (Range / R_h)^4);
-
     % SCR 및 SIR 계산
     SCR = rcs / sigma_clutter;
     SIR = 1 / ((1 / SNR) + (1 / SCR));
