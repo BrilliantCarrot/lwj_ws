@@ -153,58 +153,232 @@ end_pos = [25000,34000,80];
 %%
 visualize_PSO_SIR(path, sir_data, radar_1, X, Y, Z);
 %%
-clear; clc; close all;
+
 waypoints = path;
-num_waypoints = size(waypoints, 1);
-dt = 0.1;  % 시뮬레이션 타임 스텝 [s]
-T_end = 100; % 최대 시뮬레이션 시간 [s]
-t = 0:dt:T_end;
-num_steps = length(t);
-state = zeros(num_steps, 12); % [x, y, z, u, v, w, phi, theta, psi, p, q, r]
-state(1, 1:3) = waypoints(1, :); % 초기 위치 설정
-% 초기 속도 설정 (웨이포인트 간 평균 속도)
-avg_speed = 50; % m/s (기본 설정)
-state(1, 4:6) = [avg_speed, 0, 0];
-m = 1000; % 질량 [kg]
-g = 9.81; % 중력가속도 [m/s^2]
-I = diag([5000, 5000, 8000]); % 관성 모멘트 행렬 [kg*m^2]
-for i = 1:num_steps-1
-    % 현재 상태
-    pos = state(i, 1:3);
-    vel = state(i, 4:6);
-    euler = state(i, 7:9);
-    omega = state(i, 10:12);
+n_waypoints = size(waypoints, 1);
+
+% Simulation parameters
+dt = 0.1;  % Time step (s)
+T_final = 100; % Total simulation time (s)
+g = 9.81; % Gravity (m/s^2)
+
+% Initial aircraft state
+pos = waypoints(1, :);  % Initial position (x, y, z)
+vel = [50, 0, 0];        % Initial velocity [m/s] (assuming forward motion)
+angles = [0, 0, 0];     % Euler angles [phi (roll), theta (pitch), psi (yaw)]
+omega = [0, 0, 0];      % Angular velocity [rad/s]
+
+% Inertia matrix (simplified aircraft model)
+I_body = diag([5000, 6000, 7000]);
+
+% Simulation loop
+state_log = [];
+time = 0;
+wp_idx = 2; % Start from second waypoint
+
+while time < T_final && wp_idx <= n_waypoints
+    % Current waypoint target
+    target = waypoints(wp_idx, :);
     
-    % 목표 웨이포인트 결정
-    target_idx = min(find(vecnorm(waypoints - pos, 2, 2) > 10, 1), num_waypoints);
-    target = waypoints(target_idx, :);
+    % Compute desired direction
+    direction = target - pos;
+    dist = norm(direction);
+    if dist < 50  % If close to waypoint, move to next
+        wp_idx = wp_idx + 1;
+        continue;
+    end
     
-    % 속도 방향 업데이트
-    dir_vector = (target - pos) / norm(target - pos);
-    speed = norm(vel);
-    new_vel = dir_vector * speed;
+    direction = direction / dist; % Normalize direction vector
     
-    % 중력 및 단순 제어 입력 적용
-    F_thrust = m * g + 500; % 기본 양력 + 추가 추력
-    F_body = [F_thrust; 0; 0]; % 비행기 진행 방향으로 힘 작용
-    M_body = [0; 0; 0]; % 초기 제어 입력 없음
+    % Simple proportional guidance control for velocity
+    desired_vel = direction * norm(vel);
+    acc_cmd = (desired_vel - vel) / dt;
     
-    % 운동 방정식 (뉴턴-오일러)
-    acc = F_body / m - [0; 0; g];
-    omega_dot = I \ (M_body - cross(omega, I * omega));
+    % Update velocity and position
+    vel = vel + acc_cmd * dt;
+    pos = pos + vel * dt;
     
-    % 상태 업데이트 (오일러 적분)
-    state(i+1, 1:3) = pos + vel * dt;
-    state(i+1, 4:6) = vel + acc' * dt;
-    state(i+1, 7:9) = euler + omega * dt;
-    state(i+1, 10:12) = omega + omega_dot' * dt;
+    % Compute desired yaw angle
+    psi_desired = atan2(direction(2), direction(1));
+    yaw_rate_cmd = (psi_desired - angles(3)) / dt;
+    
+    % Update angular velocity and angles (simplified dynamics)
+    omega(3) = yaw_rate_cmd; % Only update yaw rate for now
+    angles = angles + omega * dt;
+    
+    % Log state
+    state_log = [state_log; time, pos, vel, angles];
+    
+    % Time update
+    time = time + dt;
 end
-%% 결과 시각화
+
+% Convert log to struct
+sim_data.time = state_log(:, 1);
+sim_data.pos = state_log(:, 2:4);
+sim_data.vel = state_log(:, 5:7);
+sim_data.angles = state_log(:, 8:10);
+
+% Plot results
 figure;
-plot3(state(:,1), state(:,2), state(:,3), 'b-', 'LineWidth', 2);
+plot3(waypoints(:,1), waypoints(:,2), waypoints(:,3), 'ro-', 'LineWidth', 2);
 hold on;
-scatter3(waypoints(:,1), waypoints(:,2), waypoints(:,3), 50, 'ro', 'filled');
+plot3(sim_data.pos(:,1), sim_data.pos(:,2), sim_data.pos(:,3), 'b-', 'LineWidth', 1.5);
 grid on;
-xlabel('X (m)'); ylabel('Y (m)'); zlabel('Altitude (m)');
-title('6-DoF Aircraft Simulation Following Waypoints');
-legend('Flight Path', 'Waypoints');
+xlabel('X [m]'); ylabel('Y [m]'); zlabel('Z [m]');
+title('6DoF Aircraft Path Following Simulation');
+legend('Waypoints', 'Aircraft Path');
+%%
+
+dt = 0.1;  % 시간 간격 (s)
+sim_time = 200; % 최대 시뮬레이션 시간 (s)
+
+%% 항공기 초기 상태
+pos = path(1, :);  % 초기 위치 (첫 번째 웨이포인트)
+vel = [0 0 0];  % 초기 속도 (m/s)
+euler_angles = [0 0 0];  % 초기 자세 (롤, 피치, 요)
+omega = [0 0 0];  % 각속도 (rad/s)
+
+%% 항공기 파라미터
+mass = 5000;  % kg
+I = diag([2000, 2000, 3000]);  % 관성 모멘트 (kg·m²)
+g = 9.81;  % 중력 가속도 (m/s²)
+
+%% PID 제어기 설정
+Kp_pos = [0.5, 0.5, 0.8];  % X, Y, Z 방향 위치 제어 P 게인
+Kd_pos = [0.1, 0.1, 0.2];  % 속도 제어 D 게인
+Kp_att = [1.0 1.0 1.5];  % 자세 제어 P 게인
+Kd_att = [0.1 0.1 0.2];  % 각속도 제어 D 게인
+
+%% 시뮬레이션 변수 초기화
+num_steps = floor(sim_time / dt);
+history.pos = zeros(num_steps, 3);
+history.euler = zeros(num_steps, 3);
+history.vel = zeros(num_steps, 3);
+
+current_wp_index = 2;  % 현재 목표 웨이포인트 인덱스
+target_pos = path(current_wp_index, :);  % 첫 번째 목표 웨이포인트
+
+%% 시뮬레이션 루프
+for t = 1:num_steps
+    % 목표까지의 거리 계산
+    error_pos = target_pos - pos;
+    distance_to_wp = norm(error_pos);
+
+    % 웨이포인트 도달 체크 (2m 이내 도달하면 다음 웨이포인트로 이동)
+    if distance_to_wp < 2 && current_wp_index < size(path, 1)
+        current_wp_index = current_wp_index + 1;
+        target_pos = path(current_wp_index, :);
+        error_pos = target_pos - pos;
+    end
+
+    % 속도 및 가속도 계산 (PD 제어 적용) (XYZ 방향 반영)
+    desired_vel = Kp_pos .* error_pos - Kd_pos .* vel;
+    accel = (desired_vel - vel) / dt;
+    
+    % 중력 보정 (z 방향에서만 중력 영향 추가)
+    accel(3) = accel(3) - g;
+
+    % 자세 제어 (간단한 P 제어)
+    desired_pitch = atan2(accel(1), sqrt(accel(2)^2 + accel(3)^2));
+    desired_roll = atan2(-accel(2), accel(3));
+    desired_euler = [desired_roll, desired_pitch, 0];
+    
+    error_euler = desired_euler - euler_angles;
+    error_omega = -omega;
+
+    % 각가속도 계산 (PD 제어)
+    torque = Kp_att .* error_euler + Kd_att .* error_omega;
+    ang_accel = I \ torque';
+
+    % 상태 업데이트 (오일러 적분)
+    vel = vel + accel * dt;
+    pos = pos + vel * dt;
+    omega = omega + ang_accel' * dt;
+    euler_angles = euler_angles + omega * dt;
+
+    % 로그 저장
+    history.pos(t, :) = pos;
+    history.euler(t, :) = euler_angles;
+    history.vel(t, :) = vel;
+
+    % 시뮬레이션 출력
+    fprintf('Time: %.1f s | Pos: [%.2f, %.2f, %.2f] | Euler: [%.2f, %.2f, %.2f]\n', ...
+        t*dt, pos(1), pos(2), pos(3), euler_angles(1), euler_angles(2), euler_angles(3));
+end
+
+%% 시각화
+figure;
+plot3(path(:,1), path(:,2), path(:,3), 'ro-', 'MarkerSize', 5, 'LineWidth', 1.5);
+hold on;
+plot3(history.pos(:,1), history.pos(:,2), history.pos(:,3), 'b-', 'LineWidth', 1.2);
+grid on;
+xlabel('X (m)');
+ylabel('Y (m)');
+zlabel('Altitude (m)');
+legend('Waypoints', 'Aircraft Path');
+title('6-DOF Aircraft Trajectory with Altitude Control');
+axis equal;
+
+% num_waypoints = size(path, 1);
+% dt = 0.1;  % 시뮬레이션 타임 스텝 [s]
+% T_end = 100; % 최대 시뮬레이션 시간 [s]
+% t = 0:dt:T_end;
+% num_steps = length(t);
+% state = zeros(num_steps, 12); % [x, y, z, u, v, w, phi, theta, psi, p, q, r]
+% state(1, 1:3) = path(1, :); % 초기 위치 설정
+% % 초기 속도 설정 (웨이포인트 간 평균 속도)
+% avg_speed = 50; % m/s (기본 설정)
+% state(1, 4:6) = [avg_speed, 0, 0];
+% m = 1000; % 질량 [kg]
+% g = 9.81; % 중력가속도 [m/s^2]
+% I = diag([5000, 5000, 8000]); % 관성 모멘트 행렬 [kg*m^2]
+% for i = 1:num_steps-1
+%     % 현재 상태
+%     pos = state(i, 1:3);
+%     vel = state(i, 4:6);
+%     euler = state(i, 7:9);
+%     omega = state(i, 10:12);
+% 
+%     % 목표 웨이포인트 결정
+%     target_idx = min(find(vecnorm(path - pos, 2, 2) > 10, 1), num_waypoints);
+%     target = path(target_idx, :);
+% 
+%     % 속도 방향 업데이트
+%     dir_vector = (target - pos) / norm(target - pos);
+%     speed = norm(vel);
+%     new_vel = dir_vector * speed;
+% 
+%     % 중력 및 단순 제어 입력 적용
+%     F_thrust = m * g + 500; % 기본 양력 + 추가 추력
+%     F_body = [F_thrust; 0; 0]; % 비행기 진행 방향으로 힘 작용
+%     M_body = [0; 0; 0]; % 초기 제어 입력 없음
+% 
+%     % 운동 방정식 (뉴턴-오일러)
+%     acc = F_body / m - [0; 0; g];
+%     omega = omega(:);
+% 
+%     M_body = M_body(:);
+%     omega_dot = I \ (M_body - cross(omega, I * omega));
+% 
+%     % 상태 업데이트 (오일러 적분)
+% 
+% 
+% 
+%     state(i+1, 1:3) = pos + vel * dt;
+%     state(i+1, 4:6) = vel + acc' * dt;
+%     % state(i+1, 7:9) = euler + omega * dt;
+% 
+%     state(i+1, 7:9) = euler + omega' * dt;
+%     state(i+1, 10:12) = omega' + omega_dot' * dt;
+%     % state(i+1, 10:12) = omega + omega_dot' * dt;
+% end
+% %% 결과 시각화
+% figure;
+% plot3(state(:,1), state(:,2), state(:,3), 'b-', 'LineWidth', 2);
+% hold on;
+% scatter3(path(:,1), path(:,2), path(:,3), 50, 'ro', 'filled');
+% grid on;
+% xlabel('X (m)'); ylabel('Y (m)'); zlabel('Altitude (m)');
+% title('6-DoF Aircraft Simulation Following Waypoints');
+% legend('Flight Path', 'Waypoints');
