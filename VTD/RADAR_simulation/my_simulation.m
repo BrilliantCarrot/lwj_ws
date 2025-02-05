@@ -46,6 +46,12 @@ RADAR.Du = RADAR.tau * RADAR.prf;
 rcs_table = RADAR.RCS1;
 radar_1 = double([10000, 10000, 230]);  % 레이더1 위치
 % radar_2 = [14000, 14000, 300];  % 레이더2 위치
+
+load C:/Users/leeyj/lab_ws/data/VTD/RADAR/path_new.mat;
+load C:/Users/leeyj/lab_ws/data/VTD/RADAR/path.mat;
+load C:/Users/leeyj/lab_ws/data/VTD/RADAR/sir_data.mat;
+load C:/Users/leeyj/lab_ws/data/VTD/RADAR/visibility_matrix_sky.mat;
+
 %% 시각화
 figure;
 clf;
@@ -152,6 +158,31 @@ end_pos = [25000,34000,80];
 [path, sir_data] = PSO_visibility(radars, start_pos, end_pos, X, Y, Z, RADAR,visibility_matrix);
 %%
 visualize_PSO_SIR(path, sir_data, radar_1, X, Y, Z);
+
+%% 추출된 path를 잇는 코드
+
+num_points = 500; % 원하는 보간 후 총 좌표 개수
+x_original = path(:, 1);
+y_original = path(:, 2);
+z_original = path(:, 3);
+distances = [0; cumsum(sqrt(diff(x_original).^2 + diff(y_original).^2 + diff(z_original).^2))];
+distance_query = linspace(0, distances(end), num_points);
+x_interp = interp1(distances, x_original, distance_query, 'spline');
+y_interp = interp1(distances, y_original, distance_query, 'spline');
+z_interp = interp1(distances, z_original, distance_query, 'spline');
+figure;
+plot3(x_original, y_original, z_original, 'ro-', 'MarkerFaceColor', 'r', 'DisplayName', 'Original Waypoints');
+hold on;
+plot3(x_interp, y_interp, z_interp, 'b.-', 'DisplayName', 'Interpolated Path');
+grid on;
+legend;
+xlabel('X Coordinate (meters)');
+ylabel('Y Coordinate (meters)');
+zlabel('Altitude (meters)');
+title('Interpolated Flight Path Visualization');
+path_new = [x_interp', y_interp', z_interp'];
+% save('path_new.mat', 'path_new');
+waypoints = path_new;
 %%
 
 waypoints = path;
@@ -228,157 +259,125 @@ grid on;
 xlabel('X [m]'); ylabel('Y [m]'); zlabel('Z [m]');
 title('6DoF Aircraft Path Following Simulation');
 legend('Waypoints', 'Aircraft Path');
-%%
+%% 무게 고려 6DoF
 
-dt = 0.1;  % 시간 간격 (s)
-sim_time = 200; % 최대 시뮬레이션 시간 (s)
+% 시뮬레이션 파라미터 및 초기 상태 변수 설정
+dt = 0.1; % 시간 간격 (초)
+Tmax = 2000; % 최대 시뮬레이션 시간 (초)
+velocity = 100; % 초기 항공기 속도 (m/s)
+N = 3; % PNG 비율 Gain
+pos = waypoints(1, :); % 시작점
+target_idx = 2; % 다음 웨이포인트 인덱스
+quat = [1 0 0 0]; % 초기 쿼터니언 (롤, 피치, 요 회전 상태)
+traj = [];
+time = 0;
 
-%% 항공기 초기 상태
-pos = path(1, :);  % 초기 위치 (첫 번째 웨이포인트)
-vel = [0 0 0];  % 초기 속도 (m/s)
-euler_angles = [0 0 0];  % 초기 자세 (롤, 피치, 요)
-omega = [0 0 0];  % 각속도 (rad/s)
+% 항공기 물리적 특성
+mass = 1000; % 항공기 질량 (kg)
+thrust = 5000; % 추력 (N)
+gravity = [0 0 -9.81 * mass]; % 중력 가속도
+Cd = 0.05; % 항력 계수
+density = 1.225; % 공기 밀도 (kg/m^3)
+A = 10; % 항공기 단면적 (m^2)
 
-%% 항공기 파라미터
-mass = 5000;  % kg
-I = diag([2000, 2000, 3000]);  % 관성 모멘트 (kg·m²)
-g = 9.81;  % 중력 가속도 (m/s²)
-
-%% PID 제어기 설정
-Kp_pos = [0.5, 0.5, 0.8];  % X, Y, Z 방향 위치 제어 P 게인
-Kd_pos = [0.1, 0.1, 0.2];  % 속도 제어 D 게인
-Kp_att = [1.0 1.0 1.5];  % 자세 제어 P 게인
-Kd_att = [0.1 0.1 0.2];  % 각속도 제어 D 게인
-
-%% 시뮬레이션 변수 초기화
-num_steps = floor(sim_time / dt);
-history.pos = zeros(num_steps, 3);
-history.euler = zeros(num_steps, 3);
-history.vel = zeros(num_steps, 3);
-
-current_wp_index = 2;  % 현재 목표 웨이포인트 인덱스
-target_pos = path(current_wp_index, :);  % 첫 번째 목표 웨이포인트
-
-%% 시뮬레이션 루프
-for t = 1:num_steps
-    % 목표까지의 거리 계산
-    error_pos = target_pos - pos;
-    distance_to_wp = norm(error_pos);
-
-    % 웨이포인트 도달 체크 (2m 이내 도달하면 다음 웨이포인트로 이동)
-    if distance_to_wp < 2 && current_wp_index < size(path, 1)
-        current_wp_index = current_wp_index + 1;
-        target_pos = path(current_wp_index, :);
-        error_pos = target_pos - pos;
+% 시뮬레이션 루프
+while target_idx <= size(waypoints, 1) && time < Tmax
+    target = waypoints(target_idx, :);
+    rel_pos = target - pos;
+    range = norm(rel_pos);
+    direction = rel_pos / range; % 목표 방향 벡터
+    
+    % 목표에 도달하면 다음 웨이포인트로 변경
+    if range < 50
+        target_idx = target_idx + 1;
+        if target_idx > size(waypoints, 1)
+            break;
+        end
+        continue;
     end
-
-    % 속도 및 가속도 계산 (PD 제어 적용) (XYZ 방향 반영)
-    desired_vel = Kp_pos .* error_pos - Kd_pos .* vel;
-    accel = (desired_vel - vel) / dt;
     
-    % 중력 보정 (z 방향에서만 중력 영향 추가)
-    accel(3) = accel(3) - g;
-
-    % 자세 제어 (간단한 P 제어)
-    desired_pitch = atan2(accel(1), sqrt(accel(2)^2 + accel(3)^2));
-    desired_roll = atan2(-accel(2), accel(3));
-    desired_euler = [desired_roll, desired_pitch, 0];
+    % 목표 웨이포인트를 향한 직선 추종
+    velocity_vector = velocity * direction;
     
-    error_euler = desired_euler - euler_angles;
-    error_omega = -omega;
-
-    % 각가속도 계산 (PD 제어)
-    torque = Kp_att .* error_euler + Kd_att .* error_omega;
-    ang_accel = I \ torque';
-
-    % 상태 업데이트 (오일러 적분)
-    vel = vel + accel * dt;
+    % 공기 저항 계산
+    speed = norm(velocity_vector);
+    drag_force = 0.5 * density * speed^2 * A * Cd * (-velocity_vector / speed);
+    
+    % 총 가속도 계산 (추력, 공기저항, 중력 고려)
+    force_total = thrust * direction + drag_force + gravity;
+    acceleration = force_total / mass;
+    
+    % 속도 및 위치 업데이트
+    vel = velocity_vector + acceleration * dt;
     pos = pos + vel * dt;
-    omega = omega + ang_accel' * dt;
-    euler_angles = euler_angles + omega * dt;
-
-    % 로그 저장
-    history.pos(t, :) = pos;
-    history.euler(t, :) = euler_angles;
-    history.vel(t, :) = vel;
-
-    % 시뮬레이션 출력
-    fprintf('Time: %.1f s | Pos: [%.2f, %.2f, %.2f] | Euler: [%.2f, %.2f, %.2f]\n', ...
-        t*dt, pos(1), pos(2), pos(3), euler_angles(1), euler_angles(2), euler_angles(3));
+    yaw = atan2(vel(2), vel(1)); % 오일러 각도 업데이트 (기본적인 요(Psi) 회전 반영)
+    pitch = atan2(-vel(3), sqrt(vel(1)^2 + vel(2)^2));
+    roll = 0; % 간단한 모델에서 롤은 유지
+    quat = eul2quat([yaw pitch roll]); % 쿼터니언 업데이트
+    
+    traj = [traj; pos];
+    time = time + dt;
 end
 
-%% 시각화
 figure;
-plot3(path(:,1), path(:,2), path(:,3), 'ro-', 'MarkerSize', 5, 'LineWidth', 1.5);
 hold on;
-plot3(history.pos(:,1), history.pos(:,2), history.pos(:,3), 'b-', 'LineWidth', 1.2);
-grid on;
+plot3(waypoints(:, 1), waypoints(:, 2), waypoints(:, 3), 'ro-', 'LineWidth', 1); % 원래 웨이포인트
+plot3(traj(:, 1), traj(:, 2), traj(:, 3), 'b-', 'LineWidth', 2); % 비행 궤적
+scatter3(waypoints(:, 1), waypoints(:, 2), waypoints(:, 3), 1, 'r', 'filled');
+scatter3(traj(end, 1), traj(end, 2), traj(end, 3), 80, 'g', 'filled'); % 최종 위치
 xlabel('X (m)');
 ylabel('Y (m)');
 zlabel('Altitude (m)');
-legend('Waypoints', 'Aircraft Path');
-title('6-DOF Aircraft Trajectory with Altitude Control');
-axis equal;
+title('6-DOF Flight Simulation with Direct Waypoint Following');
+grid on;
+view(3);
+legend('Waypoints', 'Flight Path', 'Start/End Points');
 
-% num_waypoints = size(path, 1);
-% dt = 0.1;  % 시뮬레이션 타임 스텝 [s]
-% T_end = 100; % 최대 시뮬레이션 시간 [s]
-% t = 0:dt:T_end;
-% num_steps = length(t);
-% state = zeros(num_steps, 12); % [x, y, z, u, v, w, phi, theta, psi, p, q, r]
-% state(1, 1:3) = path(1, :); % 초기 위치 설정
-% % 초기 속도 설정 (웨이포인트 간 평균 속도)
-% avg_speed = 50; % m/s (기본 설정)
-% state(1, 4:6) = [avg_speed, 0, 0];
-% m = 1000; % 질량 [kg]
-% g = 9.81; % 중력가속도 [m/s^2]
-% I = diag([5000, 5000, 8000]); % 관성 모멘트 행렬 [kg*m^2]
-% for i = 1:num_steps-1
-%     % 현재 상태
-%     pos = state(i, 1:3);
-%     vel = state(i, 4:6);
-%     euler = state(i, 7:9);
-%     omega = state(i, 10:12);
-% 
-%     % 목표 웨이포인트 결정
-%     target_idx = min(find(vecnorm(path - pos, 2, 2) > 10, 1), num_waypoints);
-%     target = path(target_idx, :);
-% 
-%     % 속도 방향 업데이트
-%     dir_vector = (target - pos) / norm(target - pos);
-%     speed = norm(vel);
-%     new_vel = dir_vector * speed;
-% 
-%     % 중력 및 단순 제어 입력 적용
-%     F_thrust = m * g + 500; % 기본 양력 + 추가 추력
-%     F_body = [F_thrust; 0; 0]; % 비행기 진행 방향으로 힘 작용
-%     M_body = [0; 0; 0]; % 초기 제어 입력 없음
-% 
-%     % 운동 방정식 (뉴턴-오일러)
-%     acc = F_body / m - [0; 0; g];
-%     omega = omega(:);
-% 
-%     M_body = M_body(:);
-%     omega_dot = I \ (M_body - cross(omega, I * omega));
-% 
-%     % 상태 업데이트 (오일러 적분)
-% 
-% 
-% 
-%     state(i+1, 1:3) = pos + vel * dt;
-%     state(i+1, 4:6) = vel + acc' * dt;
-%     % state(i+1, 7:9) = euler + omega * dt;
-% 
-%     state(i+1, 7:9) = euler + omega' * dt;
-%     state(i+1, 10:12) = omega' + omega_dot' * dt;
-%     % state(i+1, 10:12) = omega + omega_dot' * dt;
-% end
-% %% 결과 시각화
-% figure;
-% plot3(state(:,1), state(:,2), state(:,3), 'b-', 'LineWidth', 2);
-% hold on;
-% scatter3(path(:,1), path(:,2), path(:,3), 50, 'ro', 'filled');
-% grid on;
-% xlabel('X (m)'); ylabel('Y (m)'); zlabel('Altitude (m)');
-% title('6-DoF Aircraft Simulation Following Waypoints');
-% legend('Flight Path', 'Waypoints');
+
+
+%% 이전 6DoF - PNG(TPN)
+dt = 0.1; % 시간 간격 (초)
+Tmax = 2000; % 최대 시뮬레이션 시간 (초)
+velocity = 100; % 항공기 속도 (m/s)
+N = 3; % PNG 비율 Gain
+pos = waypoints(1, :); % 시작점
+target_idx = 2; % 다음 웨이포인트 인덱스
+quat = [1 0 0 0]; % 초기 쿼터니언 (롤, 피치, 요 회전 상태)
+traj = [];
+time = 0; 
+while target_idx <= size(waypoints, 1) && time < Tmax
+    target = waypoints(target_idx, :);
+    rel_pos = target - pos;
+    range = norm(rel_pos);
+    if range < 50
+        target_idx = target_idx + 1;
+        if target_idx > size(waypoints, 1)
+            break;
+        end
+        continue;
+    end
+    % PNG 유도 - 선속도를 유지하며 조향 각도 결정
+    LOS_rate = cross([0 0 velocity], rel_pos) / range^2; % LOS 변화율
+    acc_cmd = N * cross(LOS_rate, [0 0 velocity]); % 유도 가속도
+    vel = velocity * rel_pos / range + acc_cmd * dt;
+    pos = pos + vel * dt;
+    yaw = atan2(vel(2), vel(1)); % 오일러 각도 업데이트 (기본적인 요(Psi) 회전 반영)
+    pitch = atan2(-vel(3), sqrt(vel(1)^2 + vel(2)^2));
+    roll = 0; % 간단한 모델에서 롤은 유지
+    quat = eul2quat([yaw pitch roll]); % 쿼터니언 업데이트
+    traj = [traj; pos];
+    time = time + dt;
+end
+figure;
+hold on;
+plot3(waypoints(:, 1), waypoints(:, 2), waypoints(:, 3), 'ro-', 'LineWidth', 1); % 원래 웨이포인트
+plot3(traj(:, 1), traj(:, 2), traj(:, 3), 'b-', 'LineWidth', 2); % 비행 궤적
+scatter3(waypoints(:, 1), waypoints(:, 2), waypoints(:, 3), 1, 'r', 'filled');
+scatter3(traj(end, 1), traj(end, 2), traj(end, 3), 80, 'g', 'filled'); % 최종 위치
+xlabel('X (m)');
+ylabel('Y (m)');
+zlabel('Altitude (m)');
+title('6-DOF Flight Simulation with PNG');
+grid on;
+view(3);
+legend('Waypoints', 'Flight Path', 'Start/End Points');
