@@ -95,7 +95,7 @@ title('SIR Distribution Over Terrain');
 %% 가시성 테스트
 % 전체 지형에 대한 가시성 결과 시각화
 visibility_matrix = LOS_test_new(radar_1, X, Y, Z);
-%% 
+
 figure;
 clf;
 set(gcf, 'Position', [150, 75, 1200, 750]);
