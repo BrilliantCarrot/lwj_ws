@@ -1,7 +1,7 @@
 %% MAP Initialize
 clear; clc; close all;
-load C:/Users/ThinkYun/lab_ws/data/VTD/Radar/MAP_STRUCT;
-% load C:/Users/leeyj/lab_ws/data/VTD/Radar/MAP_STRUCT.mat;
+% load C:/Users/ThinkYun/lab_ws/data/VTD/Radar/MAP_STRUCT;
+load C:/Users/leeyj/lab_ws/data/VTD/Radar/MAP_STRUCT.mat;
 
 % dm = 샘플링 간격, 10
 dm = 20; g_size = size(MAP.X,1);
@@ -15,22 +15,19 @@ Y = Y1 - Y1(1,1);
 Z = MAP.alt(mesh_x,mesh_y);
 
 %% RADAR Initialize
-load C:/Users/ThinkYun/lab_ws/data/VTD/Radar/Results_2GHz.mat
+load C:/Users/leeyj/lab_ws/data/VTD/Radar/Results_2GHz.mat
 RADAR.RCS1 = Sth;
 RADAR.theta = theta;
 RADAR.psi = psi;
-load C:/Users/ThinkYun/lab_ws/data/VTD/Radar/Results_8GHz.mat
+load C:/Users/leeyj/lab_ws/data/VTD/Radar/Results_8GHz.mat
 RADAR.RCS2 = Sth;
-% RADAR.RadarPos = zeros(size(131,164, 1), size(131,164, 2), 3);
-
-
 
 %% Trajectory
 x0 = 34000; y0 = 37400;
 [ix, iy] = pos2grid(x0,y0,X,Y);
 % ix = 80; iy = 40;
 x = X(ix,iy); y = Y(ix,iy); z =  Z(ix,iy);
-dt = 0.1;   % 궤적 샘플링 주기, 초기값 0.1
+dt = 0.1;
 vx = 0; vy = 0; vz = 0;
 traj = [x y z vx vy vz];
 k = 2;
@@ -48,7 +45,7 @@ for t = 0:dt:11
     k = k+1;
 
 end
-    alt = 100;  % 헬기 고도(100미티 만큼 상승 지형에서 떨어져서 기동)
+    alt = 100;
     k = k-1;
 for t = 11:dt:190
     vx = -3*60; vy = -3*60;
@@ -62,16 +59,13 @@ end
 %% Cal Visibility
 clc;
 % 처음 interval, visual_range는 30; 100000;
-interval = 50; visual_range = 100000;
-LOS_length = 50000;     % LOS벡터의 뒤로 연장하여 지형지물 가림을 비교할 거리
-visibility_results = false(size(traj, 1), 1);               % 가시성 결과 저장
+interval = 50; visual_range = 75000;
+LOS_length = 5000; % LOS벡터의 뒤로 연장하여 지형지물 가림을 비교할 거리
+visibility_results = false(size(traj, 1), 1); % 가시성 결과 저장
 block_check = false;
 for i = 1:10:length(traj)
     hx = traj(i,1); hy = traj(i,2); hz = traj(i,3);
     visual_matrix = zeros(length(mesh_x),length(mesh_y));
-    
-    % PosN = [hx,hy,hz];      % 현재 목표물 위치
-    % is_blocked = false;     % 초기 상태: 시선벡터가 지형에 
 
     for j = 1:length(mesh_x)
         for k = 1:length(mesh_y)
@@ -132,15 +126,15 @@ for i = 1:10:length(traj)
             end
 %             visual_matrix(j,k) = visibility;
 
-
+            space = 100;
             RADAR.RadarPos(1,:) = [grid_x grid_y cal_alt(grid_x,grid_y,X,Y,Z)];
             % RPos_save(j,k,:) = RADAR.RadarPos(1,:);
-            block_check = check_target_behind(RADAR,[hx,hy,hz],X,Y,Z,interval,LOS_length);
+            block_check = check_target_behind(RADAR,[hx,hy,hz],X,Y,Z,space,LOS_length);
             % disp(RADAR.RadarPos(1,:));
             % sig1에 SIR_값이 들어감
-            [sig1,sigma_MBc,sigma_SLc,sigma_clutter,SNR,SCR,SIR_dB,Range] = ...
-                RADAR_Module_SIR(block_check,RADAR,[hx,hy,hz],1,X,Y,Z);
-            % [sig1,SNR,Range] = RADAR_Module_SNR(RADAR,[hx,hy,hz],1,X,Y,Z);
+            % [sig1,sigma_MBc,sigma_SLc,sigma_clutter,SNR,SCR,SIR_dB,Range] = ...
+            %     RADAR_Module_SIR(block_check,RADAR,[hx,hy,hz],1,X,Y,Z);
+            [sig1,SNR] = RADAR_Module_SNR(RADAR,[hx,hy,hz],1,X,Y,Z);
 
             % sig1 = 4.5*(sig1-70);
 
@@ -149,10 +143,10 @@ for i = 1:10:length(traj)
             % MBc_save(j,k) = sigma_MBc;
             % SLc_save(j,k) = sigma_SLc;
             % sigma_clutter_save(j,k) = sigma_clutter;
-            SNR_save(j,k) = SNR;
-            SCR_save(j,k) = SCR;
-            SIR_save(j,k) = SIR_dB;
-            Range_save(j,k) = Range;
+            % SNR_save(j,k) = SNR;
+            % SCR_save(j,k) = SCR;
+            % SIR_save(j,k) = SIR_dB;
+            % Range_save(j,k) = Range;
             % pos_save(j,k) = RADAR.RadarPos(1,3);
 
             % if sig < 90
@@ -191,10 +185,10 @@ for i = 1:10:length(traj)
     % MBc_mat{i} = MBc_save;
     % SLc_mat{i} = SLc_save;
     % sigma_clutter_mat{i} = sigma_clutter_save;
-    SNR_mat{i} = SNR_save;
-    SCR_mat{i} = SCR_save;
-    SIR_mat{i} = SIR_save;
-    Range_mat{i} = Range_save;
+    % SNR_mat{i} = SNR_save;
+    % SCR_mat{i} = SCR_save;
+    % SIR_mat{i} = SIR_save;
+    % Range_mat{i} = Range_save;
     % RPos_mat{i} = RPos_save;
     % pos_mat{i} = pos_save;
 
@@ -209,7 +203,7 @@ set(gcf, 'Position', [150, 75, 1200, 750]); % [left, bottom, width, height]
 clf
 pause(1)
 for i = 1:10:length(traj)                                                           
-    s = surf(X/1000, Y/1000, Z, RADAR_sig_SIR{i}); hold on;
+    s = surf(X, Y, Z, real(RADAR_sig_SIR{i})); hold on;
     plot3(traj(1:i,1)/1000, traj(1:i,2)/1000, traj(1:i,3), '-', 'Color', 'k', 'LineWidth', 2); hold on; grid on;
 
     xlabel('X [km]');
@@ -217,9 +211,9 @@ for i = 1:10:length(traj)
     zlabel('Altitude [m]');
     alpha(s, 0.5);
     view(-20, 85);
-    clim([min(RADAR_sig_SIR{i}(:)), max(RADAR_sig_SIR{i}(:))]);
-    c = colorbar;
-    c.Label.String = 'RADAR Signal (SIR in dB)';
+    % clim([min(RADAR_sig_SIR{i}(:)), max(RADAR_sig_SIR{i}(:))]);
+    % c = colorbar;
+    % c.Label.String = 'RADAR Signal (SIR in dB)';
     pause(1);
     if i < length(traj)
         delete(s);
@@ -295,57 +289,3 @@ visualize_PSO_SIR(path, sir_data, radar_1, X, Y, Z);
 visualize_los(radar_1,X,Y,Z,50,100000);
 
 %% 
-
-% 레이더 파라미터 설정
-% for lambda num = 1, 2GHz
-if lambda_num == 1
-    rcs_table = RADAR.RCS1;
-    pitch_array = RADAR.theta(1,:) * pi/180;
-    yaw_array = RADAR.psi(:,1) * pi/180;
-    % sig = 0;
-    lambda = freq2wavelen(2*10^9);          % [m] wavelength
-    Pt = 14000;                             % [W] peak power
-    tau = 0.00009;                          % [s] pulse width
-    G = 34;                                 % [dBi] antenna gain
-    Ts = 290;                               % [K] System temp 
-    L = 8.17;                                  % [dB] Loss
-    prf = 1000;                             % [Hz] Pulse repetition frequency 
-% for lambda num = 2, 8GHz
-    elseif lambda_num == 2  
-    rcs_table = RADAR.RCS2;
-    pitch_array = RADAR.theta(1,:) * pi/180;
-    yaw_array = RADAR.psi(:,1) * pi/180;
-    % sig = 0;
-    lambda = freq2wavelen(8*10^9);          % [m] wavelength
-    Pt = 6000;                              % [W] peak power
-    tau = 0.0001;                           % [s] pulse width
-    G = 39;                                 % [dBi] antenna gain
-    Ts = 290;                               % [K] System temp 
-    L = 0;                                  % [dB] Loss
-    prf = 2200;                             % [Hz] Pulse repetition frequency 
-end
-
-
-% 현재 목표물 위치 계산
-target_pos = traj(i, 1:3) / 1000; % 현재 목표물 위치 (km 단위)
-% 모든 지형 셀에서 목표물로의 LOS 벡터 계산 및 시각화
-LOS_length = 30; % LOS 벡터 길0이 (단위: km)
-num_points = 20; % 샘플링 점 수
-
-% 루프를 통해 각 지형 셀에서 LOS 벡터 생성
-for row = 1:size(X, 1)
-    for col = 1:size(X, 2)
-        % 현재 셀의 레이더 위치
-        radar_pos = [X(row, col), Y(row, col), Z(row, col)] / 1000; % (km 단위)
-
-        % LOS 벡터 계산
-        LOS_direction = (target_pos - radar_pos) / norm(target_pos - radar_pos); % 단위 벡터
-        LOS_points = zeros(num_points, 3);
-        for j = 1:num_points
-            LOS_points(j, :) = radar_pos + (j * (LOS_length / num_points)) * LOS_direction;
-        end
-
-        % LOS 벡터 시각화
-        plot3(LOS_points(:,1), LOS_points(:,2), LOS_points(:,3), '-', 'Color', 'r', 'LineWidth', 0.5);
-    end
-end
