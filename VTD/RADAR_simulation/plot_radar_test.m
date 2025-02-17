@@ -1,10 +1,9 @@
-%% MAP Initialize
 clear; clc; close all;
 % load C:/Users/ThinkYun/lab_ws/data/VTD/Radar/MAP_STRUCT;
 load C:/Users/leeyj/lab_ws/data/VTD/Radar/MAP_STRUCT.mat;
 
 % dm = 샘플링 간격, 10
-dm = 20; g_size = size(MAP.X,1);
+dm = 10; g_size = size(MAP.X,1);
 mesh_x = floor(g_size/2)-250:dm:g_size-750;
 mesh_y = floor(g_size/2)-370:dm:g_size-540;
 
@@ -14,7 +13,6 @@ X = X1 - min(min(X1));
 Y = Y1 - Y1(1,1);
 Z = MAP.alt(mesh_x,mesh_y);
 
-%% RADAR Initialize
 load C:/Users/leeyj/lab_ws/data/VTD/Radar/Results_2GHz.mat
 RADAR.RCS1 = Sth;
 RADAR.theta = theta;
@@ -22,12 +20,11 @@ RADAR.psi = psi;
 load C:/Users/leeyj/lab_ws/data/VTD/Radar/Results_8GHz.mat
 RADAR.RCS2 = Sth;
 
-%% Trajectory
 x0 = 34000; y0 = 37400;
 [ix, iy] = pos2grid(x0,y0,X,Y);
 % ix = 80; iy = 40;
 x = X(ix,iy); y = Y(ix,iy); z =  Z(ix,iy);
-dt = 0.1;
+dt = 0.1; % 궤적 샘플링 주기, 0.1
 vx = 0; vy = 0; vz = 0;
 traj = [x y z vx vy vz];
 k = 2;
@@ -59,9 +56,9 @@ end
 %% Cal Visibility
 clc;
 % 처음 interval, visual_range는 30; 100000;
-interval = 50; visual_range = 75000;
-LOS_length = 5000; % LOS벡터의 뒤로 연장하여 지형지물 가림을 비교할 거리
-visibility_results = false(size(traj, 1), 1); % 가시성 결과 저장
+interval = 30; visual_range = 100000;
+LOS_length = 5000; % LOS벡터의 뒤로 연장하여 지형지물 가림을 비교할 거리, m
+% visibility_results = false(size(traj, 1), 1); % 가시성 결과 저장
 block_check = false;
 for i = 1:10:length(traj)
     hx = traj(i,1); hy = traj(i,2); hz = traj(i,3);
@@ -128,32 +125,20 @@ for i = 1:10:length(traj)
 
             space = 100;
             RADAR.RadarPos(1,:) = [grid_x grid_y cal_alt(grid_x,grid_y,X,Y,Z)];
-            % RPos_save(j,k,:) = RADAR.RadarPos(1,:);
+            % RADAR: 레이더 구조체
+            % hx, hz, hz: 항공기 위치 좌표
+            % X, Y, Z: 지표 행렬
             block_check = check_target_behind(RADAR,[hx,hy,hz],X,Y,Z,space,LOS_length);
-            % disp(RADAR.RadarPos(1,:));
-            % sig1에 SIR_값이 들어감
-            % [sig1,sigma_MBc,sigma_SLc,sigma_clutter,SNR,SCR,SIR_dB,Range] = ...
-            %     RADAR_Module_SIR(block_check,RADAR,[hx,hy,hz],1,X,Y,Z);
-            [sig1,SNR] = RADAR_Module_SNR(RADAR,[hx,hy,hz],1,X,Y,Z);
+            sig1 = RADAR_Module_SIR(block_check,RADAR,[hx,hy,hz],1,X,Y,Z);
 
             % sig1 = 4.5*(sig1-70);
-
             % sig_save(j,k) = sig1;
-
-            % MBc_save(j,k) = sigma_MBc;
-            % SLc_save(j,k) = sigma_SLc;
-            % sigma_clutter_save(j,k) = sigma_clutter;
-            % SNR_save(j,k) = SNR;
-            % SCR_save(j,k) = SCR;
-            % SIR_save(j,k) = SIR_dB;
-            % Range_save(j,k) = Range;
-            % pos_save(j,k) = RADAR.RadarPos(1,3);
 
             % if sig < 90
             %     if sig < 0 
             %         sig = 0;
             %     end
-            %     C(j,k,1) = 0;           % C에 색깔 정보(가시 유무)가 저장됨
+            %     C(j,k,1) = 0; % C에 색깔 정보(가시 유무)가 저장됨
             %     C(j,k,2) = sind(sig);
             %     C(j,k,3) = cosd(sig);
             % else
@@ -164,33 +149,21 @@ for i = 1:10:length(traj)
             %     C(j,k,2) = cosd(sig-90);
             %     C(j,k,3) = 0;
             % end
-            % if visibility == 1  % 기체가 레이더에 안 보이게 된다면 회색으로 처리
+            % if visibility == 1
             %     C(j,k,1) = 0.5;
             %     C(j,k,2) = 0.5;
             %     C(j,k,3) = 0.5;
             % end
-
-            % MTI Loss와 CFAR Loss도 구하면 15.14dB보다 높은 값이 나와야됨
             
-            if visibility == 1 % 기체가 레이더에 안 보이게 된다면 회색으로 처리
-                sig_save(j,k) = 0;  % 0이 아닌 다른 설정 필요
+            if visibility == 1 % 기체가 보이지 않는 영역은 회색으로
+                sig_save(j,k) = 0;
             else
                 sig_save(j,k) = sig1;
             end
         end
     end
     % Visual_Struct{i} = visual_matrix;
-    % RADAR_sig_SNR{i} = sig_save;    % 가시 여부를 고려 안하고 SIR만 적용된 원래 칼라맵
     RADAR_sig_SIR{i} = sig_save;
-    % MBc_mat{i} = MBc_save;
-    % SLc_mat{i} = SLc_save;
-    % sigma_clutter_mat{i} = sigma_clutter_save;
-    % SNR_mat{i} = SNR_save;
-    % SCR_mat{i} = SCR_save;
-    % SIR_mat{i} = SIR_save;
-    % Range_mat{i} = Range_save;
-    % RPos_mat{i} = RPos_save;
-    % pos_mat{i} = pos_save;
 
     % RADAR_C_SIR{i} = C;
     % RADAR_C{i} = C;             % 가시 여부가 반영된 신호 칼라맵
@@ -199,21 +172,19 @@ end
 %% 시각화
 
 figure(1)
-set(gcf, 'Position', [150, 75, 1200, 750]); % [left, bottom, width, height]
 clf
 pause(1)
 for i = 1:10:length(traj)                                                           
-    s = surf(X, Y, Z, real(RADAR_sig_SIR{i})); hold on;
-    plot3(traj(1:i,1)/1000, traj(1:i,2)/1000, traj(1:i,3), '-', 'Color', 'k', 'LineWidth', 2); hold on; grid on;
-
+    s = surf(X/1000, Y/1000, Z, real(RADAR_sig_SIR{i})); 
+    hold on;
+    plot3(traj(1:i,1)/1000, traj(1:i,2)/1000, traj(1:i,3), '-', 'Color', 'k', 'LineWidth', 2); 
+    hold on; 
+    grid on;
     xlabel('X [km]');
     ylabel('Y [km]');
     zlabel('Altitude [m]');
     alpha(s, 0.5);
     view(-20, 85);
-    % clim([min(RADAR_sig_SIR{i}(:)), max(RADAR_sig_SIR{i}(:))]);
-    % c = colorbar;
-    % c.Label.String = 'RADAR Signal (SIR in dB)';
     pause(1);
     if i < length(traj)
         delete(s);

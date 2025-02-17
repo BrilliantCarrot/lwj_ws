@@ -3,8 +3,8 @@ function is_blocked = check_target_behind(RADAR, PosN, X,Y,Z,space,LOS_length)
     % X, Y, Z: 지형 데이터 (각각 x, y, z 좌표 행렬)
     % interval: 샘플링 간격
     % LOS_length: LOS 벡터 길이 (단위: m)
-
-    is_blocked = false;
+    % 기체에서 지면까지 LOS벡터를 뒤로 연장하여 지형에 의해 차단되는지 유무를 검사
+    is_blocked = false; % 기본적으로 배경이 하늘이다 가정
     radar_pos = RADAR.RadarPos(1, :); % 레이더 위치 [x, y, z]
     LOS_direction = (PosN - radar_pos) / norm(PosN - radar_pos); % 단위 LOS 벡터
 
