@@ -1,9 +1,8 @@
 clear; clc; close all;
-% load C:/Users/ThinkYun/lab_ws/data/VTD/Radar/MAP_STRUCT;
 load C:/Users/leeyj/lab_ws/data/VTD/Radar/MAP_STRUCT.mat;
 
 % dm = 샘플링 간격, 10
-dm = 10; g_size = size(MAP.X,1);
+dm = 20; g_size = size(MAP.X,1);
 mesh_x = floor(g_size/2)-250:dm:g_size-750;
 mesh_y = floor(g_size/2)-370:dm:g_size-540;
 
@@ -13,18 +12,37 @@ X = X1 - min(min(X1));
 Y = Y1 - Y1(1,1);
 Z = MAP.alt(mesh_x,mesh_y);
 
+% 레이더 설정
 load C:/Users/leeyj/lab_ws/data/VTD/Radar/Results_2GHz.mat
 RADAR.RCS1 = Sth;
 RADAR.theta = theta;
 RADAR.psi = psi;
 load C:/Users/leeyj/lab_ws/data/VTD/Radar/Results_8GHz.mat
 RADAR.RCS2 = Sth;
+rcs_table = RADAR.RCS1;
+
+% RADAR_loc_sim 함수용 파라미터
+RADAR.lambda = freq2wavelen(2 * 10^9); % 기본 2GHz 파라미터
+RADAR.Pt = 14000;  % [W] Peak Power
+RADAR.tau = 0.00009;  % [s] Pulse Width
+RADAR.G = 34;  % [dBi] Antenna Gain
+RADAR.Ts = 290;  % [K] System Temperature
+RADAR.L = 8.17;  % [dB] Loss
+RADAR.sigma_0 = 10^(-20/10);  % Clutter Scattering Coefficient
+RADAR.theta_A = deg2rad(1);  % Azimuth Beamwidth
+RADAR.theta_E = deg2rad(2);  % Elevation Beamwidth
+RADAR.SL_rms = 10^(-20.10);  % RMS Sidelobe Level
+RADAR.R_e = 6.371e6;  % Earth Radius (m)
+RADAR.c = 3e8;  % Speed of Light (m/s)
+RADAR.prf = 1000; % [Hz] Pulse repetition frequency
+RADAR.Du = RADAR.tau * RADAR.prf;
+%
 
 x0 = 34000; y0 = 37400;
 [ix, iy] = pos2grid(x0,y0,X,Y);
 % ix = 80; iy = 40;
 x = X(ix,iy); y = Y(ix,iy); z =  Z(ix,iy);
-dt = 0.1; % 궤적 샘플링 주기, 0.1
+dt = 0.5; % 궤적 샘플링 주기, 0.1
 vx = 0; vy = 0; vz = 0;
 traj = [x y z vx vy vz];
 k = 2;
@@ -55,8 +73,9 @@ end
 
 %% Cal Visibility
 clc;
-% 처음 interval, visual_range는 30; 100000;
-interval = 30; visual_range = 100000;
+% interval = 30; visual_range = 100000;
+interval = 50; visual_range = 50000;
+space = 100; % 지형의 막힘 유무 판별시 LOS 벡터 샘플링 간격
 LOS_length = 5000; % LOS벡터의 뒤로 연장하여 지형지물 가림을 비교할 거리, m
 % visibility_results = false(size(traj, 1), 1); % 가시성 결과 저장
 block_check = false;
@@ -121,13 +140,12 @@ for i = 1:10:length(traj)
             else
                 visibility = 1;
             end
-%             visual_matrix(j,k) = visibility;
+%           visual_matrix(j,k) = visibility;
 
-            space = 100;
             RADAR.RadarPos(1,:) = [grid_x grid_y cal_alt(grid_x,grid_y,X,Y,Z)];
             % RADAR: 레이더 구조체
             % hx, hz, hz: 항공기 위치 좌표
-            % X, Y, Z: 지표 행렬
+            % X, Y, Z: 지표 데이터
             block_check = check_target_behind(RADAR,[hx,hy,hz],X,Y,Z,space,LOS_length);
             sig1 = RADAR_Module_SIR(block_check,RADAR,[hx,hy,hz],1,X,Y,Z);
 
@@ -193,13 +211,11 @@ end
 
 %% 레이더를 특정 위치에 고정시킨 후 전체 지형에 대해 SIR을 구하는 코드
 
-radar_1 = [20000, 20000, 300];  % 레이더1 위치
+radar_1 = [20000, 20000, 900];  % 레이더1 위치
 % radar_2 = [14000, 14000, 300];  % 레이더2 위치
 
 clc;
 SIR_matrix = RADAR_loc_sim(radar_1, X, Y, Z, RADAR);
-
-%% 시각화
 
 figure;
 set(gcf, 'Position', [150, 75, 1200, 750]); % [left, bottom, width, height]
@@ -229,9 +245,9 @@ radars = [20000, 20000, 900];    % 복수의 레이더 경우
 start_pos = [34000, 37400, 770];
 % end_pos = [1780, 5180, 450];
 end_pos = [1710,5170,420];
-interval = 50;
+
 % path = PSO_SIR_Optimization(radar_1, start_pos, end_pos, X, Y, Z, RADAR);
-[path, sir_data] = PSO_SIR_Optimization(radars, start_pos, end_pos, X, Y, Z, RADAR, interval);
+[path, sir_data] = PSO_SIR_Optimization(radars, start_pos, end_pos, X, Y, Z, RADAR);
 
 %% PSO 결과 시각화
 
@@ -258,5 +274,3 @@ visualize_PSO_SIR(path, sir_data, radar_1, X, Y, Z);
 
 %%
 visualize_los(radar_1,X,Y,Z,50,100000);
-
-%% 
